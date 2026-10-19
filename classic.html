@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Classic — TypeQuest</title>
+
+        <!-- Fonts used in the Stitch design -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+
+        <style>
+            /* ========================================
+               1. PAGE AND BACKGROUND
+               ======================================== */
+
+            *
+            {
+                box-sizing: border-box;
+            }
+
+            body
+            {
+                margin: 0;
+                border-top: 4px solid #28518a;
+                background: radial-gradient(circle at 50% 48%, #e8f6fa 0%, #f6f9fb 70%, #f3f7f9 100%);
+                color: #0e212b;
+                font-family: "Plus Jakarta Sans", sans-serif;
+            }
+
+            #page
+            {
+                display: flex;
+                flex-direction: column;
+                min-height: calc(100vh - 4px);
+                min-height: calc(100dvh - 4px);
+                padding: 44px 70px 58px;
+            }
+
+            /* ========================================
+               2. TOP CONTROLS AND TIMER
+               ======================================== */
+
+            #top-bar
+            {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 24px;
+            }
+
+            .control
+            {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 16px;
+                min-width: 158px;
+                min-height: 56px;
+                padding: 12px 24px;
+                border: 1px solid #b5ddeb;
+                border-radius: 15px;
+                background-color: rgba(255, 255, 255, 0.35);
+                color: #18313d;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 18px;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .control:hover
+            {
+                background-color: #e2f3f8;
+            }
+
+            .control:disabled
+            {
+                opacity: 0.5;
+                cursor: default;
+            }
+
+            .control img
+            {
+                width: 25px;
+                height: 25px;
+            }
+
+            #level-info
+            {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 32px;
+                color: #638098;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 18px;
+                letter-spacing: 0.06em;
+            }
+
+            #timer
+            {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 20px;
+            }
+
+            #timer img
+            {
+                width: 26px;
+                height: 26px;
+            }
+
+            /* ========================================
+               3. LEVEL HEADING
+               ======================================== */
+
+            #game-content
+            {
+                display: flex;
+                flex: 1;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 50px 0 60px;
+            }
+
+            #game-heading
+            {
+                margin-bottom: 64px;
+                text-align: center;
+            }
+
+            #status-badge
+            {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 18px;
+                padding: 6px 18px;
+                border: 1px solid #cde7ef;
+                border-radius: 9999px;
+                background-color: #e6f6fa;
+                color: #1c667c;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 14px;
+                font-weight: 600;
+                letter-spacing: 0.12em;
+            }
+
+            #status-dot
+            {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #2dbbc9;
+            }
+
+            #level-title
+            {
+                margin: 0;
+                font-size: 72px;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1.15;
+            }
+
+            /* ========================================
+               4. SPEED AND TYPING PASSAGE
+               ======================================== */
+
+            #typing-layout
+            {
+                display: flex;
+                align-items: flex-start;
+                gap: 58px;
+                width: 100%;
+            }
+
+            #speed-panel
+            {
+                display: flex;
+                flex: 0 0 340px;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 274px;
+                padding-right: 40px;
+                border-right: 1px solid #a9ddec;
+            }
+
+            #net-wpm
+            {
+                background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                font-size: 138px;
+                font-weight: 800;
+                letter-spacing: -0.06em;
+                line-height: 1.1;
+            }
+
+            #speed-label
+            {
+                margin: 12px 0 0;
+                color: #638098;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 30px;
+                letter-spacing: 0.16em;
+            }
+
+            #typing-area
+            {
+                position: relative;
+                flex: 1;
+                min-width: 0;
+                max-height: 324px;
+                padding-right: 28px;
+                overflow-y: auto;
+                color: #6b7fa1;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 30px;
+                line-height: 1.8;
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
+                outline: none;
+                scrollbar-width: auto;
+                scrollbar-color: #20adc0 #d9eff7;
+                cursor: text;
+            }
+
+            #typing-area::-webkit-scrollbar
+            {
+                width: 12px;
+            }
+
+            #typing-area::-webkit-scrollbar-track
+            {
+                border-radius: 9999px;
+                background-color: #d9eff7;
+            }
+
+            #typing-area::-webkit-scrollbar-thumb
+            {
+                border-radius: 9999px;
+                background-color: #20adc0;
+            }
+
+            #typing-area.paused
+            {
+                opacity: 0.5;
+            }
+
+            .correct
+            {
+                color: #159333;
+            }
+
+            .incorrect
+            {
+                background-color: #ffe1e1;
+                color: #c93232;
+            }
+
+            .current-character
+            {
+                border-left: 3px solid #20adc0;
+            }
+
+            /* ========================================
+               5. PAUSE AND RESTART
+               ======================================== */
+
+            #game-controls
+            {
+                text-align: center;
+            }
+
+            #control-buttons
+            {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            #control-buttons .control
+            {
+                min-width: 170px;
+            }
+
+            #game-message
+            {
+                margin: 20px 0 0;
+                color: #638098;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 14px;
+                letter-spacing: 0.08em;
+                line-height: 1.8;
+            }
+
+            /* ========================================
+               6. SMALLER SCREENS
+               ======================================== */
+
+            @media (max-width: 1200px)
+            {
+                #page
+                {
+                    padding: 32px 40px;
+                }
+
+                #level-title
+                {
+                    font-size: 52px;
+                }
+
+                #typing-layout
+                {
+                    gap: 32px;
+                }
+
+                #speed-panel
+                {
+                    flex-basis: 240px;
+                    padding-right: 24px;
+                }
+
+                #net-wpm
+                {
+                    font-size: 96px;
+                }
+
+                #speed-label
+                {
+                    font-size: 22px;
+                }
+
+                #typing-area
+                {
+                    font-size: 24px;
+                }
+            }
+
+            @media (max-width: 767px)
+            {
+                #page
+                {
+                    padding: 24px;
+                }
+
+                #top-bar
+                {
+                    flex-wrap: wrap;
+                    gap: 16px;
+                }
+
+                #level-info
+                {
+                    order: 1;
+                    width: 100%;
+                    gap: 20px;
+                    font-size: 14px;
+                }
+
+                .control
+                {
+                    min-width: 0;
+                    min-height: 48px;
+                    padding: 10px 16px;
+                    gap: 10px;
+                    font-size: 15px;
+                }
+
+                #control-buttons .control
+                {
+                    min-width: 140px;
+                }
+
+                #game-content
+                {
+                    padding: 36px 0;
+                }
+
+                #game-heading
+                {
+                    margin-bottom: 28px;
+                }
+
+                #level-title
+                {
+                    font-size: 36px;
+                }
+
+                #typing-layout
+                {
+                    align-items: center;
+                    flex-direction: column;
+                    gap: 24px;
+                }
+
+                #speed-panel
+                {
+                    flex: auto;
+                    min-height: 0;
+                    padding: 0;
+                    border: none;
+                }
+
+                #net-wpm
+                {
+                    font-size: 72px;
+                }
+
+                #speed-label
+                {
+                    margin-top: 4px;
+                    font-size: 18px;
+                }
+
+                #typing-area
+                {
+                    flex: auto;
+                    width: 100%;
+                    max-height: 300px;
+                    padding-right: 14px;
+                    font-size: 20px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="page">
+            <!-- Level navigation and active playing time. -->
+            <header id="top-bar">
+                <a id="levels-link" class="control" href="classic-levels.html">
+                    <span>&larr;</span>
+                    Levels
+                </a>
+
+                <div id="level-info">
+                    <span id="level-label">CLASSIC / LEVEL 01</span>
+                    <span id="timer">
+                        <img src="icons/time-attack.svg" alt="">
+                        <span id="elapsed-time">00:00</span>
+                    </span>
+                </div>
+
+                <a class="control" href="index.html">
+                    <img src="icons/home.svg" alt="">
+                    Home
+                </a>
+            </header>
+
+            <main id="game-content">
+                <div id="game-heading">
+                    <div id="status-badge">
+                        <span id="status-dot"></span>
+                        <span id="game-status">IN PLAY</span>
+                    </div>
+                    <h1 id="level-title"></h1>
+                </div>
+
+                <div id="typing-layout">
+                    
+                    <div id="speed-panel">
+                        <span id="net-wpm">0.0</span>
+                        <p id="speed-label">NET WPM</p>
+                    </div>
+
+                    <div id="typing-area" tabindex="0" spellcheck="false"></div>
+                </div>
+            </main>
+
+            <footer id="game-controls">
+                <div id="control-buttons">
+                    <button id="pause-button" class="control" type="button">
+                        <img id="pause-icon" src="icons/pause.svg" alt="">
+                        <span id="pause-label">Pause</span>
+                    </button>
+                    <button id="restart-button" class="control" type="button">
+                        <img src="icons/restart.svg" alt="">
+                        Restart
+                    </button>
+                </div>
+                <p id="game-message">ESC &middot; PAUSE</p>
+            </footer>
+        </div>
+
+        <script src="js/classic-data.js"></script>
+        <script src="js/classic.js"></script>
+    </body>
+</html>

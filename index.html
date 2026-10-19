@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TypeQuest — Keyboard Discipline &amp; Velocity</title>
+
+        <!-- Fonts used in the Stitch design -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+
+        <style>
+            /* ========================================
+               1. PAGE AND BACKGROUND
+               ======================================== */
+
+            *
+            {
+                box-sizing: border-box;
+            }
+
+            html,
+            body
+            {
+                margin: 0;
+                min-height: 100%;
+            }
+
+            body
+            {
+                background-color: #f3f7f9;
+                color: #14232c;
+                font-family: "Plus Jakarta Sans", sans-serif;
+            }
+
+            #background
+            {
+                position: fixed;
+                inset: 0;
+                background: radial-gradient(circle at 50% 48%,
+                    rgba(220, 240, 247, 0.75) 0%,
+                    rgba(235, 245, 249, 0.45) 30%,
+                    #f6f9fb 70%,
+                    #f3f7f9 100%);
+                pointer-events: none;
+            }
+
+            #page
+            {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-height: 100vh;
+                min-height: 100dvh;
+                padding: 28px 48px;
+            }
+
+            /* ========================================
+               2. TOP NAVIGATION
+               ======================================== */
+
+            #top-bar
+            {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            #brand
+            {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            #brand-logo
+            {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                background-color: #23687d;
+                color: white;
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 0.025em;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #brand-name
+            {
+                color: #0f212b;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: -0.025em;
+            }
+
+            #top-nav
+            {
+                display: flex;
+                align-items: center;
+                padding: 4px;
+                border: 1px solid rgba(210, 227, 234, 0.6);
+                border-radius: 9999px;
+                background-color: rgba(228, 238, 242, 0.8);
+                backdrop-filter: blur(12px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            }
+
+            .nav-link
+            {
+                padding: 6px 20px;
+                border-radius: 9999px;
+                color: #4a636f;
+                font-size: 14px;
+                font-weight: 500;
+                text-decoration: none;
+                transition: background-color 0.2s, color 0.2s;
+            }
+
+            .nav-link:hover
+            {
+                background-color: rgba(20, 184, 166, 0.15);
+                color: #144857;
+            }
+
+            .nav-link-active
+            {
+                border: 1px solid rgba(20, 184, 166, 0.2);
+                background-color: rgba(20, 184, 166, 0.25);
+                color: #144857;
+                font-weight: 600;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #profile
+            {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            #profile-name
+            {
+                color: #18313d;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            #profile-icon
+            {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border: 1px solid #cbdce3;
+                border-radius: 50%;
+                background-color: #e2ecf0;
+            }
+
+            #profile-icon img
+            {
+                width: 20px;
+                height: 20px;
+            }
+
+            /* ========================================
+               3. CENTER TITLE AND DESCRIPTION
+               ======================================== */
+
+            #hero
+            {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                margin-top: -24px;
+                text-align: center;
+            }
+
+            #tagline
+            {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 24px;
+                padding: 6px 16px;
+                border: 1px solid rgba(205, 226, 233, 0.7);
+                border-radius: 9999px;
+                background-color: rgba(226, 239, 243, 0.7);
+                color: #1c667c;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+            }
+
+            #tagline-dot
+            {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #52bfcf;
+            }
+
+            #hero-title
+            {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 0 20px;
+                font-size: 108.8px;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1;
+            }
+
+            #title-type
+            {
+                color: #0e212b;
+            }
+
+            #title-quest
+            {
+                background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+
+            #hero-description
+            {
+                max-width: 576px;
+                margin: 0 0 40px;
+                color: #536f7c;
+                font-size: 20px;
+                font-weight: 400;
+            }
+
+            /* ========================================
+               4. START BUTTON
+               ======================================== */
+
+            #btn-begin
+            {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 28px;
+                padding: 16px 28px;
+                border: none;
+                border-radius: 16px;
+                background-color: #1d6980;
+                color: white;
+                font-family: inherit;
+                cursor: pointer;
+                box-shadow: 0 8px 24px rgba(26, 105, 128, 0.22);
+                transition: opacity 0.2s;
+            }
+
+            #btn-begin:hover
+            {
+                opacity: 0.9;
+            }
+
+            #button-label
+            {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 16px;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+            }
+
+            #controller-icon
+            {
+                width: 20px;
+                height: 20px;
+            }
+
+            #enter-badge
+            {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 12px;
+                border: 1px solid rgba(43, 121, 145, 0.6);
+                border-radius: 8px;
+                background-color: #145366;
+                color: rgba(255, 255, 255, 0.9);
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                font-weight: 700;
+                box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #enter-icon
+            {
+                width: 14px;
+                height: 14px;
+            }
+
+            /* ========================================
+               5. BOTTOM STATUS BAR
+               ======================================== */
+
+            #bottom-bar
+            {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                color: #738e9b;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                letter-spacing: 0.025em;
+            }
+
+            #audio-status
+            {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            #audio-dot
+            {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #1b889e;
+            }
+
+            /* ========================================
+               6. SMALLER SCREENS
+               ======================================== */
+
+            @media (max-width: 767px)
+            {
+                #top-nav
+                {
+                    display: none;
+                }
+
+                #hero-title
+                {
+                    font-size: 72px;
+                }
+
+                #hero-description
+                {
+                    font-size: 18px;
+                }
+            }
+
+            @media (max-width: 639px)
+            {
+                #page
+                {
+                    padding: 28px 32px;
+                }
+
+                #hero-title
+                {
+                    font-size: 60px;
+                }
+
+                #button-label
+                {
+                    font-size: 14px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Static background from Stitch (no shader or animation) -->
+        <div id="background"></div>
+
+        <div id="page">
+            <!-- ========================================
+                 1. TOP NAVIGATION
+                 ======================================== -->
+
+            <header id="top-bar">
+                <div id="brand">
+                    <div id="brand-logo">TQ</div>
+                    <span id="brand-name">TypeQuest</span>
+                </div>
+
+                <nav id="top-nav">
+                    <!-- Progress, Profiles, and Settings are placeholders for now. -->
+                    <a href="index.html" class="nav-link nav-link-active">Home</a>
+                    <a href="play.html" class="nav-link">Play</a>
+                    <a href="#progress" class="nav-link">Progress</a>
+                    <a href="#profiles" class="nav-link">Profiles</a>
+                    <a href="#settings" class="nav-link">Settings</a>
+                </nav>
+
+                <div id="profile">
+                    <span id="profile-name">TactileTypist</span>
+                    <div id="profile-icon">
+                        <img src="icons/profile.svg" alt="">
+                    </div>
+                </div>
+            </header>
+
+            <!-- ========================================
+                 2. MAIN HOMEPAGE CONTENT
+                 ======================================== -->
+            <main id="hero">
+                <div id="tagline">
+                    <span id="tagline-dot"></span>
+                    <span>Keyboard Discipline &amp; Velocity</span>
+                </div>
+
+                <h1 id="hero-title">
+                    <span id="title-type">Type</span><span id="title-quest">Quest</span>
+                </h1>
+
+                <p id="hero-description">
+                    Master cadence, velocity, and pure muscle memory.
+                </p>
+
+                <button id="btn-begin" type="button">
+                    <span id="button-label">
+                        <img id="controller-icon" src="icons/controller.svg" alt="">
+                        <span>PRESS ENTER TO BEGIN</span>
+                    </span>
+
+                    <span id="enter-badge">
+                        <img id="enter-icon" src="icons/enter.svg" alt="">
+                        <span>ENTER</span>
+                    </span>
+                </button>
+            </main>
+
+            <!-- ========================================
+                 3. BOTTOM STATUS BAR
+                 ======================================== -->
+            <footer id="bottom-bar">
+                <div id="audio-status">
+                    <span id="audio-dot"></span>
+                    <span>AUDIO [STEREO 48k]</span>
+                </div>
+                <span>© 2025 TYPEQUEST STUDIO</span>
+            </footer>
+        </div>
+
+        <script src="js/home.js"></script>
+    </body>
+</html>
