@@ -27,19 +27,15 @@
 
             body {
                 background-color: #f3f7f9;
-                color: #14232c;
-                font-family: "Plus Jakarta Sans", sans-serif;
-            }
-
-            #background {
-                position: fixed;
-                inset: 0;
-                background: radial-gradient(circle at 50% 48%,
+                background-image: radial-gradient(circle at 50% 48%,
                     rgba(220, 240, 247, 0.75) 0%,
                     rgba(235, 245, 249, 0.45) 30%,
                     #f6f9fb 70%,
                     #f3f7f9 100%);
-                pointer-events: none;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                color: #14232c;
+                font-family: "Plus Jakarta Sans", sans-serif;
             }
 
             #page {
@@ -49,7 +45,7 @@
                 justify-content: space-between;
                 min-height: 100vh;
                 min-height: 100dvh;
-                padding: 28px 48px;
+                padding: 28px 48px 28px 48px;
             }
 
             /* ========================================
@@ -98,12 +94,11 @@
                 border: 1px solid rgba(210, 227, 234, 0.6);
                 border-radius: 9999px;
                 background-color: rgba(228, 238, 242, 0.8);
-                backdrop-filter: blur(12px);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
             }
 
             .nav-link {
-                padding: 6px 20px;
+                padding: 6px 20px 6px 20px;
                 border-radius: 9999px;
                 color: #4a636f;
                 font-size: 14px;
@@ -171,7 +166,7 @@
                 align-items: center;
                 gap: 8px;
                 margin-bottom: 24px;
-                padding: 6px 16px;
+                padding: 6px 16px 6px 16px;
                 border: 1px solid rgba(205, 226, 233, 0.7);
                 border-radius: 9999px;
                 background-color: rgba(226, 239, 243, 0.7);
@@ -193,7 +188,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin: 0 0 20px;
+                margin: 0 0 20px 0;
                 font-size: 108.8px;
                 font-weight: 800;
                 letter-spacing: -0.04em;
@@ -213,7 +208,7 @@
 
             #hero-description {
                 max-width: 576px;
-                margin: 0 0 40px;
+                margin: 0 0 40px 0;
                 color: #536f7c;
                 font-size: 20px;
                 font-weight: 400;
@@ -228,7 +223,7 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 28px;
-                padding: 16px 28px;
+                padding: 16px 28px 16px 28px;
                 border: none;
                 border-radius: 16px;
                 background-color: #1d6980;
@@ -261,7 +256,7 @@
                 display: flex;
                 align-items: center;
                 gap: 6px;
-                padding: 4px 12px;
+                padding: 4px 12px 4px 12px;
                 border: 1px solid rgba(43, 121, 145, 0.6);
                 border-radius: 8px;
                 background-color: #145366;
@@ -325,7 +320,7 @@
 
             @media (max-width: 639px) {
                 #page {
-                    padding: 28px 32px;
+                    padding: 28px 32px 28px 32px;
                 }
 
                 #hero-title {
@@ -340,9 +335,6 @@
     </head>
 
     <body>
-        <!-- Static background from Stitch (no shader or animation) -->
-        <div id="background"></div>
-
         <div id="page">
             <!-- ========================================
                  1. TOP NAVIGATION

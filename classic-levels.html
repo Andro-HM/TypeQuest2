@@ -26,19 +26,15 @@
 
             body {
                 background-color: #f3f7f9;
-                color: #14232c;
-                font-family: "Plus Jakarta Sans", sans-serif;
-            }
-
-            #background {
-                position: fixed;
-                inset: 0;
-                background: radial-gradient(circle at 50% 48%,
+                background-image: radial-gradient(circle at 50% 48%,
                     rgba(220, 240, 247, 0.75) 0%,
                     rgba(235, 245, 249, 0.45) 30%,
                     #f6f9fb 70%,
                     #f3f7f9 100%);
-                pointer-events: none;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                color: #14232c;
+                font-family: "Plus Jakarta Sans", sans-serif;
             }
 
             #page {
@@ -48,7 +44,7 @@
                 justify-content: space-between;
                 min-height: 100vh;
                 min-height: 100dvh;
-                padding: 28px 48px;
+                padding: 28px 48px 28px 48px;
             }
 
             /* ========================================
@@ -102,7 +98,7 @@
             }
 
             .nav-link {
-                padding: 6px 20px;
+                padding: 6px 20px 6px 20px;
                 border-radius: 9999px;
                 color: #4a636f;
                 font-size: 14px;
@@ -160,7 +156,7 @@
                 position: relative;
                 width: 100%;
                 max-width: 1490px;
-                margin: 48px auto 16px;
+                margin: 48px auto 16px auto;
             }
 
             #back-link {
@@ -186,7 +182,7 @@
                 align-items: center;
                 gap: 8px;
                 margin-bottom: 10px;
-                padding: 6px 16px;
+                padding: 6px 16px 6px 16px;
                 border: 1px solid rgba(205, 226, 233, 0.7);
                 border-radius: 9999px;
                 background-color: rgba(226, 239, 243, 0.7);
@@ -205,7 +201,7 @@
             }
 
             #levels-title {
-                margin: 0 0 10px;
+                margin: 0 0 10px 0;
                 color: #0e212b;
                 font-size: 68px;
                 font-weight: 800;
@@ -221,7 +217,7 @@
             }
 
             #levels-description {
-                margin: 0 0 8px;
+                margin: 0 0 8px 0;
                 color: #638098;
                 font-size: 20px;
                 line-height: 1.5;
@@ -321,7 +317,7 @@
                 flex-direction: column;
                 min-width: 0;
                 min-height: 170px;
-                padding: 16px 18px 14px;
+                padding: 16px 18px 14px 18px;
                 border: 1px solid #d5e7ee;
                 border-radius: 12px;
                 background-color: rgba(255, 255, 255, 0.8);
@@ -329,7 +325,7 @@
             }
 
             .level-number {
-                margin: 0 0 10px;
+                margin: 0 0 10px 0;
                 color: #638098;
                 font-family: "JetBrains Mono", monospace;
                 font-size: 12px;
@@ -337,7 +333,7 @@
             }
 
             .level-title {
-                margin: 0 0 8px;
+                margin: 0 0 8px 0;
                 color: #0e212b;
                 font-size: 20px;
                 font-weight: 700;
@@ -346,7 +342,7 @@
             }
 
             .level-status {
-                margin: 0 0 12px;
+                margin: 0 0 12px 0;
                 color: #638098;
                 font-size: 13px;
                 line-height: 1.5;
@@ -358,7 +354,7 @@
                 text-decoration: none;
                 width: 100%;
                 margin-top: auto;
-                padding: 10px 8px;
+                padding: 10px 8px 10px 8px;
                 border: none;
                 border-radius: 8px;
                 background-color: #1d6980;
@@ -449,7 +445,7 @@
 
             @media (max-width: 639px) {
                 #page {
-                    padding: 28px 24px;
+                    padding: 28px 24px 28px 24px;
                 }
 
                 #profile-name {
@@ -482,9 +478,6 @@
     </head>
 
     <body>
-        <!-- Use the same static background as the homepage. -->
-        <div id="background"></div>
-
         <div id="page">
             <!-- ========================================
                  1. TOP NAVIGATION
