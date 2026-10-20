@@ -15,27 +15,22 @@
                1. PAGE AND BACKGROUND
                ======================================== */
 
-            *
-            {
+            * {
                 box-sizing: border-box;
             }
 
-            html,
-            body
-            {
+            html, body {
                 margin: 0;
                 min-height: 100%;
             }
 
-            body
-            {
+            body {
                 background-color: #f3f7f9;
                 color: #14232c;
                 font-family: "Plus Jakarta Sans", sans-serif;
             }
 
-            #background
-            {
+            #background {
                 position: fixed;
                 inset: 0;
                 background: radial-gradient(circle at 50% 48%,
@@ -46,8 +41,7 @@
                 pointer-events: none;
             }
 
-            #page
-            {
+            #page {
                 position: relative;
                 display: flex;
                 flex-direction: column;
@@ -61,23 +55,20 @@
                2. TOP NAVIGATION
                ======================================== */
 
-            #top-bar
-            {
+            #top-bar {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 width: 100%;
             }
 
-            #brand
-            {
+            #brand {
                 display: flex;
                 align-items: center;
                 gap: 14px;
             }
 
-            #brand-logo
-            {
+            #brand-logo {
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -92,16 +83,14 @@
                 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             }
 
-            #brand-name
-            {
+            #brand-name {
                 color: #0f212b;
                 font-size: 20px;
                 font-weight: 700;
                 letter-spacing: -0.025em;
             }
 
-            #top-nav
-            {
+            #top-nav {
                 display: flex;
                 align-items: center;
                 padding: 4px;
@@ -112,8 +101,7 @@
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
             }
 
-            .nav-link
-            {
+            .nav-link {
                 padding: 6px 20px;
                 border-radius: 9999px;
                 color: #4a636f;
@@ -123,14 +111,12 @@
                 transition: background-color 0.2s, color 0.2s;
             }
 
-            .nav-link:hover
-            {
+            .nav-link:hover {
                 background-color: rgba(20, 184, 166, 0.15);
                 color: #144857;
             }
 
-            .nav-link-active
-            {
+            .nav-link-active {
                 border: 1px solid rgba(20, 184, 166, 0.2);
                 background-color: rgba(20, 184, 166, 0.25);
                 color: #144857;
@@ -138,22 +124,19 @@
                 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             }
 
-            #profile
-            {
+            #profile {
                 display: flex;
                 align-items: center;
                 gap: 12px;
             }
 
-            #profile-name
-            {
+            #profile-name {
                 color: #18313d;
                 font-size: 14px;
                 font-weight: 600;
             }
 
-            #profile-icon
-            {
+            #profile-icon {
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -164,8 +147,7 @@
                 background-color: #e2ecf0;
             }
 
-            #profile-icon img
-            {
+            #profile-icon img {
                 width: 20px;
                 height: 20px;
             }
@@ -174,16 +156,14 @@
                3. LEVEL SELECTION HEADING
                ======================================== */
 
-            #levels-content
-            {
+            #levels-content {
                 position: relative;
                 width: 100%;
                 max-width: 1490px;
                 margin: 48px auto 16px;
             }
 
-            #back-link
-            {
+            #back-link {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -192,19 +172,16 @@
                 text-decoration: none;
             }
 
-            #back-link:hover
-            {
+            #back-link:hover {
                 color: #1d6980;
             }
 
-            #levels-heading
-            {
+            #levels-heading {
                 margin-bottom: 14px;
                 text-align: center;
             }
 
-            #tagline
-            {
+            #tagline {
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
@@ -220,16 +197,14 @@
                 text-transform: uppercase;
             }
 
-            #tagline-dot
-            {
+            #tagline-dot {
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
                 background-color: #52bfcf;
             }
 
-            #levels-title
-            {
+            #levels-title {
                 margin: 0 0 10px;
                 color: #0e212b;
                 font-size: 68px;
@@ -238,16 +213,14 @@
                 line-height: 1.1;
             }
 
-            #title-level
-            {
+            #title-level {
                 background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
                 background-clip: text;
                 -webkit-background-clip: text;
                 color: transparent;
             }
 
-            #levels-description
-            {
+            #levels-description {
                 margin: 0 0 8px;
                 color: #638098;
                 font-size: 20px;
@@ -258,16 +231,14 @@
                4. TIER BUTTONS
                ======================================== */
 
-            #tiers
-            {
+            #tiers {
                 display: grid;
                 grid-template-columns: repeat(5, 1fr);
                 gap: 12px;
                 margin-bottom: 26px;
             }
 
-            .tier-button
-            {
+            .tier-button {
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -282,44 +253,37 @@
                 cursor: pointer;
             }
 
-            .tier-button:disabled
-            {
+            .tier-button:disabled {
                 cursor: not-allowed;
             }
 
-            .tier-button:hover
-            {
+            .tier-button:hover {
                 background-color: #e2f5f8;
             }
 
-            .tier-button:disabled:hover
-            {
+            .tier-button:disabled:hover {
                 background-color: rgba(255, 255, 255, 0.8);
             }
 
-            .tier-selected
-            {
+            .tier-selected {
                 border-color: #28a8be;
                 background-color: #e2f5f8;
                 color: #0e212b;
             }
 
-            .tier-lock
-            {
+            .tier-lock {
                 width: 22px;
                 height: 22px;
             }
 
-            .tier-name
-            {
+            .tier-name {
                 display: block;
                 margin-bottom: 4px;
                 font-size: 20px;
                 font-weight: 700;
             }
 
-            .tier-range
-            {
+            .tier-range {
                 display: block;
                 color: #638098;
                 font-family: "JetBrains Mono", monospace;
@@ -330,13 +294,11 @@
                5. TIER HEADING
                ======================================== */
 
-            #tier-summary
-            {
+            #tier-summary {
                 margin-bottom: 18px;
             }
 
-            #tier-title
-            {
+            #tier-title {
                 margin: 0;
                 color: #0e212b;
                 font-size: 30px;
@@ -348,15 +310,13 @@
                6. LEVEL CARDS
                ======================================== */
 
-            #level-grid
-            {
+            #level-grid {
                 display: grid;
                 grid-template-columns: repeat(5, 1fr);
                 gap: 12px;
             }
 
-            .level-card
-            {
+            .level-card {
                 display: flex;
                 flex-direction: column;
                 min-width: 0;
@@ -368,8 +328,7 @@
                 box-shadow: 0 6px 20px rgba(26, 105, 128, 0.03);
             }
 
-            .level-number
-            {
+            .level-number {
                 margin: 0 0 10px;
                 color: #638098;
                 font-family: "JetBrains Mono", monospace;
@@ -377,8 +336,7 @@
                 line-height: 1.5;
             }
 
-            .level-title
-            {
+            .level-title {
                 margin: 0 0 8px;
                 color: #0e212b;
                 font-size: 20px;
@@ -387,16 +345,14 @@
                 line-height: 1.35;
             }
 
-            .level-status
-            {
+            .level-status {
                 margin: 0 0 12px;
                 color: #638098;
                 font-size: 13px;
                 line-height: 1.5;
             }
 
-            .level-button
-            {
+            .level-button {
                 display: block;
                 text-align: center;
                 text-decoration: none;
@@ -414,8 +370,7 @@
                 cursor: pointer;
             }
 
-            .level-button:hover
-            {
+            .level-button:hover {
                 opacity: 0.9;
             }
 
@@ -423,8 +378,7 @@
                7. BOTTOM STATUS BAR
                ======================================== */
 
-            #bottom-bar
-            {
+            #bottom-bar {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -435,15 +389,13 @@
                 letter-spacing: 0.025em;
             }
 
-            #audio-status
-            {
+            #audio-status {
                 display: flex;
                 align-items: center;
                 gap: 10px;
             }
 
-            #audio-dot
-            {
+            #audio-dot {
                 width: 8px;
                 height: 8px;
                 border-radius: 50%;
@@ -454,92 +406,73 @@
                8. SMALLER SCREENS
                ======================================== */
 
-            @media (max-width: 1200px)
-            {
-                #level-grid
-                {
+            @media (max-width: 1200px) {
+                #level-grid {
                     grid-template-columns: repeat(3, 1fr);
                 }
 
-                #levels-title
-                {
+                #levels-title {
                     font-size: 56px;
                 }
             }
 
-            @media (max-width: 900px)
-            {
-                #back-link
-                {
+            @media (max-width: 900px) {
+                #back-link {
                     position: static;
                     display: inline-block;
                     margin-bottom: 24px;
                 }
 
-                #tiers
-                {
+                #tiers {
                     grid-template-columns: repeat(3, 1fr);
                 }
             }
 
-            @media (max-width: 767px)
-            {
-                #top-nav
-                {
+            @media (max-width: 767px) {
+                #top-nav {
                     display: none;
                 }
 
-                #levels-title
-                {
+                #levels-title {
                     font-size: 42px;
                 }
 
-                #levels-description
-                {
+                #levels-description {
                     font-size: 18px;
                 }
 
-                #level-grid
-                {
+                #level-grid {
                     grid-template-columns: repeat(2, 1fr);
                 }
 
             }
 
-            @media (max-width: 639px)
-            {
-                #page
-                {
+            @media (max-width: 639px) {
+                #page {
                     padding: 28px 24px;
                 }
 
-                #profile-name
-                {
+                #profile-name {
                     display: none;
                 }
 
-                #levels-content
-                {
+                #levels-content {
                     margin-top: 36px;
                 }
 
-                #levels-title
-                {
+                #levels-title {
                     font-size: 36px;
                 }
 
-                #tiers
-                {
+                #tiers {
                     grid-template-columns: repeat(2, 1fr);
                 }
 
-                #level-grid
-                {
+                #level-grid {
                     grid-template-columns: 1fr;
                 }
 
-                #bottom-bar
-                {
+                #bottom-bar {
                     flex-wrap: wrap;
                     gap: 12px;
                     margin-top: 16px;

@@ -15,13 +15,11 @@
                1. PAGE AND BACKGROUND
                ======================================== */
 
-            *
-            {
+            * {
                 box-sizing: border-box;
             }
 
-            body
-            {
+            body {
                 margin: 0;
                 border-top: 4px solid #28518a;
                 background: radial-gradient(circle at 50% 48%, #e8f6fa 0%, #f6f9fb 70%, #f3f7f9 100%);
@@ -29,8 +27,7 @@
                 font-family: "Plus Jakarta Sans", sans-serif;
             }
 
-            #page
-            {
+            #page {
                 display: flex;
                 flex-direction: column;
                 min-height: calc(100vh - 4px);
@@ -42,16 +39,14 @@
                2. TOP CONTROLS AND TIMER
                ======================================== */
 
-            #top-bar
-            {
+            #top-bar {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 gap: 24px;
             }
 
-            .control
-            {
+            .control {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
@@ -69,25 +64,21 @@
                 cursor: pointer;
             }
 
-            .control:hover
-            {
+            .control:hover {
                 background-color: #e2f3f8;
             }
 
-            .control:disabled
-            {
+            .control:disabled {
                 opacity: 0.5;
                 cursor: default;
             }
 
-            .control img
-            {
+            .control img {
                 width: 25px;
                 height: 25px;
             }
 
-            #level-info
-            {
+            #level-info {
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -99,29 +90,25 @@
                 letter-spacing: 0.06em;
             }
 
-            #timer
-            {
+            #timer {
                 display: flex;
                 align-items: center;
                 gap: 12px;
                 font-size: 20px;
             }
 
-            #timer img
-            {
+            #timer img {
                 width: 26px;
                 height: 26px;
             }
 
-            #hearts
-            {
+            #hearts {
                 display: flex;
                 flex: 0 0 84px;
                 gap: 6px;
             }
 
-            #hearts img
-            {
+            #hearts img {
                 width: 24px;
                 height: 24px;
             }
@@ -130,8 +117,7 @@
                3. LEVEL HEADING
                ======================================== */
 
-            #game-content
-            {
+            #game-content {
                 display: flex;
                 flex: 1;
                 flex-direction: column;
@@ -139,14 +125,12 @@
                 padding: 52px 0 60px;
             }
 
-            #game-heading
-            {
+            #game-heading {
                 margin-bottom: 72px;
                 text-align: center;
             }
 
-            #status-badge
-            {
+            #status-badge {
                 display: inline-flex;
                 align-items: center;
                 gap: 10px;
@@ -162,16 +146,14 @@
                 letter-spacing: 0.12em;
             }
 
-            #status-dot
-            {
+            #status-dot {
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
                 background-color: #2dbbc9;
             }
 
-            #challenge-title
-            {
+            #challenge-title {
                 margin: 0;
                 font-size: 64px;
                 font-weight: 800;
@@ -183,16 +165,14 @@
                4. SPEED AND TYPING PASSAGE
                ======================================== */
 
-            #typing-layout
-            {
+            #typing-layout {
                 display: flex;
                 align-items: center;
                 gap: 32px;
                 width: 100%;
             }
 
-            #speed-panel
-            {
+            #speed-panel {
                 display: flex;
                 flex: 0 0 306px;
                 min-width: 0;
@@ -204,8 +184,7 @@
                 border-right: 1px solid #a9ddec;
             }
 
-            #net-wpm
-            {
+            #net-wpm {
                 flex-shrink: 0;
                 width: 100%;
                 height: 152px;
@@ -221,8 +200,7 @@
                 line-height: 152px;
             }
 
-            #speed-label
-            {
+            #speed-label {
                 margin: 12px 0 0;
                 color: #638098;
                 font-family: "JetBrains Mono", monospace;
@@ -230,8 +208,7 @@
                 letter-spacing: 0.16em;
             }
 
-            #typing-area
-            {
+            #typing-area {
                 position: relative;
                 flex: 1;
                 min-width: 0;
@@ -247,8 +224,7 @@
                 cursor: text;
             }
 
-            #typing-area::after
-            {
+            #typing-area::after {
                 position: absolute;
                 top: 0;
                 right: 0;
@@ -259,38 +235,32 @@
                 pointer-events: none;
             }
 
-            #survival-track
-            {
+            #survival-track {
                 display: flex;
                 width: max-content;
                 white-space: pre;
             }
 
-            .typing-character
-            {
+            .typing-character {
                 flex: none;
                 display: inline-block;
                 width: 1ch;
             }
 
-            #typing-area.paused
-            {
+            #typing-area.paused {
                 opacity: 0.5;
             }
 
-            .correct
-            {
+            .correct {
                 color: #159333;
             }
 
-            .incorrect
-            {
+            .incorrect {
                 background-color: #ffe1e1;
                 color: #c93232;
             }
 
-            #typing-cursor
-            {
+            #typing-cursor {
                 position: absolute;
                 top: 12px;
                 bottom: 12px;
@@ -305,25 +275,21 @@
                5. PAUSE AND RESTART
                ======================================== */
 
-            #game-controls
-            {
+            #game-controls {
                 text-align: center;
             }
 
-            #control-buttons
-            {
+            #control-buttons {
                 display: flex;
                 justify-content: center;
                 gap: 20px;
             }
 
-            #control-buttons .control
-            {
+            #control-buttons .control {
                 min-width: 170px;
             }
 
-            #game-message
-            {
+            #game-message {
                 margin: 20px 0 0;
                 color: #638098;
                 font-family: "JetBrains Mono", monospace;
@@ -336,70 +302,57 @@
                6. SMALLER SCREENS
                ======================================== */
 
-            @media (max-width: 1200px)
-            {
-                #page
-                {
+            @media (max-width: 1200px) {
+                #page {
                     padding: 32px 40px;
                 }
 
-                #challenge-title
-                {
+                #challenge-title {
                     font-size: 52px;
                 }
 
-                #typing-layout
-                {
+                #typing-layout {
                     gap: 32px;
                 }
 
-                #speed-panel
-                {
+                #speed-panel {
                     flex-basis: 240px;
                     padding-right: 24px;
                 }
 
-                #net-wpm
-                {
+                #net-wpm {
                     height: 106px;
                     font-size: 96px;
                     line-height: 106px;
                 }
 
-                #speed-label
-                {
+                #speed-label {
                     font-size: 22px;
                 }
 
-                #typing-area
-                {
+                #typing-area {
                     font-size: 24px;
                 }
             }
 
-            @media (max-width: 767px)
-            {
-                #page
-                {
+            @media (max-width: 767px) {
+                #page {
                     padding: 24px;
                 }
 
-                #top-bar
-                {
+                #top-bar {
                     flex-wrap: wrap;
                     gap: 16px;
                 }
 
-                #level-info
-                {
+                #level-info {
                     order: 1;
                     width: 100%;
                     gap: 20px;
                     font-size: 14px;
                 }
 
-                .control
-                {
+                .control {
                     min-width: 0;
                     min-height: 48px;
                     padding: 10px 16px;
@@ -407,35 +360,29 @@
                     font-size: 15px;
                 }
 
-                #control-buttons .control
-                {
+                #control-buttons .control {
                     min-width: 140px;
                 }
 
-                #game-content
-                {
+                #game-content {
                     padding: 36px 0;
                 }
 
-                #game-heading
-                {
+                #game-heading {
                     margin-bottom: 28px;
                 }
 
-                #challenge-title
-                {
+                #challenge-title {
                     font-size: 36px;
                 }
 
-                #typing-layout
-                {
+                #typing-layout {
                     align-items: center;
                     flex-direction: column;
                     gap: 24px;
                 }
 
-                #speed-panel
-                {
+                #speed-panel {
                     flex: auto;
                     width: 100%;
                     height: 106px;
@@ -443,21 +390,18 @@
                     border: none;
                 }
 
-                #net-wpm
-                {
+                #net-wpm {
                     height: 80px;
                     font-size: 72px;
                     line-height: 80px;
                 }
 
-                #speed-label
-                {
+                #speed-label {
                     margin-top: 4px;
                     font-size: 18px;
                 }
 
-                #typing-area
-                {
+                #typing-area {
                     flex: auto;
                     width: 100%;
                     padding-right: 0;
