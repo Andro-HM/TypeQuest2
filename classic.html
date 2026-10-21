@@ -21,7 +21,6 @@
 
             body {
                 margin: 0;
-                border-top: 4px solid #28518a;
                 background: radial-gradient(circle at 50% 48%, #e8f6fa 0%, #f6f9fb 70%, #f3f7f9 100%);
                 color: #0e212b;
                 font-family: "Plus Jakarta Sans", sans-serif;
@@ -30,8 +29,7 @@
             #page {
                 display: flex;
                 flex-direction: column;
-                min-height: calc(100vh - 4px);
-                min-height: calc(100dvh - 4px);
+                min-height: 100vh;
                 padding: 44px 70px 58px 70px;
             }
 
@@ -268,113 +266,7 @@
                 line-height: 1.8;
             }
 
-            /* ========================================
-               6. SMALLER SCREENS
-               ======================================== */
-
-            @media (max-width: 1200px) {
-                #page {
-                    padding: 32px 40px 32px 40px;
-                }
-
-                #level-title {
-                    font-size: 52px;
-                }
-
-                #typing-layout {
-                    gap: 32px;
-                }
-
-                #speed-panel {
-                    flex-basis: 240px;
-                    padding-right: 24px;
-                }
-
-                #net-wpm {
-                    font-size: 96px;
-                }
-
-                #speed-label {
-                    font-size: 22px;
-                }
-
-                #typing-area {
-                    font-size: 24px;
-                }
-            }
-
-            @media (max-width: 767px) {
-                #page {
-                    padding: 24px;
-                }
-
-                #top-bar {
-                    flex-wrap: wrap;
-                    gap: 16px;
-                }
-
-                #level-info {
-                    order: 1;
-                    width: 100%;
-                    gap: 20px;
-                    font-size: 14px;
-                }
-
-                .control {
-                    min-width: 0;
-                    min-height: 48px;
-                    padding: 10px 16px 10px 16px;
-                    gap: 10px;
-                    font-size: 15px;
-                }
-
-                #control-buttons .control {
-                    min-width: 140px;
-                }
-
-                #game-content {
-                    padding: 36px 0 36px 0;
-                }
-
-                #game-heading {
-                    margin-bottom: 28px;
-                }
-
-                #level-title {
-                    font-size: 36px;
-                }
-
-                #typing-layout {
-                    align-items: center;
-                    flex-direction: column;
-                    gap: 24px;
-                }
-
-                #speed-panel {
-                    flex: auto;
-                    min-height: 0;
-                    padding: 0;
-                    border: none;
-                }
-
-                #net-wpm {
-                    font-size: 72px;
-                }
-
-                #speed-label {
-                    margin-top: 4px;
-                    font-size: 18px;
-                }
-
-                #typing-area {
-                    flex: auto;
-                    width: 100%;
-                    max-height: 300px;
-                    padding-right: 14px;
-                    font-size: 20px;
-                }
-            }
-        </style>
+</style>
     </head>
 
     <body>
