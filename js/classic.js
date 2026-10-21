@@ -12,11 +12,10 @@ const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
 let selectedTier = 1;
-let typedText = "";
-let cursorPosition = 0;
-let hasStarted = false;
-let isPaused = false;
-let isComplete = false;
+let position = 0;
+let correctCharacters = 0;
+let gameState = "start";
+let cursorCharacter = null;
 let elapsedBeforeRun = 0;
 let runningSince = null;
 let rawWpm = 0;
@@ -80,31 +79,21 @@ function formatTime(milliseconds)
     return minutes + ":" + seconds;
 }
 
-// Match the reference: five retained characters make one word.
+// Use the retained character counters; five characters make one word.
 function updateStats()
 {
     const elapsed = getActiveTime();
-    let correctCharacters = 0;
-
-    for (let i = 0; i < typedText.length; i++)
-    {
-        if (typedText[i] === level.content[i])
-        {
-            correctCharacters++;
-        }
-    }
-
     rawWpm = 0;
     accuracy = 0;
 
     if (elapsed > 0)
     {
-        rawWpm = typedText.length / 5 / (elapsed / 60000);
+        rawWpm = (position / 5) / (elapsed / 60000);
     }
 
-    if (typedText.length > 0)
+    if (position > 0)
     {
-        accuracy = correctCharacters / typedText.length;
+        accuracy = correctCharacters / position;
     }
 
     const netWpm = rawWpm * accuracy;
@@ -121,53 +110,85 @@ function updateStats()
     stopwatch.textContent = formatTime(elapsed);
 }
 
-// Color each position and keep the cursor inside the visible passage.
-function renderPassage()
+// Create the passage once. Typing and Restart reuse these numbered spans.
+function createPassage()
 {
-    typingArea.innerHTML = "";
-
     for (let i = 0; i < level.content.length; i++)
     {
         const character = document.createElement("span");
+        character.id = "char-" + i;
         character.textContent = level.content[i];
-
-        if (i < typedText.length)
-        {
-            if (typedText[i] === level.content[i])
-            {
-                character.className = "correct";
-            }
-            else
-            {
-                character.className = "incorrect";
-            }
-        }
-
-        if (i === cursorPosition && !isComplete)
-        {
-            character.classList.add("current-character");
-            character.id = "typing-cursor";
-        }
-
         typingArea.appendChild(character);
-    }
-
-    const cursor = document.getElementById("typing-cursor");
-
-    if (cursor)
-    {
-        if (cursor.offsetTop < typingArea.scrollTop)
-        {
-            typingArea.scrollTop = cursor.offsetTop;
-        }
-        else if (cursor.offsetTop + cursor.offsetHeight > typingArea.scrollTop + typingArea.clientHeight)
-        {
-            typingArea.scrollTop = cursor.offsetTop + cursor.offsetHeight - typingArea.clientHeight;
-        }
     }
 }
 
-// Letters overwrite earlier positions; Backspace removes a character.
+// Move one border between the existing spans and keep it visible while scrolling.
+function updateCursor()
+{
+    if (cursorCharacter !== null)
+    {
+        cursorCharacter.classList.remove("cursor-start", "cursor-after");
+    }
+
+    if (gameState === "end")
+    {
+        cursorCharacter = null;
+        return;
+    }
+
+    if (position === 0)
+    {
+        cursorCharacter = document.getElementById("char-0");
+        cursorCharacter.classList.add("cursor-start");
+    }
+    else
+    {
+        cursorCharacter = document.getElementById("char-" + (position - 1));
+        cursorCharacter.classList.add("cursor-after");
+    }
+
+    if (cursorCharacter.offsetTop < typingArea.scrollTop)
+    {
+        typingArea.scrollTop = cursorCharacter.offsetTop;
+    }
+    else if (cursorCharacter.offsetTop + cursorCharacter.offsetHeight > typingArea.scrollTop + typingArea.clientHeight)
+    {
+        typingArea.scrollTop = cursorCharacter.offsetTop + cursorCharacter.offsetHeight - typingArea.clientHeight;
+    }
+}
+
+// Keep all state-dependent labels, buttons, and paused styling in one place.
+function updateInterface()
+{
+    pauseButton.disabled = gameState === "end" || level === null;
+    restartButton.disabled = level === null;
+    pauseBtnLabel.textContent = "Pause";
+    pauseIcon.src = "icons/pause.svg";
+    typingArea.classList.remove("paused");
+    gameStatus.textContent = "IN PLAY";
+    footerMessage.textContent = "ESC · PAUSE";
+
+    if (level === null)
+    {
+        gameStatus.textContent = "UNAVAILABLE";
+        footerMessage.textContent = "Use Levels to choose a level.";
+    }
+    else if (gameState === "pause")
+    {
+        gameStatus.textContent = "PAUSED";
+        footerMessage.textContent = "ESC · RESUME";
+        pauseBtnLabel.textContent = "Resume";
+        pauseIcon.src = "icons/resume.svg";
+        typingArea.classList.add("paused");
+    }
+    else if (gameState === "end")
+    {
+        gameStatus.textContent = "COMPLETE";
+        footerMessage.textContent = "COMPLETE · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1);
+    }
+}
+
+// Type forward. Backspace is the only way to go back and erase a character.
 function handleTyping(event)
 {
     if (event.ctrlKey || event.altKey || event.metaKey)
@@ -175,15 +196,9 @@ function handleTyping(event)
         return;
     }
 
-    if (event.key === "Enter")
+    if (event.key !== "Backspace" && (event.key.length !== 1 || event.repeat))
     {
-        event.preventDefault();
-        return;
-    }
-
-    if (isPaused || isComplete)
-    {
-        if (event.key.length === 1 || event.key === "Backspace" || event.key === "ArrowLeft" || event.key === "ArrowRight")
+        if (event.key === "Enter" || event.key === "ArrowLeft" || event.key === "ArrowRight")
         {
             event.preventDefault();
         }
@@ -191,72 +206,69 @@ function handleTyping(event)
         return;
     }
 
-    let changed = false;
+    event.preventDefault();
+
+    if (gameState === "pause" || gameState === "end")
+    {
+        return;
+    }
 
     if (event.key === "Backspace")
     {
-        event.preventDefault();
-
-        if (cursorPosition > 0)
+        if (position === 0)
         {
-            typedText = typedText.slice(0, cursorPosition - 1) + typedText.slice(cursorPosition);
-            cursorPosition--;
-            changed = true;
+            return;
         }
-    }
-    else if (event.key === "ArrowLeft")
-    {
-        event.preventDefault();
 
-        if (cursorPosition > 0)
+        position--;
+        const character = document.getElementById("char-" + position);
+
+        if (character.classList.contains("correct"))
         {
-            cursorPosition--;
-            changed = true;
+            correctCharacters--;
         }
-    }
-    else if (event.key === "ArrowRight")
-    {
-        event.preventDefault();
 
-        if (cursorPosition < typedText.length)
+        character.className = "";
+    }
+    else
+    {
+        if (position >= level.content.length)
         {
-            cursorPosition++;
-            changed = true;
+            return;
         }
-    }
-    else if (event.key.length === 1 && !event.repeat)
-    {
-        event.preventDefault();
 
-        if (cursorPosition === typedText.length)
+        if (gameState === "start")
         {
-            typedText += event.key;
+            gameState = "play";
+            runningSince = performance.now();
+            updateInterface();
+        }
+
+        const character = document.getElementById("char-" + position);
+
+        if (event.key === character.textContent)
+        {
+            character.classList.add("correct");
+            correctCharacters++;
         }
         else
         {
-            typedText = typedText.slice(0, cursorPosition) + event.key + typedText.slice(cursorPosition + 1);
+            character.classList.add("incorrect");
         }
 
-        cursorPosition++;
-        changed = true;
-
-        if (!hasStarted)
-        {
-            hasStarted = true;
-            runningSince = performance.now();
-        }
+        position++;
     }
 
-    if (changed)
+    if (position === level.content.length)
     {
-        if (typedText.length === level.content.length)
-        {
-            finishGame();
-        }
-
-        renderPassage();
+        finishGame();
+    }
+    else
+    {
         updateStats();
     }
+
+    updateCursor();
 }
 
 // Freeze the clock and show the final figures without saving a result.
@@ -264,60 +276,51 @@ function finishGame()
 {
     elapsedBeforeRun = getActiveTime();
     runningSince = null;
-    isComplete = true;
-    pauseButton.disabled = true;
-    gameStatus.textContent = "COMPLETE";
+    gameState = "end";
     updateStats();
-    footerMessage.textContent = "COMPLETE · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1);
+    updateInterface();
 }
 
 // Pause both typing and the active playing clock.
 function pauseGame()
 {
-    if (isPaused || isComplete)
+    if (gameState === "pause" || gameState === "end")
     {
         return;
     }
 
     elapsedBeforeRun = getActiveTime();
     runningSince = null;
-    isPaused = true;
-    gameStatus.textContent = "PAUSED";
-    footerMessage.textContent = "ESC · RESUME";
-    pauseBtnLabel.textContent = "Resume";
-    pauseIcon.src = "icons/resume.svg";
-    typingArea.classList.add("paused");
+    gameState = "pause";
     updateStats();
+    updateInterface();
 }
 
-// Resume without counting the time spent paused.
+// Before the first key, Resume returns to start without starting the stopwatch.
 function resumeGame()
 {
-    isPaused = false;
+    gameState = "start";
 
-    if (hasStarted)
+    if (elapsedBeforeRun > 0 || position > 0)
     {
         runningSince = performance.now();
+        gameState = "play";
     }
 
-    gameStatus.textContent = "IN PLAY";
-    footerMessage.textContent = "ESC · PAUSE";
-    pauseBtnLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
-    typingArea.classList.remove("paused");
-    typingArea.focus();
     updateStats();
+    updateInterface();
+    typingArea.focus();
 }
 
 // The button and Escape use the same pause action.
 function togglePause()
 {
-    if (level === null || isComplete)
+    if (level === null || gameState === "end")
     {
         return;
     }
 
-    if (isPaused)
+    if (gameState === "pause")
     {
         resumeGame();
     }
@@ -327,25 +330,24 @@ function togglePause()
     }
 }
 
-// Reset the current level and wait for the first character again.
+// Clear the existing spans and counters, then wait for the first character again.
 function restartGame()
 {
-    typedText = "";
-    cursorPosition = 0;
-    hasStarted = false;
-    isPaused = false;
-    isComplete = false;
+    position = 0;
+    correctCharacters = 0;
+    gameState = "start";
     elapsedBeforeRun = 0;
     runningSince = null;
-    pauseButton.disabled = false;
-    pauseBtnLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
-    gameStatus.textContent = "IN PLAY";
-    footerMessage.textContent = "ESC · PAUSE";
-    typingArea.classList.remove("paused");
+
+    for (let i = 0; i < level.content.length; i++)
+    {
+        document.getElementById("char-" + i).className = "";
+    }
+
     typingArea.scrollTop = 0;
-    renderPassage();
+    updateCursor();
     updateStats();
+    updateInterface();
     typingArea.focus();
 }
 
@@ -361,7 +363,7 @@ function handleShortcut(event)
 // Leaving the browser or switching tabs pauses an active game.
 function pauseForFocusLoss()
 {
-    if (hasStarted && !isComplete)
+    if (gameState === "play")
     {
         pauseGame();
     }
@@ -384,12 +386,9 @@ if (level === null)
 {
     levelHeading.textContent = "Level unavailable";
     levelNo.textContent = "CLASSIC";
-    gameStatus.textContent = "UNAVAILABLE";
     typingArea.textContent = "Choose an available level from Tier 1 or Tier 2.";
     typingArea.tabIndex = -1;
-    footerMessage.textContent = "Use Levels to choose a level.";
-    pauseButton.disabled = true;
-    restartButton.disabled = true;
+    updateInterface();
 }
 else
 {
@@ -411,8 +410,10 @@ else
     document.addEventListener("keydown", handleShortcut);
     window.addEventListener("blur", pauseForFocusLoss);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    renderPassage();
+    createPassage();
+    updateCursor();
     updateStats();
+    updateInterface();
     typingArea.focus();
     setInterval(updateStats, 100);
 }
