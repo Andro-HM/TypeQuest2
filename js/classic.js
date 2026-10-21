@@ -1,13 +1,13 @@
 const typingArea = document.getElementById("typing-area");
-const levelTitle = document.getElementById("level-title");
-const levelLabel = document.getElementById("level-label");
-const levelsLink = document.getElementById("levels-link");
+const levelHeading = document.getElementById("level-heading");
+const levelNo = document.getElementById("level-no");
+const levelsButton = document.getElementById("levels-button");
 const gameStatus = document.getElementById("game-status");
-const gameMessage = document.getElementById("game-message");
-const speedDisplay = document.getElementById("net-wpm");
-const timeDisplay = document.getElementById("elapsed-time");
+const footerMessage = document.getElementById("footer-message");
+const net_wpm = document.getElementById("net-wpm");
+const stopwatch = document.getElementById("stopwatch");
 const pauseButton = document.getElementById("pause-button");
-const pauseLabel = document.getElementById("pause-label");
+const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
@@ -109,16 +109,16 @@ function updateStats()
 
     const netWpm = rawWpm * accuracy;
     const formattedSpeed = netWpm.toFixed(1);
-    speedDisplay.textContent = formattedSpeed;
-    speedDisplay.style.fontSize = "";
+    net_wpm.textContent = formattedSpeed;
+    net_wpm.style.fontSize = "";
 
     // Keep large speed readings inside the metric column.
     if (formattedSpeed.length > 4)
     {
-        speedDisplay.style.fontSize = Math.floor(520 / formattedSpeed.length) + "px";
+        net_wpm.style.fontSize = Math.floor(520 / formattedSpeed.length) + "px";
     }
 
-    timeDisplay.textContent = formatTime(elapsed);
+    stopwatch.textContent = formatTime(elapsed);
 }
 
 // Color each position and keep the cursor inside the visible passage.
@@ -268,7 +268,7 @@ function finishGame()
     pauseButton.disabled = true;
     gameStatus.textContent = "COMPLETE";
     updateStats();
-    gameMessage.textContent = "COMPLETE · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1);
+    footerMessage.textContent = "COMPLETE · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1);
 }
 
 // Pause both typing and the active playing clock.
@@ -283,8 +283,8 @@ function pauseGame()
     runningSince = null;
     isPaused = true;
     gameStatus.textContent = "PAUSED";
-    gameMessage.textContent = "ESC · RESUME";
-    pauseLabel.textContent = "Resume";
+    footerMessage.textContent = "ESC · RESUME";
+    pauseBtnLabel.textContent = "Resume";
     pauseIcon.src = "icons/resume.svg";
     typingArea.classList.add("paused");
     updateStats();
@@ -301,8 +301,8 @@ function resumeGame()
     }
 
     gameStatus.textContent = "IN PLAY";
-    gameMessage.textContent = "ESC · PAUSE";
-    pauseLabel.textContent = "Pause";
+    footerMessage.textContent = "ESC · PAUSE";
+    pauseBtnLabel.textContent = "Pause";
     pauseIcon.src = "icons/pause.svg";
     typingArea.classList.remove("paused");
     typingArea.focus();
@@ -338,10 +338,10 @@ function restartGame()
     elapsedBeforeRun = 0;
     runningSince = null;
     pauseButton.disabled = false;
-    pauseLabel.textContent = "Pause";
+    pauseBtnLabel.textContent = "Pause";
     pauseIcon.src = "icons/pause.svg";
     gameStatus.textContent = "IN PLAY";
-    gameMessage.textContent = "ESC · PAUSE";
+    footerMessage.textContent = "ESC · PAUSE";
     typingArea.classList.remove("paused");
     typingArea.scrollTop = 0;
     renderPassage();
@@ -382,12 +382,12 @@ function preventPaste(event)
 
 if (level === null)
 {
-    levelTitle.textContent = "Level unavailable";
-    levelLabel.textContent = "CLASSIC";
+    levelHeading.textContent = "Level unavailable";
+    levelNo.textContent = "CLASSIC";
     gameStatus.textContent = "UNAVAILABLE";
     typingArea.textContent = "Choose an available level from Tier 1 or Tier 2.";
     typingArea.tabIndex = -1;
-    gameMessage.textContent = "Use Levels to choose a level.";
+    footerMessage.textContent = "Use Levels to choose a level.";
     pauseButton.disabled = true;
     restartButton.disabled = true;
 }
@@ -401,9 +401,9 @@ else
     }
 
     document.title = level.title + " — TypeQuest";
-    levelTitle.textContent = level.title;
-    levelLabel.textContent = "CLASSIC / LEVEL " + displayNumber;
-    levelsLink.href = "classic-levels.html?tier=" + selectedTier;
+    levelHeading.textContent = level.title;
+    levelNo.textContent = "CLASSIC / LEVEL " + displayNumber;
+    levelsButton.href = "classic-levels.html?tier=" + selectedTier;
     typingArea.addEventListener("keydown", handleTyping);
     typingArea.addEventListener("paste", preventPaste);
     pauseButton.addEventListener("click", togglePause);
