@@ -10,7 +10,6 @@ const pauseLabel = document.getElementById("pause-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
-const HISTORY_CHARACTERS = 18;
 const WINDOW_CHARACTERS = 60;
 const parameters = new URLSearchParams(window.location.search);
 const requestedDuration = Number(parameters.get("duration"));
@@ -24,115 +23,179 @@ for (let i = 0; i < timeAttackData.durations.length; i++)
     }
 }
 
-const durationMilliseconds = durationSeconds * 1000;
-let targetText = "";
-let typedText = "";
-let cursorPosition = 0;
+const durationMs = durationSeconds * 1000;
+let windowStart = 0;
+let windowEnd = 60;
+let position = 0;
+let furthestPosition = 0;
+let generatedCount = 0;
+let typedCount = 0;
+let correctCharacters = 0;
+let cursorCharacter = null;
+let passageOrder = [];
 let lastPassage = -1;
-let phase = "countdown";
+let gameState = "start";
+let pausedState = "start";
 let countdownRemaining = 3000;
 let countdownSince = 0;
-let elapsedBeforeRun = 0;
-let runningSince = null;
+let activeMs = 0;
+let lastTick = null;
 let rawWpm = 0;
 let accuracy = 0;
 let wordsTyped = 0;
 
-// Shuffle a full cycle so each passage appears once before the next cycle.
-function appendPassages()
+// Use every passage once per shuffled cycle, avoiding repetition at the join.
+function appendPassage()
 {
-    const order = [];
-
-    for (let i = 0; i < timeAttackData.passages.length; i++)
+    if (passageOrder.length === 0)
     {
-        order.push(i);
-    }
-
-    for (let i = order.length - 1; i > 0; i--)
-    {
-        const randomIndex = Math.floor(Math.random() * (i + 1));
-        const temporary = order[i];
-        order[i] = order[randomIndex];
-        order[randomIndex] = temporary;
-    }
-
-    if (order.length > 1 && order[0] === lastPassage)
-    {
-        const temporary = order[0];
-        order[0] = order[1];
-        order[1] = temporary;
-    }
-
-    for (let i = 0; i < order.length; i++)
-    {
-        if (targetText.length > 0)
+        for (let i = 0; i < timeAttackData.passages.length; i++)
         {
-            targetText += " ";
+            passageOrder.push(i);
         }
 
-        targetText += timeAttackData.passages[order[i]];
+        for (let i = passageOrder.length - 1; i > 0; i--)
+        {
+            const randomIndex = Math.floor(Math.random() * (i + 1));
+            const temporary = passageOrder[i];
+            passageOrder[i] = passageOrder[randomIndex];
+            passageOrder[randomIndex] = temporary;
+        }
+
+        if (passageOrder.length > 1 && passageOrder[0] === lastPassage)
+        {
+            const temporary = passageOrder[0];
+            passageOrder[0] = passageOrder[1];
+            passageOrder[1] = temporary;
+        }
     }
 
-    lastPassage = order[order.length - 1];
-}
+    const passageIndex = passageOrder.shift();
+    let passage = timeAttackData.passages[passageIndex];
+    lastPassage = passageIndex;
 
-// Add another shuffled cycle before the player reaches the end of the stream.
-function ensureText(minimumLength)
-{
-    while (targetText.length < minimumLength)
+    if (generatedCount > 0)
     {
-        appendPassages();
+        passage = " " + passage;
     }
-}
 
-// Keep 18 entered characters behind the cursor in a 60-character strip.
-function renderStrip()
-{
-    typingArea.innerHTML = "";
-    const windowStart = typedText.length - HISTORY_CHARACTERS;
-
-    for (let column = 0; column < WINDOW_CHARACTERS; column++)
+    for (let i = 0; i < passage.length; i++)
     {
-        const index = windowStart + column;
         const character = document.createElement("span");
+        character.id = "char-" + generatedCount;
         character.className = "typing-character";
-        character.textContent = " ";
+        character.textContent = passage[i];
 
-        if (index >= 0 && index < targetText.length)
+        if (generatedCount < windowStart || generatedCount >= windowEnd)
         {
-            character.textContent = targetText[index];
-
-            if (index < typedText.length)
-            {
-                if (typedText[index] === targetText[index])
-                {
-                    character.classList.add("correct");
-                }
-                else
-                {
-                    character.classList.add("incorrect");
-                }
-            }
-        }
-
-        if (index === cursorPosition)
-        {
-            character.classList.add("current-character");
+            character.classList.add("hidden-character");
         }
 
         typingArea.appendChild(character);
+        generatedCount++;
     }
 }
 
-// Paused time is excluded from the run.
-function getActiveTime(now)
+// Append only enough passages to keep 60 characters ahead of the typing frontier.
+function ensureText()
 {
-    if (runningSince === null)
+    while (generatedCount - furthestPosition < WINDOW_CHARACTERS)
     {
-        return elapsedBeforeRun;
+        appendPassage();
+    }
+}
+
+// Change visibility only for characters entering or leaving the 60-span window.
+function shiftWindow(newStart)
+{
+    while (windowStart < newStart)
+    {
+        document.getElementById("char-" + windowStart).classList.add("hidden-character");
+        document.getElementById("char-" + windowEnd).classList.remove("hidden-character");
+        windowStart++;
+        windowEnd++;
     }
 
-    return elapsedBeforeRun + now - runningSince;
+    while (windowStart > newStart)
+    {
+        windowStart--;
+        windowEnd--;
+        document.getElementById("char-" + windowStart).classList.remove("hidden-character");
+        document.getElementById("char-" + windowEnd).classList.add("hidden-character");
+    }
+}
+
+// Corrections move within the current window; shift only when the cursor leaves it.
+function updateCursor()
+{
+    if (cursorCharacter !== null)
+    {
+        cursorCharacter.classList.remove("current-character");
+    }
+
+    if (gameState === "end")
+    {
+        cursorCharacter = null;
+        return;
+    }
+
+    if (position < windowStart)
+    {
+        shiftWindow(position);
+    }
+    else if (position >= windowEnd)
+    {
+        shiftWindow(position - WINDOW_CHARACTERS + 1);
+    }
+
+    cursorCharacter = document.getElementById("char-" + position);
+    cursorCharacter.classList.add("current-character");
+
+    // A narrower desktop strip can clip part of the 60-character window.
+    // Keep the cursor before the existing 60px fade at the right edge.
+    const visibleWidth = typingArea.clientWidth - 60;
+
+    if (cursorCharacter.offsetLeft + 3 > visibleWidth)
+    {
+        const characterWidth = cursorCharacter.getBoundingClientRect().width;
+        const shift = Math.ceil((cursorCharacter.offsetLeft + 3 - visibleWidth) / characterWidth);
+        shiftWindow(windowStart + shift);
+    }
+}
+
+// Count only active gameplay; the starting countdown and pauses are separate.
+function getActiveTime()
+{
+    if (lastTick === null)
+    {
+        return activeMs;
+    }
+
+    return activeMs + (performance.now() - lastTick);
+}
+
+// The optional timestamp preserves the countdown deadline after a late update.
+function startTimer(startTime = performance.now())
+{
+    if (lastTick === null)
+    {
+        lastTick = startTime;
+    }
+}
+
+function stopTimer()
+{
+    if (lastTick !== null)
+    {
+        activeMs += performance.now() - lastTick;
+        lastTick = null;
+    }
+}
+
+function resetTimer()
+{
+    activeMs = 0;
+    lastTick = null;
 }
 
 // Round up to tenths so 00:00.0 appears only when time has actually run out.
@@ -156,34 +219,26 @@ function formatRemaining(milliseconds)
     return minutes + ":" + seconds + "." + fraction;
 }
 
-// Match Classic and the old Time Attack: retained characters and their accuracy.
-function updateStats(now)
+// Retained spans are counted during input, not rescanned on each timer update.
+function updateStats()
 {
-    const elapsed = Math.min(durationMilliseconds, getActiveTime(now));
-    let correctCharacters = 0;
-
-    for (let i = 0; i < typedText.length; i++)
-    {
-        if (typedText[i] === targetText[i])
-        {
-            correctCharacters++;
-        }
-    }
-
+    const elapsed = Math.min(durationMs, getActiveTime());
+    const remainingMs = Math.max(0, durationMs - getActiveTime());
     rawWpm = 0;
     accuracy = 0;
 
     if (elapsed > 0)
     {
-        rawWpm = typedText.length / 5 / (elapsed / 60000);
+        rawWpm = (typedCount / 5) / (elapsed / 60000);
     }
 
-    if (typedText.length > 0)
+    if (typedCount > 0)
     {
-        accuracy = correctCharacters / typedText.length;
+        accuracy = correctCharacters / typedCount;
     }
 
-    const formattedSpeed = (rawWpm * accuracy).toFixed(1);
+    const netWpm = rawWpm * accuracy;
+    const formattedSpeed = netWpm.toFixed(1);
     speedDisplay.textContent = formattedSpeed;
     speedDisplay.style.fontSize = "";
 
@@ -192,72 +247,74 @@ function updateStats(now)
         speedDisplay.style.fontSize = Math.floor(520 / formattedSpeed.length) + "px";
     }
 
-    timeDisplay.textContent = formatRemaining(durationMilliseconds - elapsed);
+    timeDisplay.textContent = formatRemaining(remainingMs);
 }
 
-// Stop exactly at the selected duration and keep the result on this page.
-function finishGame()
+// Keep the badge, controls, footer, and paused appearance in one place.
+function updateInterface()
 {
-    phase = "finished";
-    elapsedBeforeRun = durationMilliseconds;
-    runningSince = null;
-    wordsTyped = 0;
-
-    for (let i = 0; i < typedText.length; i++)
-    {
-        if (targetText[i] === " ")
-        {
-            wordsTyped++;
-        }
-    }
-}
-
-// The three-second countdown is separate from the selected playing duration.
-function updateGame(now = performance.now())
-{
-
-    if (phase === "countdown" && now >= countdownSince + countdownRemaining)
-    {
-        runningSince = countdownSince + countdownRemaining;
-        countdownRemaining = 0;
-        phase = "running";
-        typingArea.focus();
-    }
-
-    if (phase === "running" && getActiveTime(now) >= durationMilliseconds)
-    {
-        finishGame();
-    }
-
-    updateStats(now);
+    pauseButton.disabled = gameState === "start" || gameState === "end";
+    restartButton.disabled = false;
+    pauseLabel.textContent = "Pause";
+    pauseIcon.src = "icons/pause.svg";
+    typingArea.classList.remove("paused");
     gameMessage.textContent = "ESC · PAUSE";
 
-    if (phase === "countdown")
+    if (gameState === "start")
     {
-        const seconds = Math.ceil(Math.max(0, countdownRemaining - (now - countdownSince)) / 1000);
-        gameStatus.textContent = "STARTING IN " + seconds;
-        pauseButton.disabled = true;
+        const remaining = Math.max(0, countdownRemaining - (performance.now() - countdownSince));
+        gameStatus.textContent = "STARTING IN " + Math.ceil(remaining / 1000);
     }
-    else if (phase === "paused-countdown" || phase === "paused-running")
+    else if (gameState === "play")
+    {
+        gameStatus.textContent = "IN PLAY";
+    }
+    else if (gameState === "pause")
     {
         gameStatus.textContent = "PAUSED";
         gameMessage.textContent = "ESC · RESUME";
-        pauseButton.disabled = false;
-    }
-    else if (phase === "running")
-    {
-        gameStatus.textContent = "IN PLAY";
-        pauseButton.disabled = false;
+        pauseLabel.textContent = "Resume";
+        pauseIcon.src = "icons/resume.svg";
+        typingArea.classList.add("paused");
     }
     else
     {
         gameStatus.textContent = "TIME UP";
-        pauseButton.disabled = true;
         gameMessage.textContent = "TIME UP · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1) + " · WORDS " + wordsTyped;
     }
 }
 
-// Only accept typing during the active run, including at the final deadline.
+// Cap the final active time at the selected duration, even after a late update.
+function finishGame()
+{
+    stopTimer();
+    activeMs = durationMs;
+    gameState = "end";
+    updateCursor();
+}
+
+function updateGame()
+{
+    const now = performance.now();
+
+    if (gameState === "start" && now >= countdownSince + countdownRemaining)
+    {
+        startTimer(countdownSince + countdownRemaining);
+        countdownRemaining = 0;
+        gameState = "play";
+        typingArea.focus();
+    }
+
+    if (gameState === "play" && getActiveTime() >= durationMs)
+    {
+        finishGame();
+    }
+
+    updateStats();
+    updateInterface();
+}
+
+// Overwrite a span's status without shifting text or counting it a second time.
 function handleTyping(event)
 {
     updateGame();
@@ -273,7 +330,7 @@ function handleTyping(event)
         return;
     }
 
-    if (phase !== "running")
+    if (gameState !== "play")
     {
         if (event.key.length === 1 || event.key === "Backspace" || event.key === "ArrowLeft" || event.key === "ArrowRight")
         {
@@ -289,21 +346,39 @@ function handleTyping(event)
     {
         event.preventDefault();
 
-        if (cursorPosition > 0)
+        if (position > 0)
         {
-            typedText = typedText.slice(0, cursorPosition - 1) + typedText.slice(cursorPosition);
-            cursorPosition--;
+            position--;
+            const character = document.getElementById("char-" + position);
+            const wasCorrect = character.classList.contains("correct");
+            const wasIncorrect = character.classList.contains("incorrect");
+
+            if (wasCorrect)
+            {
+                correctCharacters--;
+            }
+
+            if (wasCorrect || wasIncorrect)
+            {
+                typedCount--;
+
+                if (character.textContent === " ")
+                {
+                    wordsTyped--;
+                }
+            }
+
+            character.classList.remove("correct", "incorrect");
             changed = true;
         }
     }
     else if (event.key === "ArrowLeft")
     {
         event.preventDefault();
-        const firstVisiblePosition = Math.max(0, typedText.length - HISTORY_CHARACTERS);
 
-        if (cursorPosition > firstVisiblePosition)
+        if (position > 0)
         {
-            cursorPosition--;
+            position--;
             changed = true;
         }
     }
@@ -311,88 +386,121 @@ function handleTyping(event)
     {
         event.preventDefault();
 
-        if (cursorPosition < typedText.length)
+        if (position < furthestPosition)
         {
-            cursorPosition++;
+            position++;
             changed = true;
         }
     }
     else if (event.key.length === 1 && !event.repeat)
     {
         event.preventDefault();
-        ensureText(typedText.length + WINDOW_CHARACTERS + 1);
+        const character = document.getElementById("char-" + position);
+        const wasCorrect = character.classList.contains("correct");
+        const wasIncorrect = character.classList.contains("incorrect");
 
-        if (cursorPosition === typedText.length)
+        if (!wasCorrect && !wasIncorrect)
         {
-            typedText += event.key;
+            typedCount++;
+
+            // Preserve the old word count: entered positions whose original text is a space.
+            if (character.textContent === " ")
+            {
+                wordsTyped++;
+            }
+        }
+
+        if (event.key === character.textContent)
+        {
+            if (!wasCorrect)
+            {
+                correctCharacters++;
+            }
+
+            character.classList.remove("incorrect");
+            character.classList.add("correct");
         }
         else
         {
-            typedText = typedText.slice(0, cursorPosition) + event.key + typedText.slice(cursorPosition + 1);
+            if (wasCorrect)
+            {
+                correctCharacters--;
+            }
+
+            character.classList.remove("correct");
+            character.classList.add("incorrect");
         }
 
-        cursorPosition++;
+        position++;
+
+        if (position > furthestPosition)
+        {
+            furthestPosition = position;
+            ensureText();
+            shiftWindow(position);
+        }
+
         changed = true;
     }
 
     if (changed)
     {
-        renderStrip();
+        updateCursor();
         updateGame();
     }
 }
 
-// Freeze whichever phase is currently active.
+// Remember whether Pause interrupted the starting countdown or active gameplay.
 function pauseGame()
 {
-    const now = performance.now();
-    updateGame(now);
+    updateGame();
 
-    if (phase === "countdown")
+    if (gameState !== "start" && gameState !== "play")
     {
-        countdownRemaining = Math.max(0, countdownRemaining - (now - countdownSince));
-        phase = "paused-countdown";
-    }
-    else if (phase === "running")
-    {
-        elapsedBeforeRun = Math.min(durationMilliseconds, getActiveTime(now));
-        runningSince = null;
-        phase = "paused-running";
+        return;
     }
 
-    if (phase === "paused-countdown" || phase === "paused-running")
+    pausedState = gameState;
+
+    if (gameState === "start")
     {
-        pauseLabel.textContent = "Resume";
-        pauseIcon.src = "icons/resume.svg";
-        typingArea.classList.add("paused");
+        countdownRemaining = Math.max(0, countdownRemaining - (performance.now() - countdownSince));
+    }
+    else
+    {
+        stopTimer();
     }
 
-    updateGame(now);
+    gameState = "pause";
+    updateStats();
+    updateInterface();
 }
 
 function resumeGame()
 {
-    if (phase === "paused-countdown")
+    gameState = pausedState;
+
+    if (gameState === "start")
     {
         countdownSince = performance.now();
-        phase = "countdown";
     }
-    else if (phase === "paused-running")
+    else
     {
-        runningSince = performance.now();
-        phase = "running";
+        startTimer();
     }
 
-    pauseLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
-    typingArea.classList.remove("paused");
     updateGame();
     typingArea.focus();
 }
 
 function togglePause()
 {
-    if (phase === "paused-countdown" || phase === "paused-running")
+    if (gameState === "end")
+    {
+        return;
+    }
+
+    if (gameState === "pause")
     {
         resumeGame();
     }
@@ -402,24 +510,27 @@ function togglePause()
     }
 }
 
-// Restart with a fresh shuffled stream and a new three-second countdown.
+// Only Restart clears the spans. Every run begins with a fresh three-second countdown.
 function restartGame()
 {
-    targetText = "";
-    typedText = "";
-    cursorPosition = 0;
-    lastPassage = -1;
-    phase = "countdown";
+    typingArea.innerHTML = "";
+    windowStart = 0;
+    windowEnd = 60;
+    position = 0;
+    furthestPosition = 0;
+    generatedCount = 0;
+    typedCount = 0;
+    correctCharacters = 0;
+    cursorCharacter = null;
+    passageOrder = [];
+    wordsTyped = 0;
+    gameState = "start";
+    pausedState = "start";
     countdownRemaining = 3000;
     countdownSince = performance.now();
-    elapsedBeforeRun = 0;
-    runningSince = null;
-    wordsTyped = 0;
-    pauseLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
-    typingArea.classList.remove("paused");
-    ensureText(WINDOW_CHARACTERS);
-    renderStrip();
+    resetTimer();
+    ensureText();
+    updateCursor();
     updateGame();
     typingArea.focus();
 }
@@ -459,6 +570,7 @@ if (durationSeconds >= 60)
 challengeTitle.textContent = durationTitle;
 modeLabel.textContent = "TIME ATTACK / " + durationLabel;
 document.title = durationTitle + " — TypeQuest";
+
 typingArea.addEventListener("keydown", handleTyping);
 typingArea.addEventListener("paste", preventPaste);
 pauseButton.addEventListener("click", togglePause);
