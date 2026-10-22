@@ -115,6 +115,18 @@ function getDamageThreshold(stage)
     return Math.max(1, survivalData.startingDamageThreshold - stage);
 }
 
+// Wrong keystrokes and missed characters use the same damage counter.
+function applyDamage()
+{
+    damageCounter++;
+
+    if (damageCounter >= getDamageThreshold(damageStage))
+    {
+        halfHearts--;
+        damageCounter = 0;
+    }
+}
+
 // Total characters moved: speed increases steadily until it reaches the cap.
 function getScrollDistance(seconds)
 {
@@ -176,27 +188,14 @@ function shiftWindow(newStart)
     }
 }
 
-// Finalized positions keep their classes, but cannot be edited again.
+// Lock characters only when they start leaving the typing area's left edge.
 function advanceBoundary(elapsedMilliseconds)
 {
-    const crossedCount = Math.floor(getScrollDistance(elapsedMilliseconds / 1000) + 0.000000001);
+    const distance = getScrollDistance(elapsedMilliseconds / 1000);
+    const crossedCount = Math.floor(distance + 0.000000001);
     const newStart = Math.max(0, crossedCount - HISTORY_CHARACTERS);
+    const leftBoundary = Math.max(0, Math.ceil(distance - HISTORY_CHARACTERS - 0.000000001));
     ensureText(Math.max(crossedCount + 1, newStart + WINDOW_CHARACTERS), getTier(elapsedMilliseconds));
-
-    while (finalizedCount < crossedCount)
-    {
-        const character = document.getElementById("char-" + finalizedCount);
-
-        if (!character.classList.contains("correct") && !character.classList.contains("incorrect"))
-        {
-            finalizedUntyped++;
-        }
-
-        finalizedCount++;
-    }
-
-    shiftWindow(Math.max(0, finalizedCount - HISTORY_CHARACTERS));
-    position = Math.max(position, finalizedCount);
 
     // Passage tiers stop at five; damage keeps increasing each minute to its cap.
     const currentStage = Math.floor(elapsedMilliseconds / survivalData.tierMilliseconds);
@@ -205,6 +204,32 @@ function advanceBoundary(elapsedMilliseconds)
     {
         damageStage = currentStage;
         damageCounter = 0;
+    }
+
+    while (finalizedCount < leftBoundary)
+    {
+        const character = document.getElementById("char-" + finalizedCount);
+
+        if (!character.classList.contains("correct") && !character.classList.contains("incorrect"))
+        {
+            finalizedUntyped++;
+            applyDamage();
+        }
+
+        finalizedCount++;
+
+        if (halfHearts === 0)
+        {
+            break;
+        }
+    }
+
+    shiftWindow(newStart);
+    position = Math.max(position, finalizedCount);
+
+    if (halfHearts === 0)
+    {
+        finishGame();
     }
 }
 
@@ -291,7 +316,7 @@ function formatElapsed(milliseconds)
     return minutes + ":" + seconds + "." + fraction;
 }
 
-// Missed positions count toward accuracy, but never cause heart damage.
+// Include missed positions in accuracy as well as heart damage.
 function updateStats()
 {
     const elapsed = getActiveTime();
@@ -514,13 +539,7 @@ function handleTyping(event)
 
             character.classList.remove("correct");
             character.classList.add("incorrect");
-            damageCounter++;
-
-            if (damageCounter >= getDamageThreshold(damageStage))
-            {
-                halfHearts--;
-                damageCounter = 0;
-            }
+            applyDamage();
         }
 
         position++;
