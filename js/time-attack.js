@@ -1,12 +1,12 @@
 const typingArea = document.getElementById("typing-area");
-const challengeTitle = document.getElementById("challenge-title");
+const challengeTimeHeading = document.getElementById("challenge-time-heading");
 const modeLabel = document.getElementById("mode-label");
 const gameStatus = document.getElementById("game-status");
-const gameMessage = document.getElementById("game-message");
-const speedDisplay = document.getElementById("net-wpm");
-const timeDisplay = document.getElementById("remaining-time");
+const footerMessage = document.getElementById("footer-message");
+const net_wpm = document.getElementById("net-wpm");
+const timer = document.getElementById("remaining-time");
 const pauseButton = document.getElementById("pause-button");
-const pauseLabel = document.getElementById("pause-label");
+const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
@@ -239,15 +239,15 @@ function updateStats()
 
     const netWpm = rawWpm * accuracy;
     const formattedSpeed = netWpm.toFixed(1);
-    speedDisplay.textContent = formattedSpeed;
-    speedDisplay.style.fontSize = "";
+    net_wpm.textContent = formattedSpeed;
+    net_wpm.style.fontSize = "";
 
     if (formattedSpeed.length > 4)
     {
-        speedDisplay.style.fontSize = Math.floor(520 / formattedSpeed.length) + "px";
+        net_wpm.style.fontSize = Math.floor(520 / formattedSpeed.length) + "px";
     }
 
-    timeDisplay.textContent = formatRemaining(remainingMs);
+    timer.textContent = formatRemaining(remainingMs);
 }
 
 // Keep the badge, controls, footer, and paused appearance in one place.
@@ -255,10 +255,10 @@ function updateInterface()
 {
     pauseButton.disabled = gameState === "start" || gameState === "end";
     restartButton.disabled = false;
-    pauseLabel.textContent = "Pause";
+    pauseBtnLabel.textContent = "Pause";
     pauseIcon.src = "icons/pause.svg";
     typingArea.classList.remove("paused");
-    gameMessage.textContent = "ESC · PAUSE";
+    footerMessage.textContent = "ESC · PAUSE";
 
     if (gameState === "start")
     {
@@ -272,15 +272,15 @@ function updateInterface()
     else if (gameState === "pause")
     {
         gameStatus.textContent = "PAUSED";
-        gameMessage.textContent = "ESC · RESUME";
-        pauseLabel.textContent = "Resume";
+        footerMessage.textContent = "ESC · RESUME";
+        pauseBtnLabel.textContent = "Resume";
         pauseIcon.src = "icons/resume.svg";
         typingArea.classList.add("paused");
     }
     else
     {
         gameStatus.textContent = "TIME UP";
-        gameMessage.textContent = "TIME UP · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1) + " · WORDS " + wordsTyped;
+        footerMessage.textContent = "TIME UP · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1) + " · WORDS " + wordsTyped;
     }
 }
 
@@ -567,7 +567,7 @@ if (durationSeconds >= 60)
     durationLabel = minutes + " MIN";
 }
 
-challengeTitle.textContent = durationTitle;
+challengeTimeHeading.textContent = durationTitle;
 modeLabel.textContent = "TIME ATTACK / " + durationLabel;
 document.title = durationTitle + " — TypeQuest";
 
