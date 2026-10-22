@@ -10,6 +10,7 @@ const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
+const HISTORY_CHARACTERS = 18;
 const WINDOW_CHARACTERS = 60;
 const parameters = new URLSearchParams(window.location.search);
 const requestedDuration = Number(parameters.get("duration"));
@@ -28,16 +29,21 @@ let windowStart = 0;
 let windowEnd = 60;
 let position = 0;
 let furthestPosition = 0;
-let generatedCount = 0;
-let typedCount = 0;
+let generatedCount = 0;                 // the total number of character spans created so far
+let typedCount = 0;                    // how many spans currently have either the correct or incorrect class
 let correctCharacters = 0;
-let cursorCharacter = null;
-let passageOrder = [];
-let lastPassage = -1;
+let cursorCharacter = null;          // a reference to the span currently displaying the cursor's left border
+
+let passageOrder = [];              // stores a shuffled list of indexes of passages to be appended
+let lastPassage = -1;              // remembers the index of the most recently appended passage
+
 let gameState = "start";
-let pausedState = "start";
+let pausedState = "start";          // remembers whether Pause interrupted the starting countdown or active gameplay
+
+// initial three-second countdown
 let countdownRemaining = 3000;
 let countdownSince = 0;
+
 let activeMs = 0;
 let lastTick = null;
 let rawWpm = 0;
@@ -47,13 +53,18 @@ let wordsTyped = 0;
 // Use every passage once per shuffled cycle, avoiding repetition at the join.
 function appendPassage()
 {
+    // Refill and reshuffle the list of passage indexes when it runs out.
     if (passageOrder.length === 0)
     {
+
+        // Fill the list with every passage index
+
         for (let i = 0; i < timeAttackData.passages.length; i++)
         {
             passageOrder.push(i);
         }
 
+        // Shuffle the list using the Fisher-Yates algorithm
         for (let i = passageOrder.length - 1; i > 0; i--)
         {
             const randomIndex = Math.floor(Math.random() * (i + 1));
@@ -70,10 +81,11 @@ function appendPassage()
         }
     }
 
-    const passageIndex = passageOrder.shift();
+    const passageIndex = passageOrder.shift();                  // remove the 1st index from the shuffled list
     let passage = timeAttackData.passages[passageIndex];
     lastPassage = passageIndex;
 
+    // adds a space in front of the passage only if it is not the first one
     if (generatedCount > 0)
     {
         passage = " " + passage;
@@ -105,7 +117,7 @@ function ensureText()
     }
 }
 
-// Change visibility only for characters entering or leaving the 60-span window.
+// moves the 60-character visible window forward or backward.
 function shiftWindow(newStart)
 {
     while (windowStart < newStart)
@@ -125,20 +137,23 @@ function shiftWindow(newStart)
     }
 }
 
-// Corrections move within the current window; shift only when the cursor leaves it.
+// Update the cursor's position and ensure it is visible within the 60-character window
 function updateCursor()
 {
+    // Remove the old cursor
     if (cursorCharacter !== null)
     {
         cursorCharacter.classList.remove("current-character");
     }
 
+    // If the game has ended, hide cursor
     if (gameState === "end")
     {
         cursorCharacter = null;
         return;
     }
 
+    // Shift the window if the cursor is outside the visible range
     if (position < windowStart)
     {
         shiftWindow(position);
@@ -148,10 +163,11 @@ function updateCursor()
         shiftWindow(position - WINDOW_CHARACTERS + 1);
     }
 
+    // Place the cursor on the current character
     cursorCharacter = document.getElementById("char-" + position);
     cursorCharacter.classList.add("current-character");
 
-    // A narrower desktop strip can clip part of the 60-character window.
+    
     // Keep the cursor before the existing 60px fade at the right edge.
     const visibleWidth = typingArea.clientWidth - 60;
 
@@ -163,7 +179,7 @@ function updateCursor()
     }
 }
 
-// Count only active gameplay; the starting countdown and pauses are separate.
+// Return the total active time in milliseconds, including the current tick if the timer is running
 function getActiveTime()
 {
     if (lastTick === null)
@@ -174,7 +190,7 @@ function getActiveTime()
     return activeMs + (performance.now() - lastTick);
 }
 
-// The optional timestamp preserves the countdown deadline after a late update.
+// Start the timer if it is not already running, using the provided start time or the current time
 function startTimer(startTime = performance.now())
 {
     if (lastTick === null)
@@ -198,7 +214,7 @@ function resetTimer()
     lastTick = null;
 }
 
-// Round up to tenths so 00:00.0 appears only when time has actually run out.
+// Format the remaining time as MM:SS.tenths, rounding up to the next tenth of a second
 function formatRemaining(milliseconds)
 {
     const tenths = Math.ceil(Math.max(0, milliseconds) / 100);
@@ -219,7 +235,7 @@ function formatRemaining(milliseconds)
     return minutes + ":" + seconds + "." + fraction;
 }
 
-// Retained spans are counted during input, not rescanned on each timer update.
+// Update the WPM, accuracy, and remaining time displays based on the current game state
 function updateStats()
 {
     const elapsed = Math.min(durationMs, getActiveTime());
@@ -250,7 +266,7 @@ function updateStats()
     timer.textContent = formatRemaining(remainingMs);
 }
 
-// Keep the badge, controls, footer, and paused appearance in one place.
+// Update the interface to reflect the current game state, including button states and messages
 function updateInterface()
 {
     pauseButton.disabled = gameState === "start" || gameState === "end";
@@ -284,7 +300,7 @@ function updateInterface()
     }
 }
 
-// Cap the final active time at the selected duration, even after a late update.
+// Stop the timer, set the active time to the full duration, and transition to the end state
 function finishGame()
 {
     stopTimer();
@@ -314,7 +330,7 @@ function updateGame()
     updateInterface();
 }
 
-// Overwrite a span's status without shifting text or counting it a second time.
+// Handle typing input, cursor movement, and backspace corrections
 function handleTyping(event)
 {
     updateGame();
@@ -437,7 +453,8 @@ function handleTyping(event)
         {
             furthestPosition = position;
             ensureText();
-            shiftWindow(position);
+            // keeps 18 character positions behind the cursor visible during normal typing
+            shiftWindow(Math.max(0, position - HISTORY_CHARACTERS));
         }
 
         changed = true;
