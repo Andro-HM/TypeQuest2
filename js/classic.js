@@ -162,8 +162,10 @@ function updateInterface()
 {
     pauseButton.disabled = gameState === "end" || level === null;
     restartButton.disabled = level === null;
+
     pauseBtnLabel.textContent = "Pause";
     pauseIcon.src = "icons/pause.svg";
+
     typingArea.classList.remove("paused");
     gameStatus.textContent = "IN PLAY";
     footerMessage.textContent = "ESC · PAUSE";
@@ -206,6 +208,9 @@ function handleTyping(event)
         return;
     }
 
+    // We only reach this line if the key was ALLOWED
+    // (Backspace or a single non-repeating character)
+
     event.preventDefault();
 
     if (gameState === "pause" || gameState === "end")
@@ -232,11 +237,13 @@ function handleTyping(event)
     }
     else
     {
+        //game finished
         if (position >= level.content.length)
         {
             return;
         }
 
+        //game started
         if (gameState === "start")
         {
             gameState = "play";
@@ -299,7 +306,7 @@ function pauseGame()
 // Before the first key, Resume returns to start without starting the stopwatch.
 function resumeGame()
 {
-    gameState = "start";
+    gameState = "start";    //Temporarily make the gameState start
 
     if (elapsedBeforeRun > 0 || position > 0)
     {
