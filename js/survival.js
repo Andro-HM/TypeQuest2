@@ -13,8 +13,6 @@ const restartButton = document.getElementById("restart-button");
 const WINDOW_CHARACTERS = 60;
 const HISTORY_CHARACTERS = 18;
 
-typingArea.style.setProperty("--history-width", HISTORY_CHARACTERS + "ch");
-
 let windowStart = 0;
 let windowEnd = 60;
 let position = 0;
