@@ -16,8 +16,8 @@ let position = 0;
 let correctCharacters = 0;
 let gameState = "start";
 let cursorCharacter = null;
-let elapsedBeforeRun = 0;
-let runningSince = null;
+let activeMs = 0;
+let lastTick = null;
 let rawWpm = 0;
 let accuracy = 0;
 
@@ -51,12 +51,38 @@ function findLevel(number)
 // Count only time spent playing, leaving paused time out.
 function getActiveTime()
 {
-    if (runningSince === null)
+    if (lastTick === null)
     {
-        return elapsedBeforeRun;
+        return activeMs;
     }
 
-    return elapsedBeforeRun + performance.now() - runningSince;
+    return activeMs + (performance.now() - lastTick);
+}
+
+// Start a playing period only when the stopwatch is stopped.
+function startTimer()
+{
+    if (lastTick === null)
+    {
+        lastTick = performance.now();
+    }
+}
+
+// Add this playing period to the total and stop the stopwatch.
+function stopTimer()
+{
+    if (lastTick !== null)
+    {
+        activeMs += performance.now() - lastTick;
+        lastTick = null;
+    }
+}
+
+// Clear both the accumulated time and the current playing period.
+function resetTimer()
+{
+    activeMs = 0;
+    lastTick = null;
 }
 
 // Show the clock as minutes and seconds.
@@ -247,7 +273,7 @@ function handleTyping(event)
         if (gameState === "start")
         {
             gameState = "play";
-            runningSince = performance.now();
+            startTimer();
             updateInterface();
         }
 
@@ -281,8 +307,7 @@ function handleTyping(event)
 // Freeze the clock and show the final figures without saving a result.
 function finishGame()
 {
-    elapsedBeforeRun = getActiveTime();
-    runningSince = null;
+    stopTimer();
     gameState = "end";
     updateStats();
     updateInterface();
@@ -296,8 +321,7 @@ function pauseGame()
         return;
     }
 
-    elapsedBeforeRun = getActiveTime();
-    runningSince = null;
+    stopTimer();
     gameState = "pause";
     updateStats();
     updateInterface();
@@ -308,9 +332,9 @@ function resumeGame()
 {
     gameState = "start";    //Temporarily make the gameState start
 
-    if (elapsedBeforeRun > 0 || position > 0)
+    if (activeMs > 0 || position > 0)
     {
-        runningSince = performance.now();
+        startTimer();
         gameState = "play";
     }
 
@@ -343,8 +367,7 @@ function restartGame()
     position = 0;
     correctCharacters = 0;
     gameState = "start";
-    elapsedBeforeRun = 0;
-    runningSince = null;
+    resetTimer();
 
     for (let i = 0; i < level.content.length; i++)
     {
