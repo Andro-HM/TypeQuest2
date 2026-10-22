@@ -245,6 +245,10 @@
                 width: 1ch;
             }
 
+            .hidden-character {
+                display: none;
+            }
+
             #typing-area.paused {
                 opacity: 0.5;
             }
@@ -258,15 +262,8 @@
                 color: #c93232;
             }
 
-            #typing-cursor {
-                position: absolute;
-                top: 12px;
-                bottom: 12px;
-                left: 0;
-                z-index: 1;
-                width: 3px;
-                background-color: #20adc0;
-                pointer-events: none;
+            .current-character {
+                border-left: 3px solid #20adc0;
             }
 
             /* ========================================
@@ -287,7 +284,7 @@
                 min-width: 170px;
             }
 
-            #game-message {
+            #footer-message {
                 margin: 20px 0 0 0;
                 color: #638098;
                 font-family: "JetBrains Mono", monospace;
@@ -345,7 +342,6 @@
 
                     <div id="typing-area" tabindex="0" spellcheck="false">
                         <div id="survival-track"></div>
-                        <span id="typing-cursor"></span>
                     </div>
                 </div>
             </main>
@@ -354,14 +350,14 @@
                 <div id="control-buttons">
                     <button id="pause-button" class="control" type="button" disabled>
                         <img id="pause-icon" src="icons/pause.svg" alt="">
-                        <span id="pause-label">Pause</span>
+                        <span id="pause_btn-label">Pause</span>
                     </button>
                     <button id="restart-button" class="control" type="button">
                         <img src="icons/restart.svg" alt="">
                         Restart
                     </button>
                 </div>
-                <p id="game-message">ESC &middot; PAUSE</p>
+                <p id="footer-message">ESC &middot; PAUSE</p>
             </footer>
         </div>
 

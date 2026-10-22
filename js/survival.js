@@ -1,78 +1,106 @@
 const typingArea = document.getElementById("typing-area");
 const track = document.getElementById("survival-track");
-const cursorDisplay = document.getElementById("typing-cursor");
 const modeLabel = document.getElementById("mode-label");
 const gameStatus = document.getElementById("game-status");
-const gameMessage = document.getElementById("game-message");
-const speedDisplay = document.getElementById("net-wpm");
-const timeDisplay = document.getElementById("elapsed-time");
+const footerMessage = document.getElementById("footer-message");
+const net_wpm = document.getElementById("net-wpm");
+const timer = document.getElementById("elapsed-time");
 const pauseButton = document.getElementById("pause-button");
-const pauseLabel = document.getElementById("pause-label");
+const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
-let targetText = "";
-let typedText = "";
-let cursorPosition = 0;
+const WINDOW_CHARACTERS = 60;
+const HISTORY_CHARACTERS = 18;
+
+let windowStart = 0;
+let windowEnd = 60;
+let position = 0;
+let furthestPosition = 0;
+let generatedCount = 0;
+let typedCount = 0;
+let correctCharacters = 0;
+let cursorCharacter = null;
 let finalizedCount = 0;
-let finalizedEntered = 0;
-let finalizedCorrect = 0;
+let finalizedUntyped = 0;
+
 let halfHearts = survivalData.startingHalfHearts;
 let damageCounter = 0;
 let damageStage = 0;
 let passageOrders = [];
 let lastPassages = [];
-let phase = "countdown";
+
+let gameState = "start";
+let pausedState = "start";
 let countdownRemaining = survivalData.countdownMilliseconds;
 let countdownSince = 0;
-let elapsedBeforeRun = 0;
-let runningSince = null;
+let activeMs = 0;
+let lastTick = null;
 let rawWpm = 0;
 let accuracy = 0;
 let animationFrame = null;
 
 // Select passages from the current tier, using each one before repeating a cycle.
-function ensureText(minimumLength, tierNumber)
+function appendPassage(tierNumber)
 {
     const tierIndex = tierNumber - 1;
     const tier = survivalData.tiers[tierIndex];
+    const order = passageOrders[tierIndex];
 
-    while (targetText.length < minimumLength)
+    if (order.length === 0)
     {
-        if (passageOrders[tierIndex].length === 0)
+        for (let i = 0; i < tier.passages.length; i++)
         {
-            for (let i = 0; i < tier.passages.length; i++)
-            {
-                passageOrders[tierIndex].push(i);
-            }
-
-            const order = passageOrders[tierIndex];
-
-            for (let i = order.length - 1; i > 0; i--)
-            {
-                const randomIndex = Math.floor(Math.random() * (i + 1));
-                const temporary = order[i];
-                order[i] = order[randomIndex];
-                order[randomIndex] = temporary;
-            }
-
-            if (order.length > 1 && order[0] === lastPassages[tierIndex])
-            {
-                const temporary = order[0];
-                order[0] = order[1];
-                order[1] = temporary;
-            }
+            order.push(i);
         }
 
-        const passageIndex = passageOrders[tierIndex].shift();
-
-        if (targetText.length > 0)
+        for (let i = order.length - 1; i > 0; i--)
         {
-            targetText += " ";
+            const randomIndex = Math.floor(Math.random() * (i + 1));
+            const temporary = order[i];
+            order[i] = order[randomIndex];
+            order[randomIndex] = temporary;
         }
 
-        targetText += tier.passages[passageIndex];
-        lastPassages[tierIndex] = passageIndex;
+        if (order.length > 1 && order[0] === lastPassages[tierIndex])
+        {
+            const temporary = order[0];
+            order[0] = order[1];
+            order[1] = temporary;
+        }
+    }
+
+    const passageIndex = order.shift();
+    let passage = tier.passages[passageIndex];
+    lastPassages[tierIndex] = passageIndex;
+
+    if (generatedCount > 0)
+    {
+        passage = " " + passage;
+    }
+
+    for (let i = 0; i < passage.length; i++)
+    {
+        const character = document.createElement("span");
+        character.id = "char-" + generatedCount;
+        character.className = "typing-character";
+        character.textContent = passage[i];
+
+        if (generatedCount < windowStart || generatedCount >= windowEnd)
+        {
+            character.classList.add("hidden-character");
+        }
+
+        track.appendChild(character);
+        generatedCount++;
+    }
+}
+
+function ensureText(minimumLength, tierNumber)
+{
+    while (generatedCount < minimumLength)
+    {
+        appendPassage(tierNumber);
     }
 }
 
@@ -103,166 +131,120 @@ function getScrollDistance(seconds)
     return distance;
 }
 
-// Find the exact active time when a character crossed the left boundary.
-function getCrossingTime(distance)
+function getActiveTime()
 {
-    const acceleration = survivalData.speedIncreasePerMinute / 60;
-    const timeToMaximum = (survivalData.maximumSpeed - survivalData.startingSpeed) / acceleration;
-    const distanceAtMaximum = getScrollDistance(timeToMaximum);
-    let seconds = 0;
-
-    if (distance <= distanceAtMaximum)
+    if (lastTick === null)
     {
-        seconds = (Math.sqrt(survivalData.startingSpeed * survivalData.startingSpeed + 2 * acceleration * distance) - survivalData.startingSpeed) / acceleration;
-    }
-    else
-    {
-        seconds = timeToMaximum + (distance - distanceAtMaximum) / survivalData.maximumSpeed;
+        return activeMs;
     }
 
-    return seconds * 1000;
+    return activeMs + (performance.now() - lastTick);
 }
 
-function getActiveTime(now)
+function startTimer(startTime = performance.now())
 {
-    if (runningSince === null)
+    if (lastTick === null)
     {
-        return elapsedBeforeRun;
+        lastTick = startTime;
     }
-
-    return elapsedBeforeRun + now - runningSince;
 }
 
-// A late frame still ends the run at the fatal character, not at the frame time.
-function finishGame(fatalTime)
+function stopTimer()
 {
-    phase = "finished";
-    elapsedBeforeRun = fatalTime;
-    runningSince = null;
+    if (lastTick !== null)
+    {
+        activeMs += performance.now() - lastTick;
+        lastTick = null;
+    }
 }
 
-// Lock positions as they leave the window. Only these positions can cause damage.
+function resetTimer()
+{
+    activeMs = 0;
+    lastTick = null;
+}
+
+// Only the timer advances this window. Keyboard input never shifts it.
+function shiftWindow(newStart)
+{
+    while (windowStart < newStart)
+    {
+        document.getElementById("char-" + windowStart).classList.add("hidden-character");
+        document.getElementById("char-" + windowEnd).classList.remove("hidden-character");
+        windowStart++;
+        windowEnd++;
+    }
+}
+
+// Finalized positions keep their classes, but cannot be edited again.
 function advanceBoundary(elapsedMilliseconds)
 {
     const crossedCount = Math.floor(getScrollDistance(elapsedMilliseconds / 1000) + 0.000000001);
-    let changed = false;
+    const newStart = Math.max(0, crossedCount - HISTORY_CHARACTERS);
+    ensureText(Math.max(crossedCount + 1, newStart + WINDOW_CHARACTERS), getTier(elapsedMilliseconds));
 
     while (finalizedCount < crossedCount)
     {
-        const index = finalizedCount;
-        const crossingTime = getCrossingTime(index + 1);
-        ensureText(index + 1, getTier(crossingTime));
-        let enteredCharacter = null;
+        const character = document.getElementById("char-" + finalizedCount);
 
-        if (typedText.length > 0)
+        if (!character.classList.contains("correct") && !character.classList.contains("incorrect"))
         {
-            enteredCharacter = typedText[0];
-            typedText = typedText.slice(1);
-            cursorPosition = Math.max(0, cursorPosition - 1);
-            finalizedEntered++;
+            finalizedUntyped++;
         }
 
         finalizedCount++;
-        changed = true;
-        const stage = Math.floor(crossingTime / survivalData.tierMilliseconds);
-
-        if (stage !== damageStage)
-        {
-            damageStage = stage;
-            damageCounter = 0;
-        }
-
-        if (enteredCharacter !== null && enteredCharacter === targetText[index])
-        {
-            finalizedCorrect++;
-        }
-        else
-        {
-            damageCounter++;
-
-            if (damageCounter >= getDamageThreshold(stage))
-            {
-                halfHearts--;
-                damageCounter = 0;
-            }
-        }
-
-        if (halfHearts === 0)
-        {
-            finishGame(crossingTime);
-            break;
-        }
     }
 
-    if (phase !== "finished")
+    shiftWindow(Math.max(0, finalizedCount - HISTORY_CHARACTERS));
+    position = Math.max(position, finalizedCount);
+
+    // Passage tiers stop at five; damage keeps increasing each minute to its cap.
+    const currentStage = Math.floor(elapsedMilliseconds / survivalData.tierMilliseconds);
+
+    if (currentStage !== damageStage)
     {
-        const currentStage = Math.floor(elapsedMilliseconds / survivalData.tierMilliseconds);
-
-        if (currentStage !== damageStage)
-        {
-            damageStage = currentStage;
-            damageCounter = 0;
-        }
-
-        ensureText(finalizedCount + survivalData.windowCharacters + 1, getTier(elapsedMilliseconds));
-    }
-
-    return changed;
-}
-
-// Rebuild the visible characters after input or a character crossing.
-function renderStrip()
-{
-    track.innerHTML = "";
-
-    for (let offset = 0; offset <= survivalData.windowCharacters; offset++)
-    {
-        const index = finalizedCount + offset;
-        const character = document.createElement("span");
-        character.className = "typing-character";
-        character.textContent = " ";
-
-        if (index < targetText.length)
-        {
-            character.textContent = targetText[index];
-        }
-
-        if (offset < typedText.length)
-        {
-            if (typedText[offset] === targetText[index])
-            {
-                character.classList.add("correct");
-            }
-            else
-            {
-                character.classList.add("incorrect");
-            }
-        }
-
-        track.appendChild(character);
+        damageStage = currentStage;
+        damageCounter = 0;
     }
 }
 
-// Limit editing to positions whose cursor fits inside the visible typing area.
-function getCursorLimit(elapsedMilliseconds)
-{
-    const distance = getScrollDistance(elapsedMilliseconds / 1000);
-    const fraction = Math.max(0, distance - finalizedCount);
-    const characterWidth = track.firstElementChild.getBoundingClientRect().width;
-    const visiblePositions = Math.floor((typingArea.clientWidth - cursorDisplay.offsetWidth) / characterWidth + fraction);
-    return Math.max(0, Math.min(survivalData.windowCharacters, visiblePositions));
-}
-
-// Move the text smoothly, keeping the cursor inside both visible edges.
+// Build the initial history before scrolling, then animate the fractional position.
 function moveStrip(elapsedMilliseconds)
 {
     const distance = getScrollDistance(elapsedMilliseconds / 1000);
-    const fraction = Math.max(0, distance - finalizedCount);
-    const characterWidth = track.firstElementChild.getBoundingClientRect().width;
-    cursorPosition = Math.min(cursorPosition, getCursorLimit(elapsedMilliseconds));
-    const cursorLeft = Math.max(0, (cursorPosition - fraction) * characterWidth);
+    const fraction = Math.max(0, distance - HISTORY_CHARACTERS - windowStart);
+    const character = document.getElementById("char-" + windowStart);
+    const characterWidth = character.getBoundingClientRect().width;
     track.style.transform = "translateX(-" + fraction * characterWidth + "px)";
-    cursorDisplay.style.left = cursorLeft + "px";
+}
+
+// Reserve the existing 60px fade and enough room for the cursor's 3px border.
+function getCursorLimit()
+{
+    const firstCharacter = document.getElementById("char-" + windowStart);
+    const characterWidth = firstCharacter.getBoundingClientRect().width;
+    const visibleWidth = typingArea.clientWidth - 60;
+    const firstLeft = firstCharacter.getBoundingClientRect().left - typingArea.getBoundingClientRect().left - typingArea.clientLeft;
+    const visiblePositions = Math.floor((visibleWidth - firstLeft - 3) / characterWidth);
+    return Math.min(windowEnd - 1, windowStart + visiblePositions);
+}
+
+function updateCursor()
+{
+    if (cursorCharacter !== null)
+    {
+        cursorCharacter.classList.remove("current-character");
+    }
+
+    if (gameState === "end")
+    {
+        cursorCharacter = null;
+        return;
+    }
+
+    position = Math.max(finalizedCount, Math.min(position, getCursorLimit()));
+    cursorCharacter = document.getElementById("char-" + position);
+    cursorCharacter.classList.add("current-character");
 }
 
 function renderHearts()
@@ -309,27 +291,17 @@ function formatElapsed(milliseconds)
     return minutes + ":" + seconds + "." + fraction;
 }
 
-// Include passed positions in accuracy, even when the player left them untyped.
-function updateStats(elapsedMilliseconds)
+// Missed positions count toward accuracy, but never cause heart damage.
+function updateStats()
 {
-    let correctCharacters = finalizedCorrect;
-
-    for (let i = 0; i < typedText.length; i++)
-    {
-        if (typedText[i] === targetText[finalizedCount + i])
-        {
-            correctCharacters++;
-        }
-    }
-
-    const enteredCharacters = finalizedEntered + typedText.length;
-    const opportunityPositions = finalizedCount + typedText.length;
+    const elapsed = getActiveTime();
+    const opportunityPositions = typedCount + finalizedUntyped;
     rawWpm = 0;
     accuracy = 0;
 
-    if (elapsedMilliseconds > 0)
+    if (elapsed > 0)
     {
-        rawWpm = enteredCharacters / 5 / (elapsedMilliseconds / 60000);
+        rawWpm = typedCount / 5 / (elapsed / 60000);
     }
 
     if (opportunityPositions > 0)
@@ -338,65 +310,86 @@ function updateStats(elapsedMilliseconds)
     }
 
     const formattedSpeed = (rawWpm * accuracy).toFixed(1);
-    speedDisplay.textContent = formattedSpeed;
-    speedDisplay.style.fontSize = "";
+    net_wpm.textContent = formattedSpeed;
+    net_wpm.style.fontSize = "";
 
     if (formattedSpeed.length > 4)
     {
-        speedDisplay.style.fontSize = Math.floor(520 / formattedSpeed.length) + "px";
+        net_wpm.style.fontSize = Math.floor(520 / formattedSpeed.length) + "px";
     }
 
-    timeDisplay.textContent = formatElapsed(elapsedMilliseconds);
-    modeLabel.textContent = "SURVIVAL / TIER " + getTier(elapsedMilliseconds) + " / " + survivalData.tiers.length;
+    timer.textContent = formatElapsed(elapsed);
+    modeLabel.textContent = "SURVIVAL / TIER " + getTier(elapsed) + " / " + survivalData.tiers.length;
     renderHearts();
 }
 
-function updateGame(now = performance.now())
+function updateInterface()
 {
-    if (phase === "countdown" && now >= countdownSince + countdownRemaining)
-    {
-        runningSince = countdownSince + countdownRemaining;
-        countdownRemaining = 0;
-        phase = "running";
-        typingArea.focus();
-    }
+    pauseButton.disabled = gameState === "start" || gameState === "end";
+    pauseBtnLabel.textContent = "Pause";
+    pauseIcon.src = "icons/pause.svg";
+    typingArea.classList.remove("paused");
+    footerMessage.textContent = "ESC · PAUSE";
 
-    if (phase === "running")
+    if (gameState === "start")
     {
-        if (advanceBoundary(getActiveTime(now)))
-        {
-            renderStrip();
-        }
+        const remaining = Math.max(0, countdownRemaining - (performance.now() - countdownSince));
+        gameStatus.textContent = "STARTING IN " + Math.ceil(remaining / 1000);
     }
-
-    const elapsed = getActiveTime(now);
-    updateStats(elapsed);
-    moveStrip(elapsed);
-    gameMessage.textContent = "ESC · PAUSE";
-
-    if (phase === "countdown")
-    {
-        const seconds = Math.ceil(Math.max(0, countdownRemaining - (now - countdownSince)) / 1000);
-        gameStatus.textContent = "STARTING IN " + seconds;
-        pauseButton.disabled = true;
-    }
-    else if (phase === "paused-countdown" || phase === "paused-running")
-    {
-        gameStatus.textContent = "PAUSED";
-        gameMessage.textContent = "ESC · RESUME";
-        pauseButton.disabled = false;
-    }
-    else if (phase === "running")
+    else if (gameState === "play")
     {
         gameStatus.textContent = "IN PLAY";
-        pauseButton.disabled = false;
+    }
+    else if (gameState === "pause")
+    {
+        gameStatus.textContent = "PAUSED";
+        footerMessage.textContent = "ESC · RESUME";
+        pauseBtnLabel.textContent = "Resume";
+        pauseIcon.src = "icons/resume.svg";
+        typingArea.classList.add("paused");
     }
     else
     {
         gameStatus.textContent = "GAME OVER";
-        pauseButton.disabled = true;
-        gameMessage.textContent = "GAME OVER · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1);
+        footerMessage.textContent = "GAME OVER · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1);
     }
+}
+
+function finishGame()
+{
+    stopTimer();
+    gameState = "end";
+
+    if (animationFrame !== null)
+    {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+    }
+
+    updateCursor();
+}
+
+function updateGame()
+{
+    const now = performance.now();
+
+    if (gameState === "start" && now >= countdownSince + countdownRemaining)
+    {
+        startTimer(countdownSince + countdownRemaining);
+        countdownRemaining = 0;
+        gameState = "play";
+        typingArea.focus();
+    }
+
+    if (gameState === "play")
+    {
+        advanceBoundary(getActiveTime());
+    }
+
+    moveStrip(getActiveTime());
+    updateCursor();
+    updateStats();
+    updateInterface();
 }
 
 function animateGame()
@@ -404,7 +397,7 @@ function animateGame()
     animationFrame = null;
     updateGame();
 
-    if (phase === "countdown" || phase === "running")
+    if (gameState === "start" || gameState === "play")
     {
         animationFrame = requestAnimationFrame(animateGame);
     }
@@ -413,8 +406,7 @@ function animateGame()
 // Editing is limited to the active window; passed characters cannot be changed.
 function handleTyping(event)
 {
-    const now = performance.now();
-    updateGame(now);
+    updateGame();
 
     if (event.ctrlKey || event.altKey || event.metaKey)
     {
@@ -427,7 +419,7 @@ function handleTyping(event)
         return;
     }
 
-    if (phase !== "running")
+    if (gameState !== "play")
     {
         if (event.key.length === 1 || event.key === "Backspace" || event.key === "ArrowLeft" || event.key === "ArrowRight")
         {
@@ -437,17 +429,31 @@ function handleTyping(event)
         return;
     }
 
+    const cursorLimit = getCursorLimit();
     let changed = false;
-    const cursorLimit = getCursorLimit(getActiveTime(now));
 
     if (event.key === "Backspace")
     {
         event.preventDefault();
 
-        if (cursorPosition > 0)
+        if (position > finalizedCount)
         {
-            typedText = typedText.slice(0, cursorPosition - 1) + typedText.slice(cursorPosition);
-            cursorPosition--;
+            position--;
+            const character = document.getElementById("char-" + position);
+            const wasCorrect = character.classList.contains("correct");
+            const wasIncorrect = character.classList.contains("incorrect");
+
+            if (wasCorrect)
+            {
+                correctCharacters--;
+            }
+
+            if (wasCorrect || wasIncorrect)
+            {
+                typedCount--;
+            }
+
+            character.classList.remove("correct", "incorrect");
             changed = true;
         }
     }
@@ -455,9 +461,9 @@ function handleTyping(event)
     {
         event.preventDefault();
 
-        if (cursorPosition > 0)
+        if (position > finalizedCount)
         {
-            cursorPosition--;
+            position--;
             changed = true;
         }
     }
@@ -465,9 +471,9 @@ function handleTyping(event)
     {
         event.preventDefault();
 
-        if (cursorPosition < typedText.length && cursorPosition < cursorLimit)
+        if (position < furthestPosition && position < cursorLimit)
         {
-            cursorPosition++;
+            position++;
             changed = true;
         }
     }
@@ -475,55 +481,87 @@ function handleTyping(event)
     {
         event.preventDefault();
 
-        if (cursorPosition >= cursorLimit)
+        if (position >= cursorLimit)
         {
             return;
         }
 
-        if (cursorPosition < typedText.length)
+        const character = document.getElementById("char-" + position);
+        const wasCorrect = character.classList.contains("correct");
+        const wasIncorrect = character.classList.contains("incorrect");
+
+        if (!wasCorrect && !wasIncorrect)
         {
-            typedText = typedText.slice(0, cursorPosition) + event.key + typedText.slice(cursorPosition + 1);
-            cursorPosition++;
-            changed = true;
+            typedCount++;
         }
-        else if (typedText.length < survivalData.windowCharacters)
+
+        if (event.key === character.textContent)
         {
-            typedText += event.key;
-            cursorPosition++;
-            changed = true;
+            if (!wasCorrect)
+            {
+                correctCharacters++;
+            }
+
+            character.classList.remove("incorrect");
+            character.classList.add("correct");
         }
+        else
+        {
+            if (wasCorrect)
+            {
+                correctCharacters--;
+            }
+
+            character.classList.remove("correct");
+            character.classList.add("incorrect");
+            damageCounter++;
+
+            if (damageCounter >= getDamageThreshold(damageStage))
+            {
+                halfHearts--;
+                damageCounter = 0;
+            }
+        }
+
+        position++;
+        furthestPosition = Math.max(furthestPosition, position);
+
+        if (halfHearts === 0)
+        {
+            finishGame();
+        }
+
+        changed = true;
     }
 
     if (changed)
     {
-        renderStrip();
-        updateGame(now);
+        updateGame();
     }
 }
 
+// Remember whether Pause interrupted the countdown or active gameplay.
 function pauseGame()
 {
-    const now = performance.now();
-    updateGame(now);
+    updateGame();
 
-    if (phase === "countdown")
+    if (gameState !== "start" && gameState !== "play")
     {
-        countdownRemaining = Math.max(0, countdownRemaining - (now - countdownSince));
-        phase = "paused-countdown";
-    }
-    else if (phase === "running")
-    {
-        elapsedBeforeRun = getActiveTime(now);
-        runningSince = null;
-        phase = "paused-running";
+        return;
     }
 
-    if (phase === "paused-countdown" || phase === "paused-running")
+    pausedState = gameState;
+
+    if (gameState === "start")
     {
-        pauseLabel.textContent = "Resume";
-        pauseIcon.src = "icons/resume.svg";
-        typingArea.classList.add("paused");
+        countdownRemaining = Math.max(0, countdownRemaining - (performance.now() - countdownSince));
     }
+    else
+    {
+        stopTimer();
+    }
+
+    gameState = "pause";
 
     if (animationFrame !== null)
     {
@@ -531,29 +569,26 @@ function pauseGame()
         animationFrame = null;
     }
 
-    updateGame(now);
+    updateGame();
 }
 
 function resumeGame()
 {
-    if (phase === "paused-countdown")
+    gameState = pausedState;
+
+    if (gameState === "start")
     {
         countdownSince = performance.now();
-        phase = "countdown";
     }
-    else if (phase === "paused-running")
+    else
     {
-        runningSince = performance.now();
-        phase = "running";
+        startTimer();
     }
 
-    pauseLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
-    typingArea.classList.remove("paused");
     updateGame();
     typingArea.focus();
 
-    if (animationFrame === null && (phase === "countdown" || phase === "running"))
+    if (animationFrame === null)
     {
         animationFrame = requestAnimationFrame(animateGame);
     }
@@ -561,7 +596,12 @@ function resumeGame()
 
 function togglePause()
 {
-    if (phase === "paused-countdown" || phase === "paused-running")
+    if (gameState === "end")
+    {
+        return;
+    }
+
+    if (gameState === "pause")
     {
         resumeGame();
     }
@@ -571,7 +611,7 @@ function togglePause()
     }
 }
 
-// Reset both the active window and the already-passed statistics.
+// Only Restart clears the spans and begins a fresh three-second countdown.
 function restartGame()
 {
     if (animationFrame !== null)
@@ -580,12 +620,17 @@ function restartGame()
         animationFrame = null;
     }
 
-    targetText = "";
-    typedText = "";
-    cursorPosition = 0;
+    track.innerHTML = "";
+    windowStart = 0;
+    windowEnd = 60;
+    position = 0;
+    furthestPosition = 0;
+    generatedCount = 0;
+    typedCount = 0;
+    correctCharacters = 0;
+    cursorCharacter = null;
     finalizedCount = 0;
-    finalizedEntered = 0;
-    finalizedCorrect = 0;
+    finalizedUntyped = 0;
     halfHearts = survivalData.startingHalfHearts;
     damageCounter = 0;
     damageStage = 0;
@@ -598,16 +643,12 @@ function restartGame()
         lastPassages.push(-1);
     }
 
-    phase = "countdown";
+    gameState = "start";
+    pausedState = "start";
     countdownRemaining = survivalData.countdownMilliseconds;
     countdownSince = performance.now();
-    elapsedBeforeRun = 0;
-    runningSince = null;
-    pauseLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
-    typingArea.classList.remove("paused");
-    ensureText(survivalData.windowCharacters + 1, 1);
-    renderStrip();
+    resetTimer();
+    ensureText(WINDOW_CHARACTERS, 1);
     updateGame();
     typingArea.focus();
     animationFrame = requestAnimationFrame(animateGame);
