@@ -13,6 +13,8 @@ const restartButton = document.getElementById("restart-button");
 const WINDOW_CHARACTERS = 60;
 const HISTORY_CHARACTERS = 18;
 
+typingArea.style.setProperty("--history-width", HISTORY_CHARACTERS + "ch");
+
 let windowStart = 0;
 let windowEnd = 60;
 let position = 0;
@@ -208,14 +210,14 @@ function advanceBoundary(elapsedMilliseconds)
     }
 }
 
-// Build the initial history before scrolling, then animate the fractional position.
+// Start at the boundary with space for history, and scroll from the first second.
 function moveStrip(elapsedMilliseconds)
 {
     const distance = getScrollDistance(elapsedMilliseconds / 1000);
-    const fraction = Math.max(0, distance - HISTORY_CHARACTERS - windowStart);
+    const offset = HISTORY_CHARACTERS + windowStart - distance;
     const character = document.getElementById("char-" + windowStart);
     const characterWidth = character.getBoundingClientRect().width;
-    track.style.transform = "translateX(-" + fraction * characterWidth + "px)";
+    track.style.transform = "translateX(" + offset * characterWidth + "px)";
 }
 
 // Reserve the existing 60px fade and enough room for the cursor's 3px border.
