@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Classic — TypeQuest</title>
+        <title>Survival — TypeQuest</title>
 
         <!-- Fonts used in the Stitch design -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,6 +100,17 @@
                 height: 26px;
             }
 
+            #hearts {
+                display: flex;
+                flex: 0 0 84px;
+                gap: 6px;
+            }
+
+            #hearts img {
+                width: 24px;
+                height: 24px;
+            }
+
             /* ========================================
                3. LEVEL HEADING
                ======================================== */
@@ -109,11 +120,11 @@
                 flex: 1;
                 flex-direction: column;
                 justify-content: flex-start;
-                padding: 50px 0 60px 0;
+                padding: 52px 0 60px 0;
             }
 
             #game-heading {
-                margin-bottom: 64px;
+                margin-bottom: 72px;
                 text-align: center;
             }
 
@@ -121,7 +132,7 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 10px;
-                margin-bottom: 18px;
+                margin-bottom: 30px;
                 padding: 6px 18px 6px 18px;
                 border: 1px solid #cde7ef;
                 border-radius: 9999px;
@@ -140,9 +151,9 @@
                 background-color: #2dbbc9;
             }
 
-            #level-heading {
+            #challenge-title {
                 margin: 0;
-                font-size: 72px;
+                font-size: 64px;
                 font-weight: 800;
                 letter-spacing: -0.04em;
                 line-height: 1.15;
@@ -154,24 +165,29 @@
 
             #typing-layout {
                 display: flex;
-                align-items: flex-start;
-                gap: 58px;
+                align-items: center;
+                gap: 32px;
                 width: 100%;
             }
 
             #speed-panel {
                 display: flex;
-                flex: 0 0 340px;
+                flex: 0 0 306px;
                 min-width: 0;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                min-height: 274px;
+                height: 202px;
                 padding-right: 40px;
                 border-right: 1px solid #a9ddec;
             }
 
             #net-wpm {
+                flex-shrink: 0;
+                width: 100%;
+                height: 152px;
+                text-align: center;
+                font-variant-numeric: tabular-nums;
                 background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
                 background-clip: text;
                 -webkit-background-clip: text;
@@ -179,7 +195,7 @@
                 font-size: 138px;
                 font-weight: 800;
                 letter-spacing: -0.06em;
-                line-height: 1.1;
+                line-height: 152px;
             }
 
             #speed-label {
@@ -194,33 +210,42 @@
                 position: relative;
                 flex: 1;
                 min-width: 0;
-                max-height: 324px;
-                padding-right: 28px;
-                overflow-y: auto;
+                padding: 12px 0 12px 0;
+                overflow: hidden;
                 color: #6b7fa1;
                 font-family: "JetBrains Mono", monospace;
-                font-size: 30px;
+                font-size: 32px;
                 line-height: 1.8;
-                white-space: pre-wrap;
-                overflow-wrap: break-word;
+                white-space: normal;
                 outline: none;
-                scrollbar-width: auto;
-                scrollbar-color: #20adc0 #d9eff7;
                 cursor: text;
             }
 
-            #typing-area::-webkit-scrollbar {
-                width: 12px;
+            #typing-area::after {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 60px;
+                background: linear-gradient(to right, transparent, #f6f9fb);
+                content: "";
+                pointer-events: none;
             }
 
-            #typing-area::-webkit-scrollbar-track {
-                border-radius: 9999px;
-                background-color: #d9eff7;
+            #survival-track {
+                display: flex;
+                width: max-content;
+                white-space: pre;
             }
 
-            #typing-area::-webkit-scrollbar-thumb {
-                border-radius: 9999px;
-                background-color: #20adc0;
+            .typing-character {
+                flex: none;
+                display: inline-block;
+                width: 1ch;
+            }
+
+            .hidden-character {
+                display: none;
             }
 
             #typing-area.paused {
@@ -236,12 +261,8 @@
                 color: #c93232;
             }
 
-            .cursor-start {
+            .current-character {
                 border-left: 3px solid #20adc0;
-            }
-
-            .cursor-after {
-                border-right: 3px solid #20adc0;
             }
 
             /* ========================================
@@ -276,23 +297,28 @@
 
     <body>
         <div id="page">
-            <!-- Level navigation and active playing time. -->
+            <!-- Mode navigation, active time, and remaining hearts. -->
             <header id="top-bar">
-                <a id="levels-button" class="control" href="classic-levels.html">
+                <a id="modes-link" class="control" href="{{ url_for('play') }}">
                     <span>&larr;</span>
-                    Levels
+                    Modes
                 </a>
 
                 <div id="level-info">
-                    <span id="level-no">CLASSIC / LEVEL 01</span>
+                    <span id="mode-label">SURVIVAL / TIER 1 / 5</span>
                     <span id="timer">
-                        <img src="icons/time-attack.svg" alt="">
-                        <span id="stopwatch">00:00</span>
+                        <img src="{{ url_for('static', filename='icons/time-attack.svg') }}" alt="">
+                        <span id="elapsed-time">00:00.0</span>
+                    </span>
+                    <span id="hearts">
+                        <img id="heart-1" src="{{ url_for('static', filename='icons/heart-full.svg') }}" alt="">
+                        <img id="heart-2" src="{{ url_for('static', filename='icons/heart-full.svg') }}" alt="">
+                        <img id="heart-3" src="{{ url_for('static', filename='icons/heart-full.svg') }}" alt="">
                     </span>
                 </div>
 
-                <a class="control" href="index.html">
-                    <img src="icons/home.svg" alt="">
+                <a class="control" href="{{ url_for('home') }}">
+                    <img src="{{ url_for('static', filename='icons/home.svg') }}" alt="">
                     Home
                 </a>
             </header>
@@ -301,30 +327,32 @@
                 <div id="game-heading">
                     <div id="status-badge">
                         <span id="status-dot"></span>
-                        <span id="game-status">IN PLAY</span>
+                        <span id="game-status">STARTING IN 3</span>
                     </div>
-                    <h1 id="level-heading"></h1>
+                    <h1 id="challenge-title">Stay ahead of the boundary</h1>
                 </div>
 
                 <div id="typing-layout">
-                    
+
                     <div id="speed-panel">
                         <span id="net-wpm">0.0</span>
                         <p id="speed-label">NET WPM</p>
                     </div>
 
-                    <div id="typing-area" tabindex="0"></div>
+                    <div id="typing-area" tabindex="0" spellcheck="false">
+                        <div id="survival-track"></div>
+                    </div>
                 </div>
             </main>
 
             <footer id="game-controls">
                 <div id="control-buttons">
-                    <button id="pause-button" class="control" type="button">
-                        <img id="pause-icon" src="icons/pause.svg" alt="">
+                    <button id="pause-button" class="control" type="button" disabled>
+                        <img id="pause-icon" src="{{ url_for('static', filename='icons/pause.svg') }}" alt="">
                         <span id="pause_btn-label">Pause</span>
                     </button>
                     <button id="restart-button" class="control" type="button">
-                        <img src="icons/restart.svg" alt="">
+                        <img src="{{ url_for('static', filename='icons/restart.svg') }}" alt="">
                         Restart
                     </button>
                 </div>
@@ -332,7 +360,10 @@
             </footer>
         </div>
 
-        <script src="js/classic-data.js"></script>
-        <script src="js/classic.js"></script>
+        <script>
+            const iconBase = {{ url_for('static', filename='icons/') | tojson }};
+            const survivalTiers = {{ tiers | tojson }};
+        </script>
+        <script src="{{ url_for('static', filename='js/survival.js') }}"></script>
     </body>
 </html>

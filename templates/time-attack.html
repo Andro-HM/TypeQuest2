@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Survival — TypeQuest</title>
+        <title>Time Attack — TypeQuest</title>
 
         <!-- Fonts used in the Stitch design -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,17 +100,6 @@
                 height: 26px;
             }
 
-            #hearts {
-                display: flex;
-                flex: 0 0 84px;
-                gap: 6px;
-            }
-
-            #hearts img {
-                width: 24px;
-                height: 24px;
-            }
-
             /* ========================================
                3. LEVEL HEADING
                ======================================== */
@@ -120,11 +109,11 @@
                 flex: 1;
                 flex-direction: column;
                 justify-content: flex-start;
-                padding: 52px 0 60px 0;
+                padding: 58px 0 60px 0;
             }
 
             #game-heading {
-                margin-bottom: 72px;
+                margin-bottom: 88px;
                 text-align: center;
             }
 
@@ -132,7 +121,7 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 10px;
-                margin-bottom: 30px;
+                margin-bottom: 18px;
                 padding: 6px 18px 6px 18px;
                 border: 1px solid #cde7ef;
                 border-radius: 9999px;
@@ -151,9 +140,9 @@
                 background-color: #2dbbc9;
             }
 
-            #challenge-title {
+            #challenge-time-heading {
                 margin: 0;
-                font-size: 64px;
+                font-size: 68px;
                 font-weight: 800;
                 letter-spacing: -0.04em;
                 line-height: 1.15;
@@ -166,13 +155,13 @@
             #typing-layout {
                 display: flex;
                 align-items: center;
-                gap: 32px;
+                gap: 38px;
                 width: 100%;
             }
 
             #speed-panel {
                 display: flex;
-                flex: 0 0 306px;
+                flex: 0 0 314px;
                 min-width: 0;
                 flex-direction: column;
                 align-items: center;
@@ -216,7 +205,7 @@
                 font-family: "JetBrains Mono", monospace;
                 font-size: 32px;
                 line-height: 1.8;
-                white-space: normal;
+                white-space: pre;
                 outline: none;
                 cursor: text;
             }
@@ -232,14 +221,7 @@
                 pointer-events: none;
             }
 
-            #survival-track {
-                display: flex;
-                width: max-content;
-                white-space: pre;
-            }
-
             .typing-character {
-                flex: none;
                 display: inline-block;
                 width: 1ch;
             }
@@ -297,28 +279,23 @@
 
     <body>
         <div id="page">
-            <!-- Mode navigation, active time, and remaining hearts. -->
+            <!-- Mode navigation and the remaining playing time. -->
             <header id="top-bar">
-                <a id="modes-link" class="control" href="play.html">
+                <a id="modes-link" class="control" href="{{ url_for('play') }}">
                     <span>&larr;</span>
                     Modes
                 </a>
 
                 <div id="level-info">
-                    <span id="mode-label">SURVIVAL / TIER 1 / 5</span>
+                    <span id="mode-label">TIME ATTACK / 1 MIN</span>
                     <span id="timer">
-                        <img src="icons/time-attack.svg" alt="">
-                        <span id="elapsed-time">00:00.0</span>
-                    </span>
-                    <span id="hearts">
-                        <img id="heart-1" src="icons/heart-full.svg" alt="">
-                        <img id="heart-2" src="icons/heart-full.svg" alt="">
-                        <img id="heart-3" src="icons/heart-full.svg" alt="">
+                        <img src="{{ url_for('static', filename='icons/time-attack.svg') }}" alt="">
+                        <span id="remaining-time">01:00.0</span>
                     </span>
                 </div>
 
-                <a class="control" href="index.html">
-                    <img src="icons/home.svg" alt="">
+                <a class="control" href="{{ url_for('home') }}">
+                    <img src="{{ url_for('static', filename='icons/home.svg') }}" alt="">
                     Home
                 </a>
             </header>
@@ -329,7 +306,7 @@
                         <span id="status-dot"></span>
                         <span id="game-status">STARTING IN 3</span>
                     </div>
-                    <h1 id="challenge-title">Stay ahead of the boundary</h1>
+                    <h1 id="challenge-time-heading">1-minute challenge</h1>
                 </div>
 
                 <div id="typing-layout">
@@ -339,20 +316,18 @@
                         <p id="speed-label">NET WPM</p>
                     </div>
 
-                    <div id="typing-area" tabindex="0" spellcheck="false">
-                        <div id="survival-track"></div>
-                    </div>
+                    <div id="typing-area" tabindex="0" spellcheck="false"></div>
                 </div>
             </main>
 
             <footer id="game-controls">
                 <div id="control-buttons">
                     <button id="pause-button" class="control" type="button" disabled>
-                        <img id="pause-icon" src="icons/pause.svg" alt="">
+                        <img id="pause-icon" src="{{ url_for('static', filename='icons/pause.svg') }}" alt="">
                         <span id="pause_btn-label">Pause</span>
                     </button>
                     <button id="restart-button" class="control" type="button">
-                        <img src="icons/restart.svg" alt="">
+                        <img src="{{ url_for('static', filename='icons/restart.svg') }}" alt="">
                         Restart
                     </button>
                 </div>
@@ -360,7 +335,11 @@
             </footer>
         </div>
 
-        <script src="js/survival-data.js"></script>
-        <script src="js/survival.js"></script>
+        <script>
+            const iconBase = {{ url_for('static', filename='icons/') | tojson }};
+            const durationSeconds = {{ duration | tojson }};
+            const passages = {{ passages | tojson }};
+        </script>
+        <script src="{{ url_for('static', filename='js/time-attack.js') }}"></script>
     </body>
 </html>

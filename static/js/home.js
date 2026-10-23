@@ -3,7 +3,7 @@ const beginButton = document.getElementById("btn-begin");
 
 function openPlayPage()
 {
-    window.location.href = "play.html";
+    window.location.href = playUrl;
 }
 
 // Let Enter open Play unless the player is using another control.

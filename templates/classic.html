@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Time Attack — TypeQuest</title>
+        <title>{{ level.title if level else "Classic" }} — TypeQuest</title>
 
         <!-- Fonts used in the Stitch design -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -109,11 +109,11 @@
                 flex: 1;
                 flex-direction: column;
                 justify-content: flex-start;
-                padding: 58px 0 60px 0;
+                padding: 50px 0 60px 0;
             }
 
             #game-heading {
-                margin-bottom: 88px;
+                margin-bottom: 64px;
                 text-align: center;
             }
 
@@ -140,9 +140,9 @@
                 background-color: #2dbbc9;
             }
 
-            #challenge-time-heading {
+            #level-heading {
                 margin: 0;
-                font-size: 68px;
+                font-size: 72px;
                 font-weight: 800;
                 letter-spacing: -0.04em;
                 line-height: 1.15;
@@ -154,29 +154,24 @@
 
             #typing-layout {
                 display: flex;
-                align-items: center;
-                gap: 38px;
+                align-items: flex-start;
+                gap: 58px;
                 width: 100%;
             }
 
             #speed-panel {
                 display: flex;
-                flex: 0 0 314px;
+                flex: 0 0 340px;
                 min-width: 0;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                height: 202px;
+                min-height: 274px;
                 padding-right: 40px;
                 border-right: 1px solid #a9ddec;
             }
 
             #net-wpm {
-                flex-shrink: 0;
-                width: 100%;
-                height: 152px;
-                text-align: center;
-                font-variant-numeric: tabular-nums;
                 background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
                 background-clip: text;
                 -webkit-background-clip: text;
@@ -184,7 +179,7 @@
                 font-size: 138px;
                 font-weight: 800;
                 letter-spacing: -0.06em;
-                line-height: 152px;
+                line-height: 1.1;
             }
 
             #speed-label {
@@ -199,35 +194,33 @@
                 position: relative;
                 flex: 1;
                 min-width: 0;
-                padding: 12px 0 12px 0;
-                overflow: hidden;
+                max-height: 324px;
+                padding-right: 28px;
+                overflow-y: auto;
                 color: #6b7fa1;
                 font-family: "JetBrains Mono", monospace;
-                font-size: 32px;
+                font-size: 30px;
                 line-height: 1.8;
-                white-space: pre;
+                white-space: pre-wrap;
+                overflow-wrap: break-word;
                 outline: none;
+                scrollbar-width: auto;
+                scrollbar-color: #20adc0 #d9eff7;
                 cursor: text;
             }
 
-            #typing-area::after {
-                position: absolute;
-                top: 0;
-                right: 0;
-                bottom: 0;
-                width: 60px;
-                background: linear-gradient(to right, transparent, #f6f9fb);
-                content: "";
-                pointer-events: none;
+            #typing-area::-webkit-scrollbar {
+                width: 12px;
             }
 
-            .typing-character {
-                display: inline-block;
-                width: 1ch;
+            #typing-area::-webkit-scrollbar-track {
+                border-radius: 9999px;
+                background-color: #d9eff7;
             }
 
-            .hidden-character {
-                display: none;
+            #typing-area::-webkit-scrollbar-thumb {
+                border-radius: 9999px;
+                background-color: #20adc0;
             }
 
             #typing-area.paused {
@@ -243,8 +236,12 @@
                 color: #c93232;
             }
 
-            .current-character {
+            .cursor-start {
                 border-left: 3px solid #20adc0;
+            }
+
+            .cursor-after {
+                border-right: 3px solid #20adc0;
             }
 
             /* ========================================
@@ -279,23 +276,23 @@
 
     <body>
         <div id="page">
-            <!-- Mode navigation and the remaining playing time. -->
+            <!-- Level navigation and active playing time. -->
             <header id="top-bar">
-                <a id="modes-link" class="control" href="play.html">
+                <a id="levels-button" class="control" href="{{ url_for('classic_levels', tier=level.tier) if level else url_for('classic_levels') }}">
                     <span>&larr;</span>
-                    Modes
+                    Levels
                 </a>
 
                 <div id="level-info">
-                    <span id="mode-label">TIME ATTACK / 1 MIN</span>
+                    <span id="level-no">{{ "CLASSIC / LEVEL %02d" | format(level.number) if level else "CLASSIC" }}</span>
                     <span id="timer">
-                        <img src="icons/time-attack.svg" alt="">
-                        <span id="remaining-time">01:00.0</span>
+                        <img src="{{ url_for('static', filename='icons/time-attack.svg') }}" alt="">
+                        <span id="stopwatch">00:00</span>
                     </span>
                 </div>
 
-                <a class="control" href="index.html">
-                    <img src="icons/home.svg" alt="">
+                <a class="control" href="{{ url_for('home') }}">
+                    <img src="{{ url_for('static', filename='icons/home.svg') }}" alt="">
                     Home
                 </a>
             </header>
@@ -304,30 +301,30 @@
                 <div id="game-heading">
                     <div id="status-badge">
                         <span id="status-dot"></span>
-                        <span id="game-status">STARTING IN 3</span>
+                        <span id="game-status">IN PLAY</span>
                     </div>
-                    <h1 id="challenge-time-heading">1-minute challenge</h1>
+                    <h1 id="level-heading">{{ level.title if level else "Level unavailable" }}</h1>
                 </div>
 
                 <div id="typing-layout">
-
+                    
                     <div id="speed-panel">
                         <span id="net-wpm">0.0</span>
                         <p id="speed-label">NET WPM</p>
                     </div>
 
-                    <div id="typing-area" tabindex="0" spellcheck="false"></div>
+                    <div id="typing-area" tabindex="0"></div>
                 </div>
             </main>
 
             <footer id="game-controls">
                 <div id="control-buttons">
-                    <button id="pause-button" class="control" type="button" disabled>
-                        <img id="pause-icon" src="icons/pause.svg" alt="">
+                    <button id="pause-button" class="control" type="button">
+                        <img id="pause-icon" src="{{ url_for('static', filename='icons/pause.svg') }}" alt="">
                         <span id="pause_btn-label">Pause</span>
                     </button>
                     <button id="restart-button" class="control" type="button">
-                        <img src="icons/restart.svg" alt="">
+                        <img src="{{ url_for('static', filename='icons/restart.svg') }}" alt="">
                         Restart
                     </button>
                 </div>
@@ -335,7 +332,10 @@
             </footer>
         </div>
 
-        <script src="js/time-attack-data.js"></script>
-        <script src="js/time-attack.js"></script>
+        <script>
+            const iconBase = {{ url_for('static', filename='icons/') | tojson }};
+            const level = {{ level | tojson }};
+        </script>
+        <script src="{{ url_for('static', filename='js/classic.js') }}"></script>
     </body>
 </html>

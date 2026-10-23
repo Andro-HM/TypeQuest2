@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TypeQuest — Keyboard Discipline &amp; Velocity</title>
+        <title>Classic Levels — TypeQuest</title>
 
         <!-- Fonts used in the Stitch design -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,6 @@
             }
 
             html, body {
-
                 margin: 0;
                 min-height: 100%;
             }
@@ -93,6 +92,7 @@
                 border: 1px solid rgba(210, 227, 234, 0.6);
                 border-radius: 9999px;
                 background-color: rgba(228, 238, 242, 0.8);
+                backdrop-filter: blur(12px);
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
             }
 
@@ -148,23 +148,39 @@
             }
 
             /* ========================================
-               3. CENTER TITLE AND DESCRIPTION
+               3. LEVEL SELECTION HEADING
                ======================================== */
 
-            #hero {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                margin-top: -24px;
+            #levels-content {
+                position: relative;
+                width: 100%;
+                max-width: 1490px;
+                margin: 48px auto 16px auto;
+            }
+
+            #back-link {
+                position: absolute;
+                top: 0;
+                left: 0;
+                color: #638098;
+                font-size: 14px;
+                text-decoration: none;
+            }
+
+            #back-link:hover {
+                color: #1d6980;
+            }
+
+            #levels-heading {
+                margin-bottom: 14px;
                 text-align: center;
             }
 
             #tagline {
-                display: flex;
+                display: inline-flex;
                 align-items: center;
                 gap: 8px;
-                margin-bottom: 24px;
+                margin-bottom: 10px;
                 padding: 6px 16px 6px 16px;
                 border: 1px solid rgba(205, 226, 233, 0.7);
                 border-radius: 9999px;
@@ -183,96 +199,178 @@
                 background-color: #52bfcf;
             }
 
-            #hero-title {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 0 20px 0;
-                font-size: 108.8px;
+            #levels-title {
+                margin: 0 0 10px 0;
+                color: #0e212b;
+                font-size: 68px;
                 font-weight: 800;
                 letter-spacing: -0.04em;
-                line-height: 1;
+                line-height: 1.1;
             }
 
-            #title-type {
-                color: #0e212b;
-            }
-
-            #title-quest {
+            #title-level {
                 background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
                 background-clip: text;
                 -webkit-background-clip: text;
                 color: transparent;
             }
 
-            #hero-description {
-                max-width: 576px;
-                margin: 0 0 40px 0;
-                color: #536f7c;
+            #levels-description {
+                margin: 0 0 8px 0;
+                color: #638098;
                 font-size: 20px;
-                font-weight: 400;
+                line-height: 1.5;
             }
 
             /* ========================================
-               4. START BUTTON
+               4. TIER BUTTONS
                ======================================== */
 
-            #btn-begin {
+            #tiers {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 12px;
+                margin-bottom: 26px;
+            }
+
+            .tier-button {
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
-                gap: 28px;
-                padding: 16px 28px 16px 28px;
+                justify-content: center;
+                gap: 16px;
+                min-height: 70px;
+                padding: 10px;
+                border: 1px solid #d5e7ee;
+                border-radius: 12px;
+                background-color: rgba(255, 255, 255, 0.8);
+                color: #638098;
+                font-family: inherit;
+                cursor: pointer;
+            }
+
+            .tier-button:disabled {
+                cursor: not-allowed;
+            }
+
+            .tier-button:hover {
+                background-color: #e2f5f8;
+            }
+
+            .tier-button:disabled:hover {
+                background-color: rgba(255, 255, 255, 0.8);
+            }
+
+            .tier-selected {
+                border-color: #28a8be;
+                background-color: #e2f5f8;
+                color: #0e212b;
+            }
+
+            .tier-lock {
+                width: 22px;
+                height: 22px;
+            }
+
+            .tier-name {
+                display: block;
+                margin-bottom: 4px;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            .tier-range {
+                display: block;
+                color: #638098;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 13px;
+            }
+
+            /* ========================================
+               5. TIER HEADING
+               ======================================== */
+
+            #tier-summary {
+                margin-bottom: 18px;
+            }
+
+            #tier-title {
+                margin: 0;
+                color: #0e212b;
+                font-size: 30px;
+                font-weight: 800;
+                letter-spacing: -0.035em;
+            }
+
+            /* ========================================
+               6. LEVEL CARDS
+               ======================================== */
+
+            #level-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 12px;
+            }
+
+            .level-card {
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+                min-height: 170px;
+                padding: 16px 18px 14px 18px;
+                border: 1px solid #d5e7ee;
+                border-radius: 12px;
+                background-color: rgba(255, 255, 255, 0.8);
+                box-shadow: 0 6px 20px rgba(26, 105, 128, 0.03);
+            }
+
+            .level-number {
+                margin: 0 0 10px 0;
+                color: #638098;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            .level-title {
+                margin: 0 0 8px 0;
+                color: #0e212b;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: -0.025em;
+                line-height: 1.35;
+            }
+
+            .level-status {
+                margin: 0 0 12px 0;
+                color: #638098;
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .level-button {
+                display: block;
+                text-align: center;
+                text-decoration: none;
+                width: 100%;
+                margin-top: auto;
+                padding: 10px 8px 10px 8px;
                 border: none;
-                border-radius: 16px;
+                border-radius: 8px;
                 background-color: #1d6980;
                 color: white;
                 font-family: inherit;
+                font-size: 16px;
+                font-weight: 700;
+                line-height: 1.4;
                 cursor: pointer;
-                box-shadow: 0 8px 24px rgba(26, 105, 128, 0.22);
-                transition: opacity 0.2s;
             }
 
-            #btn-begin:hover {
+            .level-button:hover {
                 opacity: 0.9;
             }
 
-            #button-label {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                font-size: 16px;
-                font-weight: 700;
-                letter-spacing: 0.06em;
-            }
-
-            #controller-icon {
-                width: 20px;
-                height: 20px;
-            }
-
-            #enter-badge {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                padding: 4px 12px 4px 12px;
-                border: 1px solid rgba(43, 121, 145, 0.6);
-                border-radius: 8px;
-                background-color: #145366;
-                color: rgba(255, 255, 255, 0.9);
-                font-family: "JetBrains Mono", monospace;
-                font-size: 12px;
-                font-weight: 700;
-                box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-            }
-
-            #enter-icon {
-                width: 14px;
-                height: 14px;
-            }
-
             /* ========================================
-               5. BOTTOM STATUS BAR
+               7. BOTTOM STATUS BAR
                ======================================== */
 
             #bottom-bar {
@@ -307,7 +405,6 @@
             <!-- ========================================
                  1. TOP NAVIGATION
                  ======================================== -->
-
             <header id="top-bar">
                 <div id="brand">
                     <div id="brand-logo">TQ</div>
@@ -316,8 +413,8 @@
 
                 <nav id="top-nav">
                     <!-- Progress, Profiles, and Settings are placeholders for now. -->
-                    <a href="index.html" class="nav-link nav-link-active">Home</a>
-                    <a href="play.html" class="nav-link">Play</a>
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('play') }}" class="nav-link nav-link-active">Play</a>
                     <a href="#progress" class="nav-link">Progress</a>
                     <a href="#profiles" class="nav-link">Profiles</a>
                     <a href="#settings" class="nav-link">Settings</a>
@@ -326,39 +423,60 @@
                 <div id="profile">
                     <span id="profile-name">TactileTypist</span>
                     <div id="profile-icon">
-                        <img src="icons/profile.svg" alt="">
+                        <img src="{{ url_for('static', filename='icons/profile.svg') }}" alt="">
                     </div>
                 </div>
             </header>
 
             <!-- ========================================
-                 2. MAIN HOMEPAGE CONTENT
+                 2. CLASSIC LEVEL SELECTION
                  ======================================== -->
-            <main id="hero">
-                <div id="tagline">
-                    <span id="tagline-dot"></span>
-                    <span>Keyboard Discipline &amp; Velocity</span>
+            <main id="levels-content">
+                <a id="back-link" href="{{ url_for('play') }}">&larr; Game modes</a>
+
+                <div id="levels-heading">
+                    <div id="tagline">
+                        <span id="tagline-dot"></span>
+                        <span>Classic mode</span>
+                    </div>
+
+                    <h1 id="levels-title">
+                        Choose your <span id="title-level">level</span>
+                    </h1>
+
+                    <p id="levels-description">
+                        Build accuracy. Earn stars. Unlock your next challenge.
+                    </p>
                 </div>
 
-                <h1 id="hero-title">
-                    <span id="title-type">Type</span><span id="title-quest">Quest</span>
-                </h1>
+                <form id="tiers" action="{{ url_for('classic_levels') }}" method="get">
+                    {% for tier in tiers %}
+                        <button id="tier-{{ tier.id }}" class="tier-button{% if tier.id == selected_tier.id %} tier-selected{% endif %}" type="submit" name="tier" value="{{ tier.id }}"{% if not tier.available %} disabled{% endif %}>
+                            {% if not tier.available %}
+                                <img class="tier-lock" src="{{ url_for('static', filename='icons/lock.svg') }}" alt="Locked">
+                            {% endif %}
+                            <span>
+                                <span class="tier-name">Tier {{ tier.id }}</span>
+                                <span class="tier-range">Levels {{ tier.first_level }}–{{ tier.last_level }}</span>
+                            </span>
+                        </button>
+                    {% endfor %}
+                </form>
 
-                <p id="hero-description">
-                    Master cadence, velocity, and pure muscle memory.
-                </p>
+                <div id="tier-summary">
+                    <h2 id="tier-title">Tier {{ selected_tier.id }}</h2>
+                </div>
 
-                <button id="btn-begin" type="button">
-                    <span id="button-label">
-                        <img id="controller-icon" src="icons/controller.svg" alt="">
-                        <span>PRESS ENTER TO BEGIN</span>
-                    </span>
-
-                    <span id="enter-badge">
-                        <img id="enter-icon" src="icons/enter.svg" alt="">
-                        <span>ENTER</span>
-                    </span>
-                </button>
+                <div id="level-grid">
+                    {% for level in levels %}
+                        <div class="level-card">
+                            <p class="level-number">LEVEL {{ "%02d" | format(level.id) }}</p>
+                            <h3 class="level-title">{{ level.title }}</h3>
+                            <p class="level-status">Not attempted</p>
+                            <a id="btn-level-{{ level.id }}" class="level-button" href="{{ url_for('classic', level=level.id) }}">Play level →</a>
+                        </div>
+                    {% endfor %}
+                </div>
             </main>
 
             <!-- ========================================
@@ -373,6 +491,5 @@
             </footer>
         </div>
 
-        <script src="js/home.js"></script>
     </body>
 </html>

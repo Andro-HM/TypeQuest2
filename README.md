@@ -1,10 +1,12 @@
 # TypeQuest 2
 
-**v1.0.0 — First playable frontend version**
+**Phase 1 backend — Flask, Jinja2, and SQLite**
 
-TypeQuest 2 is a browser-based typing game for a college Design Thinking and Idea Lab project. It uses HTML, internal CSS, and vanilla JavaScript, with simple code that can be understood, modified, and explained during the lab presentation.
+The playable frontend milestone is preserved on `main` as `v1.0.0`. Backend development continues on `feature/backend_1`.
 
-This milestone includes playable **Classic, Time Attack, and Survival** modes, along with Home, game selection, and Classic level selection. Gameplay and results run entirely in the browser. Results are not saved.
+TypeQuest 2 is a browser-based typing game for a college Design Thinking and Idea Lab project. It uses Flask and Jinja2 to serve HTML, SQLite to store game content, and internal CSS plus vanilla JavaScript for gameplay, with simple code that can be understood, modified, and explained during the lab presentation.
+
+This milestone includes playable **Classic, Time Attack, and Survival** modes, along with Home, game selection, and Classic level selection. Gameplay and result calculations remain in the browser. Flask loads the initial content from SQLite when rendering each page. Player results are not saved.
 
 The current version is intended for **desktop and laptop browsers with a physical keyboard**. Mobile layouts are not implemented.
 
@@ -14,7 +16,7 @@ The current version is intended for **desktop and laptop browsers with a physica
 | --- | --- |
 | Home | Begin button and Enter shortcut open game selection |
 | Play | Opens all three modes and passes the selected Time Attack duration |
-| Classic level selection | Loads tiers and levels from JavaScript data; Tiers 1–2 are available |
+| Classic level selection | Renders tiers and levels from SQLite with Jinja; Tiers 1–2 are available |
 | Classic gameplay | Levels 1–20, passage completion, character feedback, stopwatch, Net WPM, and final statistics |
 | Time Attack | 30-second, 1-minute, 2-minute, and 5-minute challenges with a continuous passage stream |
 | Survival | Automatic scrolling, editable visible text, increasing difficulty, hearts, and GAME OVER |
@@ -25,7 +27,7 @@ The current version is intended for **desktop and laptop browsers with a physica
 
 - Five tiers are shown, with a planned total of 50 levels.
 - Tiers 1 and 2 currently contain 10 playable levels each. Tiers 3–5 are disabled.
-- Tier information, level headings, and passages come from `js/classic-data.js`.
+- Tier information, level headings, and exact original passages come from the `classic_tiers` and `classic_levels` SQLite tables.
 - The multiline passage uses character coloring and a cursor that stays visible as the passage scrolls vertically.
 - The stopwatch begins on the first typed character. Paused time is excluded.
 - Typing moves forward; **Backspace is the way to move back and erase**. Left/Right Arrow editing is not used in Classic.
@@ -109,59 +111,115 @@ Speed increases continuously between these points and caps at 4 characters per s
 | Profiles | No account system or profile management; the displayed username is a visual placeholder |
 | Settings | Navigation placeholder with no settings page or functionality |
 | Audio | The audio footer is decorative; game audio is not implemented |
-| Backend | Flask integration is postponed |
-| Database | SQLite integration is postponed; data currently comes from JavaScript objects and arrays |
 
-The project currently makes no database or backend API calls and does not use browser storage to save game results. Some interface text describes planned features such as stars and unlocking; those are not functional in this version.
+The database currently stores game content only. There are no profile, session, progress, leaderboard, or settings tables, and game results are not saved in SQLite or browser storage. Some interface text describes planned features such as stars and unlocking; those are not functional in this version.
 
 Mobile support, multiplayer, and a separate Practice mode are outside the current project scope.
 
-## Run Locally
+## Backend and Content Storage
 
-No frontend packages or build step are required. With Python installed, open a terminal in the project directory and run:
+The database is `typequest.db` in the project root. It is Git-ignored and can be rebuilt from the tracked `schema.sql` and `seed_data.json` files.
+
+| Table | Initial records | Purpose |
+| --- | --- | --- |
+| `classic_tiers` | 5 | Tier ranges and global availability |
+| `classic_levels` | 20 | Level numbers, tiers, titles, and exact passages |
+| `typing_passages` | 200 | 100 Time Attack passages and 100 Survival passages, with 20 per Survival tier |
+
+Passages appearing in both modes remain separate mode-specific records. Python uses built-in `sqlite3`, parameterized queries, `sqlite3.Row`, and enabled foreign keys. No ORM is used.
+
+`seed.py` creates missing tables and inserts missing seed IDs. Repeating it does not duplicate rows or overwrite existing database edits. Ordinary Flask startup does not initialize or reseed the database. The seed fixture is for rebuilding; normal page requests read SQLite.
+
+## Flask Routes
+
+| URL | Page |
+| --- | --- |
+| `/` | Home |
+| `/play` | Mode selection |
+| `/classic-levels?tier=1` | Classic tiers and level cards |
+| `/classic?level=1` | Selected Classic level |
+| `/time-attack?duration=60` | Selected Time Attack duration |
+| `/survival` | Survival |
+
+An invalid or unavailable Classic level shows the existing unavailable-level screen with HTTP 404. Invalid/unavailable tier selections fall back to Tier 1. Missing, invalid, or unsupported Time Attack durations default to 60 seconds.
+
+Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no content-fetch APIs or AJAX requests.
+
+## Run Locally — Windows PowerShell
+
+Use Python 3 and run these commands from the project directory:
 
 ```powershell
-python -m http.server 8000
+cd "C:\_VAULT\Techhh\TypeQuest 2"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+python seed.py
+python app.py
 ```
 
-Open [TypeQuest locally](http://localhost:8000/) in a desktop browser. Stop the server with `Ctrl+C`.
+If `.venv` already exists, skip its creation. Open [TypeQuest locally](http://127.0.0.1:5000/) in a desktop browser. Stop Flask with `Ctrl+C`.
 
-Python only serves the static files here; Flask is not needed to play this version. Fonts load from Google Fonts, so internet access is needed for the intended fonts. SVG icons are included locally.
+If PowerShell prevents activation, use the environment's Python directly:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe seed.py
+.\.venv\Scripts\python.exe app.py
+```
+
+Serve the application through Flask. Opening template HTML directly, or using `python -m http.server`, will not render Jinja or load database content. Fonts load from Google Fonts; SVG icons are local.
+
+## Tests
+
+```powershell
+python -m unittest -v
+```
+
+The tests use temporary SQLite databases and cover the full seed fixture, repeatable seeding without overwriting edits, foreign keys, routes, assets, tier/level validation, duration defaults, and safe JSON rendering. They do not change the application's database.
+
+Browser verification during this migration also covered navigation, the six original page layouts, Classic completion, all Time Attack durations, and Survival scrolling, editing, damage, tiers, pause/resume, and restart. Timing scenarios used a controlled browser clock. Actual operating-system tab switching was not retested during this migration.
 
 ## Project Structure
 
 ```text
 TypeQuest 2/
-├── index.html                 # Home
-├── play.html                  # Game modes and Time Attack duration
-├── classic-levels.html        # Tier and level selection
-├── classic.html               # Classic gameplay
-├── time-attack.html           # Time Attack gameplay
-├── survival.html              # Survival gameplay
-├── js/
-│   ├── home.js
-│   ├── classic-data.js        # Tier information, level titles, and passages
-│   ├── classic-levels.js      # Builds tier buttons and level cards
-│   ├── classic.js
-│   ├── time-attack-data.js    # Supported durations and passage pool
-│   ├── time-attack.js
-│   ├── survival-data.js       # Speed, hearts, damage rules, and tier passage pools
-│   └── survival.js
-├── icons/                    # SVG files referenced as images
+├── app.py                     # Flask routes and initial page data
+├── database.py                # SQLite connections and queries
+├── schema.sql                 # Exactly three content tables
+├── seed.py                    # Explicit database initialization/seeding
+├── seed_data.json             # Exact original content, tracked in Git
+├── requirements.txt           # Flask (includes Jinja2 as a dependency)
+├── test_backend.py            # Small unittest suite
+├── typequest.db               # Local database, Git-ignored
+├── templates/
+│   ├── index.html
+│   ├── play.html
+│   ├── classic-levels.html
+│   ├── classic.html
+│   ├── time-attack.html
+│   └── survival.html
+├── static/
+│   ├── js/
+│   │   ├── home.js
+│   │   ├── classic.js
+│   │   ├── time-attack.js
+│   │   └── survival.js
+│   └── icons/
 ├── .gitignore
 └── README.md
 ```
 
-Each gameplay page has its own JavaScript file. Numbered character spans retain correct/incorrect status, and counters track results without recreating the visible passage on each keystroke.
+The three old JavaScript data files and `classic-levels.js` have been removed. Gameplay constants remain in JavaScript. Numbered character spans, correctness classes, timers, and scoring stay in the existing browser engines.
 
 ## Development Approach
 
-- Build playable browser functionality first; add Flask and SQLite later.
-- Keep separate HTML pages, internal CSS, and straightforward vanilla JavaScript.
-- Use editable JavaScript data objects and arrays until database integration is needed.
+- Keep per-keystroke gameplay in the browser; use Flask for routing/rendering and SQLite for content.
+- Keep separate Jinja templates, internal CSS, and straightforward vanilla JavaScript.
+- Keep database queries in Python and pass initial content with Jinja; avoid extra client-side content fetching.
 - Use four-space indentation, opening braces on the next line in JavaScript, and opening braces on the selector line in CSS.
 - Use one-value `padding`/`margin` when all sides are equal, or four values when they differ.
 - Keep static page backgrounds on `body`, icons in separate SVG files, and layouts focused on desktop/laptop screens.
 - Preserve the supplied designs and favor code that can be explained line by line over frameworks or unnecessary abstractions.
 
-This release marks the first version with all three core game modes playable. The remaining interface, content, progression, and persistence work is listed above.
+Phase 1 adds server-side content storage and rendering while preserving the three playable modes. Player profiles, saved results, progression, and the remaining interface work are still pending.

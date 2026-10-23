@@ -362,8 +362,8 @@
 
                 <nav id="top-nav">
                     <!-- Progress, Profiles, and Settings are placeholders for now. -->
-                    <a href="index.html" class="nav-link">Home</a>
-                    <a href="play.html" class="nav-link nav-link-active">Play</a>
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('play') }}" class="nav-link nav-link-active">Play</a>
                     <a href="#progress" class="nav-link">Progress</a>
                     <a href="#profiles" class="nav-link">Profiles</a>
                     <a href="#settings" class="nav-link">Settings</a>
@@ -372,7 +372,7 @@
                 <div id="profile">
                     <span id="profile-name">TactileTypist</span>
                     <div id="profile-icon">
-                        <img src="icons/profile.svg" alt="">
+                        <img src="{{ url_for('static', filename='icons/profile.svg') }}" alt="">
                     </div>
                 </div>
             </header>
@@ -399,7 +399,7 @@
                 <div id="game-modes">
                     <div class="mode-card">
                         <div class="mode-icon">
-                            <img src="icons/classic.svg" alt="">
+                            <img src="{{ url_for('static', filename='icons/classic.svg') }}" alt="">
                         </div>
 
                         <h2 class="mode-title">Classic</h2>
@@ -408,14 +408,14 @@
                             50 levels across five tiers. Earn accuracy-based stars to unlock the next tier.
                         </p>
 
-                        <a id="btn-classic" class="mode-button" href="classic-levels.html">
+                        <a id="btn-classic" class="mode-button" href="{{ url_for('classic_levels') }}">
                             Choose levels &rarr;
                         </a>
                     </div>
 
-                    <form class="mode-card" action="time-attack.html" method="get">
+                    <form class="mode-card" action="{{ url_for('time_attack') }}" method="get">
                         <div class="mode-icon">
-                            <img src="icons/time-attack.svg" alt="">
+                            <img src="{{ url_for('static', filename='icons/time-attack.svg') }}" alt="">
                         </div>
 
                         <h2 class="mode-title">Time Attack</h2>
@@ -439,7 +439,7 @@
 
                     <div class="mode-card">
                         <div class="mode-icon">
-                            <img src="icons/survival.svg" alt="">
+                            <img src="{{ url_for('static', filename='icons/survival.svg') }}" alt="">
                         </div>
 
                         <h2 class="mode-title">Survival</h2>
@@ -448,7 +448,7 @@
                             Stay ahead of the moving boundary. Missed positions cost hearts.
                         </p>
 
-                        <a id="btn-survival" class="mode-button" href="survival.html">
+                        <a id="btn-survival" class="mode-button" href="{{ url_for('survival') }}">
                             Play Survival &rarr;
                         </a>
                     </div>

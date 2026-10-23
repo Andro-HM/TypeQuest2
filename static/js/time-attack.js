@@ -12,18 +12,6 @@ const restartButton = document.getElementById("restart-button");
 
 const HISTORY_CHARACTERS = 18;
 const WINDOW_CHARACTERS = 60;
-const parameters = new URLSearchParams(window.location.search);
-const requestedDuration = Number(parameters.get("duration"));
-let durationSeconds = 60;
-
-for (let i = 0; i < timeAttackData.durations.length; i++)
-{
-    if (timeAttackData.durations[i] === requestedDuration)
-    {
-        durationSeconds = requestedDuration;
-    }
-}
-
 const durationMs = durationSeconds * 1000;
 let windowStart = 0;
 let windowEnd = 60;
@@ -59,7 +47,7 @@ function appendPassage()
 
         // Fill the list with every passage index
 
-        for (let i = 0; i < timeAttackData.passages.length; i++)
+        for (let i = 0; i < passages.length; i++)
         {
             passageOrder.push(i);
         }
@@ -82,7 +70,7 @@ function appendPassage()
     }
 
     const passageIndex = passageOrder.shift();                  // remove the 1st index from the shuffled list
-    let passage = timeAttackData.passages[passageIndex];
+    let passage = passages[passageIndex];
     lastPassage = passageIndex;
 
     // adds a space in front of the passage only if it is not the first one
@@ -272,7 +260,7 @@ function updateInterface()
     pauseButton.disabled = gameState === "start" || gameState === "end";
     restartButton.disabled = false;
     pauseBtnLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
+    pauseIcon.src = iconBase + "pause.svg";
     typingArea.classList.remove("paused");
     footerMessage.textContent = "ESC · PAUSE";
 
@@ -290,7 +278,7 @@ function updateInterface()
         gameStatus.textContent = "PAUSED";
         footerMessage.textContent = "ESC · RESUME";
         pauseBtnLabel.textContent = "Resume";
-        pauseIcon.src = "icons/resume.svg";
+        pauseIcon.src = iconBase + "resume.svg";
         typingArea.classList.add("paused");
     }
     else

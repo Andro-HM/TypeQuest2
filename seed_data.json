@@ -1,0 +1,1358 @@
+{
+    "tiers": [
+        {
+            "id": 1,
+            "first_level": 1,
+            "last_level": 10,
+            "available": 1
+        },
+        {
+            "id": 2,
+            "first_level": 11,
+            "last_level": 20,
+            "available": 1
+        },
+        {
+            "id": 3,
+            "first_level": 21,
+            "last_level": 30,
+            "available": 0
+        },
+        {
+            "id": 4,
+            "first_level": 31,
+            "last_level": 40,
+            "available": 0
+        },
+        {
+            "id": 5,
+            "first_level": 41,
+            "last_level": 50,
+            "available": 0
+        }
+    ],
+    "levels": [
+        {
+            "id": 1,
+            "tier": 1,
+            "title": "The Workshop Bell",
+            "content": "The bell rang in the small workshop. Maya put down her bag and took a seat by the window. A wooden box waited on the table. She opened it and found a ruler, a pencil, and a note. It was time to make something new."
+        },
+        {
+            "id": 2,
+            "tier": 1,
+            "title": "A Library Map",
+            "content": "Sam found a map inside a book at the library. A blue line ran from the front desk to a quiet room. He followed it past the tall shelves. Near the last shelf, a small sign pointed to a table full of old stories."
+        },
+        {
+            "id": 3,
+            "tier": 1,
+            "title": "Rain at the Stop",
+            "content": "Rain fell on the road as Leena waited for the bus. She moved under the roof and held her bag close. A man beside her shared a kind smile. Soon the bus came around the bend, and warm light shone through its windows."
+        },
+        {
+            "id": 4,
+            "tier": 1,
+            "title": "The Rooftop Garden",
+            "content": "A small garden grew on the roof of our house. We planted mint in one pot and beans in another. Every morning, I carried a can of water up the stairs. By the end of the week, tiny green leaves had opened in the sun."
+        },
+        {
+            "id": 5,
+            "tier": 1,
+            "title": "Harbor Lights",
+            "content": "The sun went down behind the harbor. Boats moved slowly across the water, and lights began to shine along the shore. We sat on a bench and watched the waves. A cool wind carried the sound of a bell from the nearest boat."
+        },
+        {
+            "id": 6,
+            "tier": 1,
+            "title": "The Small Museum",
+            "content": "The town had a small museum beside the park. Inside, we saw old clocks, clay bowls, and a wooden train. A guide told us how people once lived here. My favorite room held photos of the same streets we walk through each day."
+        },
+        {
+            "id": 7,
+            "tier": 1,
+            "title": "Morning Market",
+            "content": "The market opened early on Saturday. Fresh fruit filled the stalls, and the smell of warm bread drifted down the street. Dad gave me a list and a cloth bag. We bought apples, rice, and tea before walking home in the soft morning light."
+        },
+        {
+            "id": 8,
+            "tier": 1,
+            "title": "A Clear Night",
+            "content": "After dinner, we took a blanket into the yard. The sky was clear, and stars filled the dark space above us. My sister pointed to a bright group near the moon. We stayed outside for a while, making up names for the shapes we saw."
+        },
+        {
+            "id": 9,
+            "tier": 1,
+            "title": "The Bicycle Chain",
+            "content": "My bicycle made a strange sound on the way home. I stopped near the gate and looked at the chain. It had slipped off the wheel. With a little care, I put it back in place and turned the pedals. Soon I was riding again."
+        },
+        {
+            "id": 10,
+            "tier": 1,
+            "title": "When the Lights Went Out",
+            "content": "The lights went out just as we sat down to eat. Mum found a candle while I looked for a torch. We moved our plates close together and talked in the warm glow. When the power returned, nobody wanted to switch the bright lights on."
+        },
+        {
+            "id": 11,
+            "tier": 2,
+            "title": "The Station Notice",
+            "content": "At the station, an announcement interrupted the morning rush. The train would leave from a different platform, so Nila checked the notice before moving. She counted her bags, folded her ticket, and followed the signs. A worker near the stairs helped an older passenger find the lift. Within a few minutes, everyone was waiting in the right place."
+        },
+        {
+            "id": 12,
+            "tier": 2,
+            "title": "A Letter from the Coast",
+            "content": "A letter arrived from my cousin on Tuesday. She described a quiet village beside the sea, where fishing boats returned before sunrise. Each afternoon, she helped her aunt arrange shells in a small shop. At the end of the letter, she asked a simple question: would I visit during the holidays? I began planning my reply that evening."
+        },
+        {
+            "id": 13,
+            "tier": 2,
+            "title": "The Missing Recipe",
+            "content": "We planned to bake a cake for the school fair, but the recipe was missing. Rohan searched the kitchen drawer while I checked the old notebook on the shelf. Between two pages, we discovered a folded sheet with flour on its edges. We read the instructions carefully, measured each ingredient, and finally placed the filled tin in the oven."
+        },
+        {
+            "id": 14,
+            "tier": 2,
+            "title": "Across the Footbridge",
+            "content": "The footbridge crossed a narrow river behind the school. After several days of rain, the water moved faster than usual. We stopped in the middle to watch leaves float beneath the wooden boards. On the far bank, a gardener was clearing the path. He waved us forward and reminded us to keep our shoes away from the muddy edge."
+        },
+        {
+            "id": 15,
+            "tier": 2,
+            "title": "The Repair Cafe",
+            "content": "Once a month, our community hall becomes a repair cafe. People bring broken lamps, loose handles, and toys that have stopped working. Volunteers examine each item and explain the problem as they fix it. I watched a woman repair a radio with a damaged wire. Instead of throwing it away, its owner carried it home with a grateful smile."
+        },
+        {
+            "id": 16,
+            "tier": 2,
+            "title": "A Change of Plans",
+            "content": "Our picnic plans changed when dark clouds gathered above the hills. Instead of cancelling the afternoon, we cleared a space in the living room. We spread a blanket on the floor, opened the food baskets, and played a guessing game. Rain tapped against the windows, but nobody minded. The unexpected indoor picnic became the best part of the weekend."
+        },
+        {
+            "id": 17,
+            "tier": 2,
+            "title": "The Bookshop Window",
+            "content": "A new display appeared in the bookshop window every Friday. This week, the owner arranged travel books around a small globe. Handwritten cards described distant forests, busy cities, and quiet mountain paths. One card invited readers to share a place they hoped to visit. I wrote down the name of a town I had heard about from my grandfather."
+        },
+        {
+            "id": 18,
+            "tier": 2,
+            "title": "The Final Rehearsal",
+            "content": "During the final rehearsal, the school hall was full of movement. Singers checked their places while the stage team adjusted the curtains. Our teacher asked everyone to pause and listen. We practised the opening scene once more, paying attention to each entrance. By the time the music ended, the nervous group had started to work together with confidence."
+        },
+        {
+            "id": 19,
+            "tier": 2,
+            "title": "The Hidden Courtyard",
+            "content": "Behind the crowded main street, a narrow passage led to a hidden courtyard. We stepped through the entrance and found a stone fountain surrounded by flowering plants. The noise of traffic faded into the distance. An artist sat nearby, sketching the old buildings. She showed us how the afternoon light changed the colors of the walls and windows."
+        },
+        {
+            "id": 20,
+            "tier": 2,
+            "title": "A Journey Before Sunrise",
+            "content": "We began our journey before sunrise, when the roads were almost empty. My brother checked the directions while I packed the last bottle of water. As we left the city, the sky slowly changed from grey to gold. We stopped near a field to stretch our legs. In the quiet morning air, even a short break felt like an adventure."
+        }
+    ],
+    "passages": [
+        {
+            "id": 1,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The morning sun warmed the path. A small bird hopped beside the garden gate."
+        },
+        {
+            "id": 2,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Mina placed a cup on the table. She poured cool water and sat by the window."
+        },
+        {
+            "id": 3,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A blue bus stopped near the park. Three friends climbed aboard with their bags."
+        },
+        {
+            "id": 4,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The baker opened his shop early. Fresh rolls filled the room with a warm smell."
+        },
+        {
+            "id": 5,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Rain tapped softly on the roof. Nila closed her book and watched the street."
+        },
+        {
+            "id": 6,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A dog slept under the old bench. Its ears moved when the children walked past."
+        },
+        {
+            "id": 7,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The train crossed a green field. From the window, Ravi saw a line of trees."
+        },
+        {
+            "id": 8,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Two lamps lit the quiet room. Sara found her pencil and began a new drawing."
+        },
+        {
+            "id": 9,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The shop sold red apples and yellow pears. Each basket had a neat paper sign."
+        },
+        {
+            "id": 10,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A boat moved slowly across the lake. Its white sail shone in the afternoon sun."
+        },
+        {
+            "id": 11,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Kiran swept the front steps. He left a clean place for the guests to sit."
+        },
+        {
+            "id": 12,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The library clock struck noon. A reader returned a book and chose another one."
+        },
+        {
+            "id": 13,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A child planted a bean in a pot. Each day, she checked for a new green leaf."
+        },
+        {
+            "id": 14,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The market lane was busy. A seller tied flowers with a piece of brown string."
+        },
+        {
+            "id": 15,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Omar fixed the loose wheel on his cart. It rolled well on the next trip."
+        },
+        {
+            "id": 16,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The moon rose above the houses. A cat watched it from a warm stone wall."
+        },
+        {
+            "id": 17,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Leena put fresh paper in the printer. The class notes came out clear and neat."
+        },
+        {
+            "id": 18,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A gentle wind moved the tall grass. The path to the river was easy to follow."
+        },
+        {
+            "id": 19,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The team shared a large map. They found the bridge and marked a safe route."
+        },
+        {
+            "id": 20,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "At dusk, the street lights came on. Families walked home after the fair."
+        },
+        {
+            "id": 21,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The museum guide lifted a small wooden box, then asked visitors to guess what it once held."
+        },
+        {
+            "id": 22,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "After the storm, neighbors checked the narrow lane and cleared leaves from its drains."
+        },
+        {
+            "id": 23,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Priya wrote a list of tools before the repair, so nobody had to search during the work."
+        },
+        {
+            "id": 24,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A sign at the station showed the new platform number; travelers paused to read it twice."
+        },
+        {
+            "id": 25,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The school garden grew mint, beans, and flowers. Each bed had a label beside its path."
+        },
+        {
+            "id": 26,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Dev tested the kite in a light breeze, but its tail needed one more careful knot."
+        },
+        {
+            "id": 27,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The ferry arrived late because the river was high. Its captain explained the delay calmly."
+        },
+        {
+            "id": 28,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Mira found two similar keys in a drawer; only one could open the old storage room."
+        },
+        {
+            "id": 29,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "At the workshop, students measured each board before they cut it to fit the frame."
+        },
+        {
+            "id": 30,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A note on the door said the hall was closed today, but the side room remained open."
+        },
+        {
+            "id": 31,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The book cart visited on Friday. New readers learned its stops from a simple printed map."
+        },
+        {
+            "id": 32,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Nia checked the soil in both pots; the one near the wall needed less water."
+        },
+        {
+            "id": 33,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The clock ran slowly after lunch, so its owner recorded the time and watched it again."
+        },
+        {
+            "id": 34,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A group painted the park bench blue and waited until the next morning to use it."
+        },
+        {
+            "id": 35,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The first recipe was too sweet. Tara used less sugar when she baked the second batch."
+        },
+        {
+            "id": 36,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A runner stopped at the fountain, filled her bottle, and thanked the volunteer nearby."
+        },
+        {
+            "id": 37,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The town notice listed three meeting times. Farah circled the one she could attend."
+        },
+        {
+            "id": 38,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Clouds hid the stars at first, yet the sky cleared before the telescope was packed away."
+        },
+        {
+            "id": 39,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Two teams compared their paper bridges and wrote down which folds held the most coins."
+        },
+        {
+            "id": 40,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The visitor desk kept a spare umbrella for anyone caught by a sudden shower."
+        },
+        {
+            "id": 41,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The archive labeled each photograph with a date, a place, and the name of its donor."
+        },
+        {
+            "id": 42,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A minor change in the river's course made the old survey map harder to interpret."
+        },
+        {
+            "id": 43,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The committee tested two routes, compared their travel times, and chose the safer crossing."
+        },
+        {
+            "id": 44,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "When the first reading seemed unusual, Amita repeated the measurement before recording it."
+        },
+        {
+            "id": 45,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The lantern maker kept a sketch of every design, including those that failed to balance."
+        },
+        {
+            "id": 46,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "At the rehearsal, one misplaced cue changed the scene; the stage crew corrected its timing."
+        },
+        {
+            "id": 47,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A volunteer counted the borrowed tools and noticed that the drill had not yet returned."
+        },
+        {
+            "id": 48,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The weather club moved its wind vane beyond the wall to obtain a clearer reading."
+        },
+        {
+            "id": 49,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Ezra revised the schedule after two families missed the cart's final Friday stop."
+        },
+        {
+            "id": 50,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A careful label can distinguish an observed fact from a reasonable but uncertain guess."
+        },
+        {
+            "id": 51,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The glasshouse team recorded temperature at dawn, noon, and dusk for an entire week."
+        },
+        {
+            "id": 52,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Noor kept both dates on the letter; the writer had continued after midnight."
+        },
+        {
+            "id": 53,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A second estimate included anchors and repairs that the first estimate had omitted."
+        },
+        {
+            "id": 54,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The survey followed the path people actually used, not the straight line on an old plan."
+        },
+        {
+            "id": 55,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Because the workshop was noisy, the team practiced clear signals before starting work."
+        },
+        {
+            "id": 56,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The guide marked each trail junction and asked the last walker to stay within sight."
+        },
+        {
+            "id": 57,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A bright chart showed the experiment's average result as well as its unusual trial."
+        },
+        {
+            "id": 58,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The post office changed its notice after residents described where they had become lost."
+        },
+        {
+            "id": 59,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The organizer left room for slower walkers and checked that the ramp was clear."
+        },
+        {
+            "id": 60,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Their final report explained the method, the limits, and what the group would test next."
+        },
+        {
+            "id": 61,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "An inventory is useful only when its dates and locations can be checked against the items themselves."
+        },
+        {
+            "id": 62,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The canal team postponed its repair until daylight; fragile stones near the bank required care."
+        },
+        {
+            "id": 63,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A street can change its purpose long before an official map changes the name printed beside it."
+        },
+        {
+            "id": 64,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The thermometer near the roof gave a higher reading than the one beside the shaded table."
+        },
+        {
+            "id": 65,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Instead of declaring the bowl a cooking vessel, the exhibit described what had actually been found."
+        },
+        {
+            "id": 66,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "During the drill, a delivery cart blocked half the corridor; the leader recorded the hazard."
+        },
+        {
+            "id": 67,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Both sides of the letter were scanned in order, preserving the change in ink after midnight."
+        },
+        {
+            "id": 68,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The cheapest estimate omitted an important fitting, so the students compared complete costs."
+        },
+        {
+            "id": 69,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Footmarks curved around the orchard's low ground, which flooded after heavy rain."
+        },
+        {
+            "id": 70,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "One hand signal resembled a casual wave; the team replaced it before the machines started."
+        },
+        {
+            "id": 71,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A catalog entry should distinguish a draft map from the polished drawing prepared months later."
+        },
+        {
+            "id": 72,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The committee asked the builders identical questions about materials, weather, and maintenance."
+        },
+        {
+            "id": 73,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "When the sign was hidden from one approach, the organizers tested the junction on bicycles."
+        },
+        {
+            "id": 74,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The printer checked a color proof under daylight and lamps before changing the design."
+        },
+        {
+            "id": 75,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Separate notes about fruit sold and fruit donated made the orchard ledger more reliable."
+        },
+        {
+            "id": 76,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The bridge report listed one adjustment alongside the successful load tests; both details mattered."
+        },
+        {
+            "id": 77,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A sensor recorded steady measurements while the wall clock skipped an hour during the time change."
+        },
+        {
+            "id": 78,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Three memories of the same storm differed, so Rosa checked notices before writing the timeline."
+        },
+        {
+            "id": 79,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The spare valve carried a different pressure rating, despite looking identical on the shelf."
+        },
+        {
+            "id": 80,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Counts taken at several hours helped the council judge when the square was busiest."
+        },
+        {
+            "id": 81,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A timestamp can be precise and still be misleading if its clock follows a different convention."
+        },
+        {
+            "id": 82,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Before opening the footbridge, inspectors verified the predicted bend and the railing's height."
+        },
+        {
+            "id": 83,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Conflicting recollections do not automatically make witnesses careless; perspective shapes memory."
+        },
+        {
+            "id": 84,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The ferry's delay was inconvenient, but installing an unverified spare would have been reckless."
+        },
+        {
+            "id": 85,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A temporary loading lane let the council test its compromise before making the change permanent."
+        },
+        {
+            "id": 86,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Draft and final maps belonged in separate archive boxes, with a cross-reference linking them."
+        },
+        {
+            "id": 87,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The shelter coordinator documented the family's request without promising a response from the clinic."
+        },
+        {
+            "id": 88,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Paper stock altered the printed orange, so a narrow test strip saved another full poster run."
+        },
+        {
+            "id": 89,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Common units made the three harvest ledgers comparable; uncertain dates remained marked as such."
+        },
+        {
+            "id": 90,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The route was checked at riding speed, revealing a sign that was hidden by leaves."
+        },
+        {
+            "id": 91,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A robust procedure states who records each observation, when it is checked, and how exceptions are handled."
+        },
+        {
+            "id": 92,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The council's first proposal sounded simple; its effects differed sharply between morning and evening."
+        },
+        {
+            "id": 93,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A carefully worded museum label can present evidence without pretending that uncertainty has vanished."
+        },
+        {
+            "id": 94,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "After comparing the duplicate records, Zoya preserved both versions and explained their sequence."
+        },
+        {
+            "id": 95,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The forecast changed overnight; the team revised its route instead of defending yesterday's plan."
+        },
+        {
+            "id": 96,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "One anomalous trial deserved an explanation, not deletion from the experiment's final table."
+        },
+        {
+            "id": 97,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "When the lens failed, the volunteers checked its mount and notes before ordering a replacement."
+        },
+        {
+            "id": 98,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "A reliable inventory records not merely what is absent, but where a borrowed item went."
+        },
+        {
+            "id": 99,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "The team distinguished what the sensor measured from what the chart's labels implied."
+        },
+        {
+            "id": 100,
+            "mode": "time_attack",
+            "tier": null,
+            "content": "Their final review listed successes, unresolved questions, and the next checks in clear order."
+        },
+        {
+            "id": 101,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The morning sun warmed the path. A small bird hopped beside the garden gate."
+        },
+        {
+            "id": 102,
+            "mode": "survival",
+            "tier": 1,
+            "content": "Mina placed a cup on the table. She poured cool water and sat by the window."
+        },
+        {
+            "id": 103,
+            "mode": "survival",
+            "tier": 1,
+            "content": "A blue bus stopped near the park. Three friends climbed aboard with their bags."
+        },
+        {
+            "id": 104,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The baker opened his shop early. Fresh rolls filled the room with a warm smell."
+        },
+        {
+            "id": 105,
+            "mode": "survival",
+            "tier": 1,
+            "content": "Rain tapped softly on the roof. Nila closed her book and watched the street."
+        },
+        {
+            "id": 106,
+            "mode": "survival",
+            "tier": 1,
+            "content": "A dog slept under the old bench. Its ears moved when the children walked past."
+        },
+        {
+            "id": 107,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The train crossed a green field. From the window, Ravi saw a line of trees."
+        },
+        {
+            "id": 108,
+            "mode": "survival",
+            "tier": 1,
+            "content": "Two lamps lit the quiet room. Sara found her pencil and began a new drawing."
+        },
+        {
+            "id": 109,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The shop sold red apples and yellow pears. Each basket had a neat paper sign."
+        },
+        {
+            "id": 110,
+            "mode": "survival",
+            "tier": 1,
+            "content": "A boat moved slowly across the lake. Its white sail shone in the afternoon sun."
+        },
+        {
+            "id": 111,
+            "mode": "survival",
+            "tier": 1,
+            "content": "Kiran swept the front steps. He left a clean place for the guests to sit."
+        },
+        {
+            "id": 112,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The library clock struck noon. A reader returned a book and chose another one."
+        },
+        {
+            "id": 113,
+            "mode": "survival",
+            "tier": 1,
+            "content": "A child planted a bean in a pot. Each day, she checked for a new green leaf."
+        },
+        {
+            "id": 114,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The market lane was busy. A seller tied flowers with a piece of brown string."
+        },
+        {
+            "id": 115,
+            "mode": "survival",
+            "tier": 1,
+            "content": "Omar fixed the loose wheel on his cart. It rolled well on the next trip."
+        },
+        {
+            "id": 116,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The moon rose above the houses. A cat watched it from a warm stone wall."
+        },
+        {
+            "id": 117,
+            "mode": "survival",
+            "tier": 1,
+            "content": "Leena put fresh paper in the printer. The class notes came out clear and neat."
+        },
+        {
+            "id": 118,
+            "mode": "survival",
+            "tier": 1,
+            "content": "A gentle wind moved the tall grass. The path to the river was easy to follow."
+        },
+        {
+            "id": 119,
+            "mode": "survival",
+            "tier": 1,
+            "content": "The team shared a large map. They found the bridge and marked a safe route."
+        },
+        {
+            "id": 120,
+            "mode": "survival",
+            "tier": 1,
+            "content": "At dusk, the street lights came on. Families walked home after the fair."
+        },
+        {
+            "id": 121,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The museum guide lifted a small wooden box, then asked visitors to guess what it once held."
+        },
+        {
+            "id": 122,
+            "mode": "survival",
+            "tier": 2,
+            "content": "After the storm, neighbors checked the narrow lane and cleared leaves from its drains."
+        },
+        {
+            "id": 123,
+            "mode": "survival",
+            "tier": 2,
+            "content": "Priya wrote a list of tools before the repair, so nobody had to search during the work."
+        },
+        {
+            "id": 124,
+            "mode": "survival",
+            "tier": 2,
+            "content": "A sign at the station showed the new platform number; travelers paused to read it twice."
+        },
+        {
+            "id": 125,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The school garden grew mint, beans, and flowers. Each bed had a label beside its path."
+        },
+        {
+            "id": 126,
+            "mode": "survival",
+            "tier": 2,
+            "content": "Dev tested the kite in a light breeze, but its tail needed one more careful knot."
+        },
+        {
+            "id": 127,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The ferry arrived late because the river was high. Its captain explained the delay calmly."
+        },
+        {
+            "id": 128,
+            "mode": "survival",
+            "tier": 2,
+            "content": "Mira found two similar keys in a drawer; only one could open the old storage room."
+        },
+        {
+            "id": 129,
+            "mode": "survival",
+            "tier": 2,
+            "content": "At the workshop, students measured each board before they cut it to fit the frame."
+        },
+        {
+            "id": 130,
+            "mode": "survival",
+            "tier": 2,
+            "content": "A note on the door said the hall was closed today, but the side room remained open."
+        },
+        {
+            "id": 131,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The book cart visited on Friday. New readers learned its stops from a simple printed map."
+        },
+        {
+            "id": 132,
+            "mode": "survival",
+            "tier": 2,
+            "content": "Nia checked the soil in both pots; the one near the wall needed less water."
+        },
+        {
+            "id": 133,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The clock ran slowly after lunch, so its owner recorded the time and watched it again."
+        },
+        {
+            "id": 134,
+            "mode": "survival",
+            "tier": 2,
+            "content": "A group painted the park bench blue and waited until the next morning to use it."
+        },
+        {
+            "id": 135,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The first recipe was too sweet. Tara used less sugar when she baked the second batch."
+        },
+        {
+            "id": 136,
+            "mode": "survival",
+            "tier": 2,
+            "content": "A runner stopped at the fountain, filled her bottle, and thanked the volunteer nearby."
+        },
+        {
+            "id": 137,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The town notice listed three meeting times. Farah circled the one she could attend."
+        },
+        {
+            "id": 138,
+            "mode": "survival",
+            "tier": 2,
+            "content": "Clouds hid the stars at first, yet the sky cleared before the telescope was packed away."
+        },
+        {
+            "id": 139,
+            "mode": "survival",
+            "tier": 2,
+            "content": "Two teams compared their paper bridges and wrote down which folds held the most coins."
+        },
+        {
+            "id": 140,
+            "mode": "survival",
+            "tier": 2,
+            "content": "The visitor desk kept a spare umbrella for anyone caught by a sudden shower."
+        },
+        {
+            "id": 141,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The archive labeled each photograph with a date, a place, and the name of its donor."
+        },
+        {
+            "id": 142,
+            "mode": "survival",
+            "tier": 3,
+            "content": "A minor change in the river's course made the old survey map harder to interpret."
+        },
+        {
+            "id": 143,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The committee tested two routes, compared their travel times, and chose the safer crossing."
+        },
+        {
+            "id": 144,
+            "mode": "survival",
+            "tier": 3,
+            "content": "When the first reading seemed unusual, Amita repeated the measurement before recording it."
+        },
+        {
+            "id": 145,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The lantern maker kept a sketch of every design, including those that failed to balance."
+        },
+        {
+            "id": 146,
+            "mode": "survival",
+            "tier": 3,
+            "content": "At the rehearsal, one misplaced cue changed the scene; the stage crew corrected its timing."
+        },
+        {
+            "id": 147,
+            "mode": "survival",
+            "tier": 3,
+            "content": "A volunteer counted the borrowed tools and noticed that the drill had not yet returned."
+        },
+        {
+            "id": 148,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The weather club moved its wind vane beyond the wall to obtain a clearer reading."
+        },
+        {
+            "id": 149,
+            "mode": "survival",
+            "tier": 3,
+            "content": "Ezra revised the schedule after two families missed the cart's final Friday stop."
+        },
+        {
+            "id": 150,
+            "mode": "survival",
+            "tier": 3,
+            "content": "A careful label can distinguish an observed fact from a reasonable but uncertain guess."
+        },
+        {
+            "id": 151,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The glasshouse team recorded temperature at dawn, noon, and dusk for an entire week."
+        },
+        {
+            "id": 152,
+            "mode": "survival",
+            "tier": 3,
+            "content": "Noor kept both dates on the letter; the writer had continued after midnight."
+        },
+        {
+            "id": 153,
+            "mode": "survival",
+            "tier": 3,
+            "content": "A second estimate included anchors and repairs that the first estimate had omitted."
+        },
+        {
+            "id": 154,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The survey followed the path people actually used, not the straight line on an old plan."
+        },
+        {
+            "id": 155,
+            "mode": "survival",
+            "tier": 3,
+            "content": "Because the workshop was noisy, the team practiced clear signals before starting work."
+        },
+        {
+            "id": 156,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The guide marked each trail junction and asked the last walker to stay within sight."
+        },
+        {
+            "id": 157,
+            "mode": "survival",
+            "tier": 3,
+            "content": "A bright chart showed the experiment's average result as well as its unusual trial."
+        },
+        {
+            "id": 158,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The post office changed its notice after residents described where they had become lost."
+        },
+        {
+            "id": 159,
+            "mode": "survival",
+            "tier": 3,
+            "content": "The organizer left room for slower walkers and checked that the ramp was clear."
+        },
+        {
+            "id": 160,
+            "mode": "survival",
+            "tier": 3,
+            "content": "Their final report explained the method, the limits, and what the group would test next."
+        },
+        {
+            "id": 161,
+            "mode": "survival",
+            "tier": 4,
+            "content": "An inventory is useful only when its dates and locations can be checked against the items themselves."
+        },
+        {
+            "id": 162,
+            "mode": "survival",
+            "tier": 4,
+            "content": "The canal team postponed its repair until daylight; fragile stones near the bank required care."
+        },
+        {
+            "id": 163,
+            "mode": "survival",
+            "tier": 4,
+            "content": "A street can change its purpose long before an official map changes the name printed beside it."
+        },
+        {
+            "id": 164,
+            "mode": "survival",
+            "tier": 4,
+            "content": "The thermometer near the roof gave a higher reading than the one beside the shaded table."
+        },
+        {
+            "id": 165,
+            "mode": "survival",
+            "tier": 4,
+            "content": "Instead of declaring the bowl a cooking vessel, the exhibit described what had actually been found."
+        },
+        {
+            "id": 166,
+            "mode": "survival",
+            "tier": 4,
+            "content": "During the drill, a delivery cart blocked half the corridor; the leader recorded the hazard."
+        },
+        {
+            "id": 167,
+            "mode": "survival",
+            "tier": 4,
+            "content": "Both sides of the letter were scanned in order, preserving the change in ink after midnight."
+        },
+        {
+            "id": 168,
+            "mode": "survival",
+            "tier": 4,
+            "content": "The cheapest estimate omitted an important fitting, so the students compared complete costs."
+        },
+        {
+            "id": 169,
+            "mode": "survival",
+            "tier": 4,
+            "content": "Footmarks curved around the orchard's low ground, which flooded after heavy rain."
+        },
+        {
+            "id": 170,
+            "mode": "survival",
+            "tier": 4,
+            "content": "One hand signal resembled a casual wave; the team replaced it before the machines started."
+        },
+        {
+            "id": 171,
+            "mode": "survival",
+            "tier": 4,
+            "content": "A catalog entry should distinguish a draft map from the polished drawing prepared months later."
+        },
+        {
+            "id": 172,
+            "mode": "survival",
+            "tier": 4,
+            "content": "The committee asked the builders identical questions about materials, weather, and maintenance."
+        },
+        {
+            "id": 173,
+            "mode": "survival",
+            "tier": 4,
+            "content": "When the sign was hidden from one approach, the organizers tested the junction on bicycles."
+        },
+        {
+            "id": 174,
+            "mode": "survival",
+            "tier": 4,
+            "content": "The printer checked a color proof under daylight and lamps before changing the design."
+        },
+        {
+            "id": 175,
+            "mode": "survival",
+            "tier": 4,
+            "content": "Separate notes about fruit sold and fruit donated made the orchard ledger more reliable."
+        },
+        {
+            "id": 176,
+            "mode": "survival",
+            "tier": 4,
+            "content": "The bridge report listed one adjustment alongside the successful load tests; both details mattered."
+        },
+        {
+            "id": 177,
+            "mode": "survival",
+            "tier": 4,
+            "content": "A sensor recorded steady measurements while the wall clock skipped an hour during the time change."
+        },
+        {
+            "id": 178,
+            "mode": "survival",
+            "tier": 4,
+            "content": "Three memories of the same storm differed, so Rosa checked notices before writing the timeline."
+        },
+        {
+            "id": 179,
+            "mode": "survival",
+            "tier": 4,
+            "content": "The spare valve carried a different pressure rating, despite looking identical on the shelf."
+        },
+        {
+            "id": 180,
+            "mode": "survival",
+            "tier": 4,
+            "content": "Counts taken at several hours helped the council judge when the square was busiest."
+        },
+        {
+            "id": 181,
+            "mode": "survival",
+            "tier": 5,
+            "content": "A timestamp can be precise and still be misleading if its clock follows a different convention."
+        },
+        {
+            "id": 182,
+            "mode": "survival",
+            "tier": 5,
+            "content": "Before opening the footbridge, inspectors verified the predicted bend and the railing's height."
+        },
+        {
+            "id": 183,
+            "mode": "survival",
+            "tier": 5,
+            "content": "Conflicting recollections do not automatically make witnesses careless; perspective shapes memory."
+        },
+        {
+            "id": 184,
+            "mode": "survival",
+            "tier": 5,
+            "content": "The ferry's delay was inconvenient, but installing an unverified spare would have been reckless."
+        },
+        {
+            "id": 185,
+            "mode": "survival",
+            "tier": 5,
+            "content": "A temporary loading lane let the council test its compromise before making the change permanent."
+        },
+        {
+            "id": 186,
+            "mode": "survival",
+            "tier": 5,
+            "content": "Draft and final maps belonged in separate archive boxes, with a cross-reference linking them."
+        },
+        {
+            "id": 187,
+            "mode": "survival",
+            "tier": 5,
+            "content": "The shelter coordinator documented the family's request without promising a response from the clinic."
+        },
+        {
+            "id": 188,
+            "mode": "survival",
+            "tier": 5,
+            "content": "Paper stock altered the printed orange, so a narrow test strip saved another full poster run."
+        },
+        {
+            "id": 189,
+            "mode": "survival",
+            "tier": 5,
+            "content": "Common units made the three harvest ledgers comparable; uncertain dates remained marked as such."
+        },
+        {
+            "id": 190,
+            "mode": "survival",
+            "tier": 5,
+            "content": "The route was checked at riding speed, revealing a sign that was hidden by leaves."
+        },
+        {
+            "id": 191,
+            "mode": "survival",
+            "tier": 5,
+            "content": "A robust procedure states who records each observation, when it is checked, and how exceptions are handled."
+        },
+        {
+            "id": 192,
+            "mode": "survival",
+            "tier": 5,
+            "content": "The council's first proposal sounded simple; its effects differed sharply between morning and evening."
+        },
+        {
+            "id": 193,
+            "mode": "survival",
+            "tier": 5,
+            "content": "A carefully worded museum label can present evidence without pretending that uncertainty has vanished."
+        },
+        {
+            "id": 194,
+            "mode": "survival",
+            "tier": 5,
+            "content": "After comparing the duplicate records, Zoya preserved both versions and explained their sequence."
+        },
+        {
+            "id": 195,
+            "mode": "survival",
+            "tier": 5,
+            "content": "The forecast changed overnight; the team revised its route instead of defending yesterday's plan."
+        },
+        {
+            "id": 196,
+            "mode": "survival",
+            "tier": 5,
+            "content": "One anomalous trial deserved an explanation, not deletion from the experiment's final table."
+        },
+        {
+            "id": 197,
+            "mode": "survival",
+            "tier": 5,
+            "content": "When the lens failed, the volunteers checked its mount and notes before ordering a replacement."
+        },
+        {
+            "id": 198,
+            "mode": "survival",
+            "tier": 5,
+            "content": "A reliable inventory records not merely what is absent, but where a borrowed item went."
+        },
+        {
+            "id": 199,
+            "mode": "survival",
+            "tier": 5,
+            "content": "The team distinguished what the sensor measured from what the chart's labels implied."
+        },
+        {
+            "id": 200,
+            "mode": "survival",
+            "tier": 5,
+            "content": "Their final review listed successes, unresolved questions, and the next checks in clear order."
+        }
+    ]
+}

@@ -1,7 +1,4 @@
 const typingArea = document.getElementById("typing-area");
-const levelHeading = document.getElementById("level-heading");
-const levelNo = document.getElementById("level-no");
-const levelsButton = document.getElementById("levels-button");
 const gameStatus = document.getElementById("game-status");
 const footerMessage = document.getElementById("footer-message");
 const net_wpm = document.getElementById("net-wpm");
@@ -11,7 +8,6 @@ const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
-let selectedTier = 1;
 let position = 0;
 let correctCharacters = 0;
 let gameState = "start";
@@ -20,33 +16,6 @@ let activeMs = 0;
 let lastTick = null;
 let rawWpm = 0;
 let accuracy = 0;
-
-const parameters = new URLSearchParams(window.location.search);
-const levelNumber = Number(parameters.get("level") || 1);
-const level = findLevel(levelNumber);
-
-// Find an available level in the shared JavaScript data object.
-function findLevel(number)
-{
-    for (let i = 0; i < classicData.tiers.length; i++)
-    {
-        const tier = classicData.tiers[i];
-
-        if (tier.available)
-        {
-            for (let j = 0; j < tier.levels.length; j++)
-            {
-                if (tier.levels[j].number === number)
-                {
-                    selectedTier = tier.number;
-                    return tier.levels[j];
-                }
-            }
-        }
-    }
-
-    return null;
-}
 
 // Count only time spent playing, leaving paused time out.
 function getActiveTime()
@@ -190,7 +159,7 @@ function updateInterface()
     restartButton.disabled = level === null;
 
     pauseBtnLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
+    pauseIcon.src = iconBase + "pause.svg";
 
     typingArea.classList.remove("paused");
     gameStatus.textContent = "IN PLAY";
@@ -206,7 +175,7 @@ function updateInterface()
         gameStatus.textContent = "PAUSED";
         footerMessage.textContent = "ESC · RESUME";
         pauseBtnLabel.textContent = "Resume";
-        pauseIcon.src = "icons/resume.svg";
+        pauseIcon.src = iconBase + "resume.svg";
         typingArea.classList.add("paused");
     }
     else if (gameState === "end")
@@ -414,25 +383,12 @@ function preventPaste(event)
 
 if (level === null)
 {
-    levelHeading.textContent = "Level unavailable";
-    levelNo.textContent = "CLASSIC";
     typingArea.textContent = "Choose an available level from Tier 1 or Tier 2.";
     typingArea.tabIndex = -1;
     updateInterface();
 }
 else
 {
-    let displayNumber = level.number;
-
-    if (displayNumber < 10)
-    {
-        displayNumber = "0" + displayNumber;
-    }
-
-    document.title = level.title + " — TypeQuest";
-    levelHeading.textContent = level.title;
-    levelNo.textContent = "CLASSIC / LEVEL " + displayNumber;
-    levelsButton.href = "classic-levels.html?tier=" + selectedTier;
     typingArea.addEventListener("keydown", handleTyping);
     typingArea.addEventListener("paste", preventPaste);
     pauseButton.addEventListener("click", togglePause);

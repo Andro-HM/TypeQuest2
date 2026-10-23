@@ -1,3 +1,16 @@
+const survivalData =
+{
+    countdownMilliseconds: 3000,
+    windowCharacters: 60,
+    startingHalfHearts: 6,
+    startingSpeed: 1.5,
+    speedIncreasePerMinute: 0.5,
+    maximumSpeed: 4,
+    tierMilliseconds: 60000,
+    startingDamageThreshold: 6,
+    tiers: survivalTiers
+};
+
 const typingArea = document.getElementById("typing-area");
 const track = document.getElementById("survival-track");
 const modeLabel = document.getElementById("mode-label");
@@ -289,15 +302,15 @@ function renderHearts()
     {
         const heart = document.getElementById("heart-" + (i + 1));
         const units = halfHearts - i * 2;
-        let source = "icons/heart-empty.svg";
+        let source = iconBase + "heart-empty.svg";
 
         if (units >= 2)
         {
-            source = "icons/heart-full.svg";
+            source = iconBase + "heart-full.svg";
         }
         else if (units === 1)
         {
-            source = "icons/heart-half.svg";
+            source = iconBase + "heart-half.svg";
         }
 
         if (heart.getAttribute("src") !== source)
@@ -363,7 +376,7 @@ function updateInterface()
 {
     pauseButton.disabled = gameState === "start" || gameState === "end";
     pauseBtnLabel.textContent = "Pause";
-    pauseIcon.src = "icons/pause.svg";
+    pauseIcon.src = iconBase + "pause.svg";
     typingArea.classList.remove("paused");
     footerMessage.textContent = "ESC · PAUSE";
 
@@ -381,7 +394,7 @@ function updateInterface()
         gameStatus.textContent = "PAUSED";
         footerMessage.textContent = "ESC · RESUME";
         pauseBtnLabel.textContent = "Resume";
-        pauseIcon.src = "icons/resume.svg";
+        pauseIcon.src = iconBase + "resume.svg";
         typingArea.classList.add("paused");
     }
     else
