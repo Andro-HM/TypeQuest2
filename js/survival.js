@@ -17,30 +17,35 @@ let windowStart = 0;
 let windowEnd = 60;
 let position = 0;
 let furthestPosition = 0;
-let generatedCount = 0;
-let typedCount = 0;
-let correctCharacters = 0;
-let cursorCharacter = null;
-let finalizedCount = 0;
-let finalizedUntyped = 0;
+let generatedCount = 0;     // Total number of spans generated
+let typedCount = 0;         // Number of spans currently marked typed
+let correctCharacters = 0;  
+let cursorCharacter = null;     // The span currently marked as the cursor
 
-let halfHearts = survivalData.startingHalfHearts;
-let damageCounter = 0;
-let damageStage = 0;
-let passageOrders = [];
-let lastPassages = [];
+let finalizedCount = 0;         // Number of spans that have passed the left edge of the typing area
+let finalizedUntyped = 0;      //  Number of spans that have passed the left edge without being typed
+
+let halfHearts = survivalData.startingHalfHearts;           // Remaining half-heart units, initially 6
+let damageCounter = 0;                                     // Mistakes accumulated toward the next half-heart loss
+let damageStage = 0;                                      // The number of minutes that have passed, used to increase the damage threshold
+
+let passageOrders = [];                 // Randomized order of passages for each tier, used to avoid repeating the same passage twice in a row
+let lastPassages = [];                 // The index of the last passage used for each tier, to avoid repeating it twice in a row
 
 let gameState = "start";
 let pausedState = "start";
-let countdownRemaining = survivalData.countdownMilliseconds;
-let countdownSince = 0;
+
+let countdownRemaining = survivalData.countdownMilliseconds;    // Milliseconds left in the initial three-second countdown
+let countdownSince = 0;                                       // The timestamp when the countdown began, used to calculate how much time has passed
 let activeMs = 0;
 let lastTick = null;
 let rawWpm = 0;
 let accuracy = 0;
 let animationFrame = null;
 
-// Select passages from the current tier, using each one before repeating a cycle.
+
+// Append a passage from the current tier to the track, generating spans for each character.
+// The first passage is not preceded by a space, but all subsequent passages are.
 function appendPassage(tierNumber)
 {
     const tierIndex = tierNumber - 1;
@@ -49,11 +54,13 @@ function appendPassage(tierNumber)
 
     if (order.length === 0)
     {
+        // Create a new randomized order of passages for this tier
         for (let i = 0; i < tier.passages.length; i++)
         {
             order.push(i);
         }
 
+        // Shuffle the order using the Fisher-Yates algorithm
         for (let i = order.length - 1; i > 0; i--)
         {
             const randomIndex = Math.floor(Math.random() * (i + 1));
@@ -62,6 +69,7 @@ function appendPassage(tierNumber)
             order[randomIndex] = temporary;
         }
 
+        // If the first passage in the new order is the same as the last passage used, swap it with the second passage to avoid repetition
         if (order.length > 1 && order[0] === lastPassages[tierIndex])
         {
             const temporary = order[0];
@@ -70,6 +78,7 @@ function appendPassage(tierNumber)
         }
     }
 
+    // Remove the first passage index from the order and use it to select the passage to append
     const passageIndex = order.shift();
     let passage = tier.passages[passageIndex];
     lastPassages[tierIndex] = passageIndex;
@@ -79,6 +88,7 @@ function appendPassage(tierNumber)
         passage = " " + passage;
     }
 
+    // Generate spans for each character in the passage and append them to the track
     for (let i = 0; i < passage.length; i++)
     {
         const character = document.createElement("span");
@@ -95,6 +105,7 @@ function appendPassage(tierNumber)
         generatedCount++;
     }
 }
+
 
 function ensureText(minimumLength, tierNumber)
 {
