@@ -1,11 +1,8 @@
-"""Small SQLite queries used by the Flask pages."""
-
 import sqlite3
-from contextlib import closing
-from pathlib import Path
 
 
-DATABASE_PATH = Path(__file__).parent / "typequest.db"
+# Keep the database beside this file, regardless of the terminal folder.
+DATABASE_PATH = __file__.replace("\\", "/").rsplit("/", 1)[0] + "/typequest.db"
 
 
 def get_connection(database_path=None):
@@ -19,19 +16,29 @@ def get_connection(database_path=None):
 
 
 def get_tiers():
-    with closing(get_connection()) as connection:
+    connection = get_connection()
+
+    try:
         return connection.execute("SELECT * FROM classic_tiers ORDER BY id").fetchall()
+    finally:
+        connection.close()
 
 
 def get_levels(tier):
-    with closing(get_connection()) as connection:
+    connection = get_connection()
+
+    try:
         return connection.execute(
             "SELECT * FROM classic_levels WHERE tier = ? ORDER BY id", (tier,)
         ).fetchall()
+    finally:
+        connection.close()
 
 
 def get_level(number):
-    with closing(get_connection()) as connection:
+    connection = get_connection()
+
+    try:
         return connection.execute(
             """SELECT classic_levels.id AS number, tier, title, content
                FROM classic_levels
@@ -39,11 +46,17 @@ def get_level(number):
                WHERE classic_levels.id = ? AND classic_tiers.available = 1""",
             (number,),
         ).fetchone()
+    finally:
+        connection.close()
 
 
 def get_passages(mode):
-    with closing(get_connection()) as connection:
+    connection = get_connection()
+
+    try:
         return connection.execute(
             "SELECT tier, content FROM typing_passages WHERE mode = ? ORDER BY id",
             (mode,),
         ).fetchall()
+    finally:
+        connection.close()
