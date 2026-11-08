@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Progress — TypeQuest</title>
+
+        <!-- Fonts used in the Stitch design -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+
+        <style>
+            /* ========================================
+               1. PAGE AND BACKGROUND
+               ======================================== */
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                min-height: 100%;
+            }
+
+            body {
+                background-color: #f3f7f9;
+                background-image: radial-gradient(circle at 50% 48%,
+                    rgba(220, 240, 247, 0.75) 0%,
+                    rgba(235, 245, 249, 0.45) 30%,
+                    #f6f9fb 70%,
+                    #f3f7f9 100%);
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                color: #14232c;
+                font-family: "Plus Jakarta Sans", sans-serif;
+            }
+
+            #page {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-height: 100vh;
+                padding: 28px 48px 28px 48px;
+            }
+
+            /* ========================================
+               2. TOP NAVIGATION
+               ======================================== */
+
+            #top-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            #brand {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            #brand-logo {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                background-color: #23687d;
+                color: white;
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 0.025em;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #brand-name {
+                color: #0f212b;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: -0.025em;
+            }
+
+            #top-nav {
+                display: flex;
+                align-items: center;
+                padding: 4px;
+                border: 1px solid rgba(210, 227, 234, 0.6);
+                border-radius: 9999px;
+                background-color: rgba(228, 238, 242, 0.8);
+                backdrop-filter: blur(12px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            }
+
+            .nav-link {
+                padding: 6px 20px 6px 20px;
+                border-radius: 9999px;
+                color: #4a636f;
+                font-size: 14px;
+                font-weight: 500;
+                text-decoration: none;
+                transition: background-color 0.2s, color 0.2s;
+            }
+
+            .nav-link:hover {
+                background-color: rgba(20, 184, 166, 0.15);
+                color: #144857;
+            }
+
+            .nav-link-active {
+                border: 1px solid rgba(20, 184, 166, 0.2);
+                background-color: rgba(20, 184, 166, 0.25);
+                color: #144857;
+                font-weight: 600;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #profile {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            #profile-name {
+                color: #18313d;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            #profile-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border: 1px solid #cbdce3;
+                border-radius: 50%;
+                background-color: #e2ecf0;
+            }
+
+            #profile-icon img {
+                width: 20px;
+                height: 20px;
+            }
+
+            /* ========================================
+               3. PLAY HEADING
+               ======================================== */
+
+            #bottom-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                color: #738e9b;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                letter-spacing: 0.025em;
+            }
+
+            #audio-status {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            #audio-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #1b889e;
+            }
+
+            [hidden], #profile-modal[hidden] {
+                display: none;
+            }
+
+            #section-content {
+                width: 100%;
+                max-width: 1208px;
+                margin: 44px auto 60px auto;
+            }
+
+            #section-heading {
+                text-align: center;
+                margin-bottom: 42px;
+            }
+
+            .eyebrow {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 6px 18px 6px 18px;
+                border: 1px solid #cde7ef;
+                border-radius: 9999px;
+                background-color: #e6f6fa;
+                color: #1c667c;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 13px;
+                letter-spacing: 0.12em;
+            }
+
+            .eyebrow-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #2dbbc9;
+            }
+
+            #section-title {
+                margin: 12px 0 10px 0;
+                font-size: 64px;
+                line-height: 1.15;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+            }
+
+            .accent {
+                background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+
+            .description {
+                margin: 0;
+                color: #638098;
+                font-size: 20px;
+                line-height: 1.6;
+            }
+
+            .saved-for {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                margin: 8px 0 0 0;
+                color: #638098;
+                font-size: 14px;
+            }
+
+            .saved-for img {
+                width: 21px;
+                height: 21px;
+            }
+
+            .section-toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 24px;
+            }
+
+            .section-toolbar h2 {
+                margin: 0;
+                font-size: 28px;
+                letter-spacing: -0.03em;
+            }
+
+            .profile-count {
+                margin-left: 16px;
+                font-size: 18px;
+                font-weight: 400;
+                color: #638098;
+            }
+
+            .primary, .outline {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                min-height: 48px;
+                padding: 10px 24px 10px 24px;
+                border: 1px solid #1d6980;
+                border-radius: 10px;
+                font: inherit;
+                font-weight: 700;
+                font-size: 18px;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .primary {
+                background-color: #1d6980;
+                color: white;
+            }
+
+            .outline {
+                background-color: transparent;
+                color: #1d6980;
+            }
+
+            .primary:hover {
+                opacity: 0.9;
+            }
+
+            .outline:hover {
+                background-color: #e2f3f8;
+            }
+
+            .primary img, .outline img {
+                width: 22px;
+                height: 22px;
+            }
+
+            #profiles-list {
+                border: 1px solid #cde7ef;
+                border-radius: 14px;
+                background-color: rgba(255,255,255,0.8);
+                max-height: 438px;
+                overflow-y: auto;
+                padding: 0 14px 0 14px;
+            }
+
+            .profile-row {
+                display: flex;
+                align-items: center;
+                gap: 24px;
+                min-height: 72px;
+                padding: 8px 16px 8px 16px;
+                border-bottom: 1px solid #d5e7ee;
+            }
+
+            .profile-row:last-child {
+                border-bottom: none;
+            }
+
+            .profile-row.active {
+                background-color: #effbf5;
+            }
+
+            .avatar {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 56px;
+                height: 56px;
+                border-radius: 50%;
+                background-color: #e6f3f7;
+                color: #1c667c;
+                font-size: 24px;
+                font-weight: 700;
+            }
+
+            .player-name {
+                flex: 1;
+                min-width: 0;
+                overflow-wrap: anywhere;
+                font-size: 24px;
+                font-weight: 700;
+            }
+
+            .profile-row form {
+                margin: 0;
+            }
+
+            .profile-row .outline {
+                min-width: 144px;
+            }
+
+            .active-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px 18px 12px 18px;
+                border-radius: 10px;
+                background-color: #ddf6ec;
+                color: #1c667c;
+                font-weight: 700;
+            }
+
+            .active-badge img {
+                width: 22px;
+                height: 22px;
+            }
+
+            .profile-menu {
+                position: relative;
+            }
+
+            .profile-menu summary {
+                list-style: none;
+                border: 1px solid #cde7ef;
+                border-radius: 8px;
+                width: 38px;
+                height: 40px;
+                text-align: center;
+                line-height: 36px;
+                color: #1c667c;
+                cursor: pointer;
+            }
+
+            .profile-menu summary::-webkit-details-marker {
+                display: none;
+            }
+
+            .menu-actions {
+                position: absolute;
+                z-index: 2;
+                right: 0;
+                width: 140px;
+                padding: 6px;
+                border: 1px solid #cde7ef;
+                border-radius: 8px;
+                background-color: white;
+                box-shadow: 0 8px 24px rgba(26,105,128,0.12);
+            }
+
+            .menu-actions button {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                border: none;
+                border-radius: 4px;
+                background-color: transparent;
+                text-align: left;
+                color: #18313d;
+                font: inherit;
+                cursor: pointer;
+            }
+
+            .menu-actions button:hover {
+                background-color: #e6f3f7;
+            }
+
+            .empty-state {
+                padding: 36px;
+                text-align: center;
+                color: #638098;
+                line-height: 1.8;
+            }
+
+            .notice {
+                padding: 12px 18px 12px 18px;
+                margin: 0 0 20px 0;
+                border: 1px solid #cde7ef;
+                border-radius: 10px;
+                color: #1c667c;
+                background-color: #e6f6fa;
+            }
+
+            #profile-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: rgba(30,61,89,0.45);
+            }
+
+            #modal-card {
+                position: relative;
+                width: 608px;
+                padding: 36px 40px 30px 40px;
+                border: 1px solid #cde7ef;
+                border-radius: 20px;
+                background-color: #fcfefe;
+            }
+
+            #modal-card h2 {
+                margin: 0 0 4px 0;
+                font-size: 38px;
+                letter-spacing: -0.04em;
+            }
+
+            #modal-close {
+                position: absolute;
+                top: 26px;
+                right: 24px;
+                border: none;
+                padding: 4px;
+                background: transparent;
+                cursor: pointer;
+            }
+
+            #modal-close img {
+                width: 25px;
+                height: 25px;
+            }
+
+            #profile-form label {
+                display: block;
+                margin: 28px 0 8px 0;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            #profile-input {
+                width: 100%;
+                padding: 14px 18px 14px 18px;
+                border: 1px solid #1a9bbb;
+                border-radius: 10px;
+                color: #18313d;
+                background-color: white;
+                font: inherit;
+                font-size: 22px;
+            }
+
+            #name-help {
+                margin: 8px 0 0 0;
+                color: #638098;
+                font-size: 14px;
+            }
+
+            #modal-error {
+                color: #b32e2e;
+                margin: 14px 0 0 0;
+            }
+
+            #modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+                margin-top: 56px;
+            }
+
+            #progress-tabs {
+                display: flex;
+                width: 884px;
+                margin: 0 auto 20px auto;
+                border: 1px solid #cde7ef;
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            .progress-tab {
+                flex: 1;
+                padding: 12px;
+                color: #638098;
+                text-align: center;
+                text-decoration: none;
+                border-right: 1px solid #d5e7ee;
+            }
+
+            .progress-tab:last-child {
+                border-right: none;
+            }
+
+            .progress-tab.selected {
+                border: 1px solid #28a8be;
+                border-radius: 12px;
+                background-color: #e2f5f8;
+                color: #0e212b;
+                font-weight: 700;
+            }
+
+            .section-kicker {
+                margin: 18px 0 4px 0;
+                font: 13px "JetBrains Mono", monospace;
+                letter-spacing: 0.08em;
+                color: #638098;
+            }
+
+            .mode-heading {
+                margin: 0 0 18px 0;
+                font-size: 32px;
+            }
+
+            #stat-grid {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .stat-card {
+                flex: 1;
+                min-width: 0;
+                padding: 18px 22px 18px 22px;
+                border: 1px solid #cde7ef;
+                border-radius: 12px;
+                background-color: rgba(255,255,255,0.8);
+            }
+
+            .stat-label {
+                margin: 0 0 6px 0;
+                font: 13px "JetBrains Mono", monospace;
+                letter-spacing: 0.02em;
+                color: #638098;
+            }
+
+            .stat-value {
+                font-size: 38px;
+                font-weight: 800;
+                line-height: 1.2;
+            }
+
+            .stat-unit {
+                font-size: 22px;
+                color: #638098;
+            }
+
+            .stat-value img {
+                width: 32px;
+                height: 32px;
+                vertical-align: middle;
+            }
+
+            .table-panel {
+                border: 1px solid #cde7ef;
+                border-radius: 12px;
+                background-color: rgba(255,255,255,0.8);
+                overflow: hidden;
+            }
+
+            .table-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 22px 14px 22px;
+            }
+
+            .table-heading h3 {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .table-heading span {
+                color: #638098;
+                font-size: 14px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+                color: #638098;
+                font-size: 14px;
+            }
+
+            th {
+                background-color: #f4f9fb;
+                font: 12px "JetBrains Mono", monospace;
+                font-weight: 400;
+                letter-spacing: 0.03em;
+            }
+
+            th, td {
+                padding: 10px 26px 10px 26px;
+                border-top: 1px solid #d5e7ee;
+            }
+
+            td:first-child {
+                color: #0e212b;
+                font-weight: 700;
+            }
+
+            .stars {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .stars img {
+                width: 18px;
+                height: 18px;
+            }
+
+            .leader-filters {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 0 0 22px 0;
+            }
+
+            .leader-filters select {
+                padding: 10px 14px 10px 14px;
+                border: 1px solid #cde7ef;
+                border-radius: 8px;
+                background-color: white;
+                color: #18313d;
+                font: inherit;
+            }
+
+            tr.active-player {
+                background-color: #effbf5;
+            }
+
+            #page {
+                justify-content: flex-start;
+            }
+
+            #bottom-bar {
+                margin-top: auto;
+            }
+
+            #profile-input:focus {
+                outline: 2px solid #2dbbc9;
+                outline-offset: 0;
+            }
+
+            #section-heading {
+                margin-bottom: 20px;
+            }
+
+            #section-title {
+                margin: 8px 0 4px 0;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="page">
+            <header id="top-bar">
+                <div id="brand">
+                    <div id="brand-logo">TQ</div>
+                    <span id="brand-name">TypeQuest</span>
+                </div>
+
+                <nav id="top-nav">
+                    <!-- Settings remains a placeholder. -->
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('play') }}" class="nav-link">Play</a>
+                    <a href="{{ url_for('progress') }}" class="nav-link nav-link-active">Progress</a>
+                    <a href="{{ url_for('profiles') }}" class="nav-link">Profiles</a>
+                    <a href="#settings" class="nav-link">Settings</a>
+                </nav>
+
+                <div id="profile">
+                    <span id="profile-name">{{ active_profile.name if active_profile else "Choose profile" }}</span>
+                    <a id="profile-icon" href="{{ url_for('profiles') }}">
+                        <img src="{{ url_for('static', filename='icons/profile.svg') }}" alt="">
+                    </a>
+                </div>
+            </header>
+            <main id="section-content">
+                <div id="section-heading">
+                    <div class="eyebrow"><span class="eyebrow-dot"></span>YOUR RECORD</div>
+                    <h1 id="section-title">Your <span class="accent">progress</span></h1>
+                    <p class="description">Your best results and recent sessions, all in one place.</p>
+                    {% if active_profile %}<p class="saved-for"><img src="{{ url_for('static', filename='icons/check.svg') }}" alt="">Saved for {{ active_profile.name }}</p>{% endif %}
+                </div>
+                <nav id="progress-tabs">
+                    {% for value, label in [('leaderboard','Leaderboard'), ('classic','Classic'), ('time_attack','Time Attack'), ('survival','Survival')] %}
+                        <a class="progress-tab{% if tab == value %} selected{% endif %}" href="{{ url_for('progress', tab=value) }}">{{ label }}</a>
+                    {% endfor %}
+                </nav>
+                {% if tab == 'leaderboard' %}
+                    <p class="section-kicker">LOCAL PLAYERS</p>
+                    <h2 class="mode-heading">Leaderboard</h2>
+                    <form class="leader-filters" method="get" action="{{ url_for('progress') }}">
+                        <input type="hidden" name="tab" value="leaderboard">
+                        <label for="leader-mode">Mode</label>
+                        <select id="leader-mode" name="mode">
+                            {% for value, label in [('classic','Classic'), ('time_attack','Time Attack'), ('survival','Survival')] %}
+                                <option value="{{ value }}"{% if mode == value %} selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="leader-duration">Time Attack duration</label>
+                        <select id="leader-duration" name="duration">
+                            {% for seconds in [30,60,120,300] %}<option value="{{ seconds }}"{% if duration == seconds %} selected{% endif %}>{{ seconds }} seconds</option>{% endfor %}
+                        </select>
+                        <button class="outline" type="submit">Show ranking</button>
+                    </form>
+                    <div class="table-panel">
+                        <div class="table-heading"><h3>{{ {'classic':'Classic · Total best stars', 'time_attack':'Time Attack · Best Net WPM', 'survival':'Survival · Longest time'}[mode] }}{% if mode == 'time_attack' %} · {{ duration }} seconds{% endif %}</h3><span>Local profiles</span></div>
+                        <table>
+                            <thead><tr><th>RANK</th><th>PLAYER</th><th>{% if mode == 'classic' %}STARS{% elif mode == 'time_attack' %}NET WPM{% else %}SURVIVAL TIME{% endif %}</th></tr></thead>
+                            <tbody>
+                                {% for player in leaderboard %}
+                                    <tr{% if active_profile and player.id == active_profile.id %} class="active-player"{% endif %}><td>{{ loop.index }}</td><td>{{ player.name }}</td><td>{% if mode == 'classic' %}{{ player.score }}{% elif mode == 'time_attack' %}{{ '%.1f' | format(player.score) }}{% else %}{{ player.score | duration_text }}{% endif %}</td></tr>
+                                {% else %}<tr><td class="empty-state" colspan="3">No completed runs for this ranking yet.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif not active_profile %}
+                    <div class="empty-state">Choose a profile to view your progress.<br><a class="outline" href="{{ url_for('profiles') }}">Choose profile</a></div>
+                {% else %}
+                    {% set title = {'classic':'Classic', 'time_attack':'Time Attack', 'survival':'Survival'}[tab] %}
+                    <p class="section-kicker">{% if tab == 'classic' %}LEVEL JOURNEY{% else %}PERSONAL BESTS{% endif %}</p>
+                    <h2 class="mode-heading">{{ title }}</h2>
+                    <div id="stat-grid">
+                        {% if tab == 'classic' %}
+                            <div class="stat-card"><p class="stat-label">LEVELS COMPLETED (CLASSIC)</p><span class="stat-value">{{ summary.completed }} <span class="stat-unit">/ 50</span></span></div>
+                            <div class="stat-card"><p class="stat-label">TOTAL BEST STARS (CLASSIC)</p><span class="stat-value">{{ summary.stars }} <img src="{{ url_for('static', filename='icons/star.svg') }}" alt="stars"></span></div>
+                            <div class="stat-card"><p class="stat-label">BEST NET WPM (CLASSIC)</p><span class="stat-value">{{ '%.1f' | format(summary.net_wpm) }} <span class="stat-unit">WPM</span></span></div>
+                        {% elif tab == 'time_attack' %}
+                            <div class="stat-card"><p class="stat-label">COMPLETED TIME ATTACK RUNS</p><span class="stat-value">{{ summary.runs }}</span></div>
+                            <div class="stat-card"><p class="stat-label">BEST NET WPM (TIME ATTACK)</p><span class="stat-value">{{ '%.1f' | format(summary.net_wpm) }} <span class="stat-unit">WPM</span></span></div>
+                            <div class="stat-card"><p class="stat-label">BEST ACCURACY</p><span class="stat-value">{{ '%.1f' | format(summary.accuracy * 100) }} <span class="stat-unit">%</span></span></div>
+                        {% else %}
+                            <div class="stat-card"><p class="stat-label">COMPLETED SURVIVAL RUNS</p><span class="stat-value">{{ summary.runs }}</span></div>
+                            <div class="stat-card"><p class="stat-label">LONGEST SURVIVAL</p><span class="stat-value">{{ summary.elapsed_ms | duration_text }}</span></div>
+                            <div class="stat-card"><p class="stat-label">BEST NET WPM (SURVIVAL)</p><span class="stat-value">{{ '%.1f' | format(summary.net_wpm) }} <span class="stat-unit">WPM</span></span></div>
+                        {% endif %}
+                    </div>
+                    <div class="table-panel">
+                        <div class="table-heading"><h3>Recent {{ title }} sessions</h3><span>Latest 5 sessions</span></div>
+                        <table>
+                            <thead><tr><th>{% if tab == 'classic' %}LEVEL{% elif tab == 'time_attack' %}DURATION{% else %}TIME SURVIVED{% endif %}</th><th>NET WPM</th><th>ACCURACY</th><th>{% if tab == 'classic' %}STARS{% else %}PLAYING TIME{% endif %}</th><th>DATE &amp; TIME (IST)</th></tr></thead>
+                            <tbody>
+                                {% for result in recent %}
+                                    <tr><td>{% if tab == 'classic' %}Level {{ result.level_id }}{% elif tab == 'time_attack' %}{{ result.duration }} seconds{% else %}{{ result.elapsed_ms | duration_text }} · Tier {{ result.tier }}{% endif %}</td><td>{{ '%.1f' | format(result.net_wpm) }}</td><td>{{ '%.1f' | format(result.accuracy * 100) }}%</td><td>{% if tab == 'classic' %}<span class="stars"><img src="{{ url_for('static', filename='icons/star.svg') }}" alt="">{{ result.stars }} / 3</span>{% else %}{{ result.elapsed_ms | duration_text }}{% endif %}</td><td>{{ result.played_at | ist }}</td></tr>
+                                {% else %}<tr><td class="empty-state" colspan="5">No completed {{ title }} sessions yet. Play a run to save your first result.</td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </main>
+            <footer id="bottom-bar">
+                <div id="audio-status">
+                    <span id="audio-dot"></span>
+                    <span>AUDIO [STEREO 48k]</span>
+                </div>
+                <span>© 2025 TYPEQUEST STUDIO</span>
+            </footer>
+        </div>
+    </body>
+</html>

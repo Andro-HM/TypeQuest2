@@ -280,6 +280,7 @@ function finishGame()
     gameState = "end";
     updateStats();
     updateInterface();
+    saveGameResult(position, correctCharacters, getActiveTime(), 0);
 }
 
 // Pause both typing and the active playing clock.
@@ -333,6 +334,7 @@ function togglePause()
 // Clear the existing spans and counters, then wait for the first character again.
 function restartGame()
 {
+    startResultRun();
     position = 0;
     correctCharacters = 0;
     gameState = "start";

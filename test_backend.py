@@ -20,16 +20,19 @@ class BackendTests(unittest.TestCase):
         self.database_patch.start()
         seed_database()
         self.client = app.test_client()
+        profile_id = database.create_profile("Test player")
+        with self.client.session_transaction() as session:
+            session["profile_id"] = profile_id
         self.fixture = json.loads((Path(__file__).parent / "seed_data.json").read_text(encoding="utf-8"))
 
     def tearDown(self):
         self.database_patch.stop()
         self.directory.cleanup()
 
-    def test_seed_values_and_exactly_three_tables(self):
+    def test_seed_values_and_exactly_seven_tables(self):
         with closing(database.get_connection()) as connection:
-            names = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall()
-            self.assertEqual({row[0] for row in names}, {"classic_tiers", "classic_levels", "typing_passages"})
+            names = connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'").fetchall()
+            self.assertEqual({row[0] for row in names}, {"classic_tiers", "classic_levels", "typing_passages", "profiles", "classic_progress", "time_attack_progress", "survival_progress"})
             for table, key in [("classic_tiers", "tiers"), ("classic_levels", "levels"), ("typing_passages", "passages")]:
                 rows = connection.execute("SELECT * FROM " + table + " ORDER BY id").fetchall()
                 self.assertEqual([dict(row) for row in rows], self.fixture[key])
@@ -47,7 +50,7 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(first, {"classic_tiers": 5, "classic_levels": 20, "time_attack": 100, "survival": 100})
 
     def test_all_routes_and_local_assets(self):
-        for url in ["/", "/play", "/classic-levels", "/classic?level=1", "/time-attack?duration=60", "/survival"]:
+        for url in ["/", "/play", "/classic-levels", "/classic?level=1", "/time-attack?duration=60", "/survival", "/profiles", "/progress", "/progress?tab=leaderboard&mode=survival"]:
             with self.subTest(url=url):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, 200)

@@ -332,6 +332,12 @@
             </footer>
         </div>
 
+        {% if run %}
+        <script>
+            const resultConfig = {runId: {{ run | tojson }}, mode: "classic", url: {{ url_for('save_results') | tojson }}};
+        </script>
+        <script src="{{ url_for('static', filename='js/results.js') }}"></script>
+        {% endif %}
         <script>
             const iconBase = {{ url_for('static', filename='icons/') | tojson }};
             const level = {{ level | tojson }};

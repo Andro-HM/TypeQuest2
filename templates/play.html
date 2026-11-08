@@ -361,19 +361,19 @@
                 </div>
 
                 <nav id="top-nav">
-                    <!-- Progress, Profiles, and Settings are placeholders for now. -->
+                    <!-- Settings remains a placeholder. -->
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                     <a href="{{ url_for('play') }}" class="nav-link nav-link-active">Play</a>
-                    <a href="#progress" class="nav-link">Progress</a>
-                    <a href="#profiles" class="nav-link">Profiles</a>
+                    <a href="{{ url_for('progress') }}" class="nav-link">Progress</a>
+                    <a href="{{ url_for('profiles') }}" class="nav-link">Profiles</a>
                     <a href="#settings" class="nav-link">Settings</a>
                 </nav>
 
                 <div id="profile">
-                    <span id="profile-name">TactileTypist</span>
-                    <div id="profile-icon">
+                    <span id="profile-name">{{ active_profile.name if active_profile else "Choose profile" }}</span>
+                    <a id="profile-icon" href="{{ url_for('profiles') }}">
                         <img src="{{ url_for('static', filename='icons/profile.svg') }}" alt="">
-                    </div>
+                    </a>
                 </div>
             </header>
 

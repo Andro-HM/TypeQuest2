@@ -374,6 +374,7 @@ function updateStats()
 
 function updateInterface()
 {
+    const completedMessage = footerMessage.textContent;
     pauseButton.disabled = gameState === "start" || gameState === "end";
     pauseBtnLabel.textContent = "Pause";
     pauseIcon.src = iconBase + "pause.svg";
@@ -399,6 +400,11 @@ function updateInterface()
     }
     else
     {
+        if (completedMessage.includes(" · Saved for ") || completedMessage.includes(" · Not saved: "))
+        {
+            footerMessage.textContent = completedMessage;
+            return;
+        }
         gameStatus.textContent = "GAME OVER";
         footerMessage.textContent = "GAME OVER · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1);
     }
@@ -416,6 +422,7 @@ function finishGame()
     }
 
     updateCursor();
+    saveGameResult(typedCount, correctCharacters, getActiveTime(), finalizedUntyped);
 }
 
 function updateGame()
@@ -657,6 +664,7 @@ function togglePause()
 // Only Restart clears the spans and begins a fresh three-second countdown.
 function restartGame()
 {
+    startResultRun();
     if (animationFrame !== null)
     {
         cancelAnimationFrame(animationFrame);

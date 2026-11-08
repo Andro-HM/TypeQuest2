@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Profiles — TypeQuest</title>
+
+        <!-- Fonts used in the Stitch design -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+
+        <style>
+            /* ========================================
+               1. PAGE AND BACKGROUND
+               ======================================== */
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                min-height: 100%;
+            }
+
+            body {
+                background-color: #f3f7f9;
+                background-image: radial-gradient(circle at 50% 48%,
+                    rgba(220, 240, 247, 0.75) 0%,
+                    rgba(235, 245, 249, 0.45) 30%,
+                    #f6f9fb 70%,
+                    #f3f7f9 100%);
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                color: #14232c;
+                font-family: "Plus Jakarta Sans", sans-serif;
+            }
+
+            #page {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                min-height: 100vh;
+                padding: 28px 48px 28px 48px;
+            }
+
+            /* ========================================
+               2. TOP NAVIGATION
+               ======================================== */
+
+            #top-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            #brand {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            #brand-logo {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                background-color: #23687d;
+                color: white;
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 0.025em;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #brand-name {
+                color: #0f212b;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: -0.025em;
+            }
+
+            #top-nav {
+                display: flex;
+                align-items: center;
+                padding: 4px;
+                border: 1px solid rgba(210, 227, 234, 0.6);
+                border-radius: 9999px;
+                background-color: rgba(228, 238, 242, 0.8);
+                backdrop-filter: blur(12px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            }
+
+            .nav-link {
+                padding: 6px 20px 6px 20px;
+                border-radius: 9999px;
+                color: #4a636f;
+                font-size: 14px;
+                font-weight: 500;
+                text-decoration: none;
+                transition: background-color 0.2s, color 0.2s;
+            }
+
+            .nav-link:hover {
+                background-color: rgba(20, 184, 166, 0.15);
+                color: #144857;
+            }
+
+            .nav-link-active {
+                border: 1px solid rgba(20, 184, 166, 0.2);
+                background-color: rgba(20, 184, 166, 0.25);
+                color: #144857;
+                font-weight: 600;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #profile {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            #profile-name {
+                color: #18313d;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            #profile-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border: 1px solid #cbdce3;
+                border-radius: 50%;
+                background-color: #e2ecf0;
+            }
+
+            #profile-icon img {
+                width: 20px;
+                height: 20px;
+            }
+
+            /* ========================================
+               3. PLAY HEADING
+               ======================================== */
+
+            #bottom-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                color: #738e9b;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                letter-spacing: 0.025em;
+            }
+
+            #audio-status {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            #audio-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #1b889e;
+            }
+
+            [hidden], #profile-modal[hidden] {
+                display: none;
+            }
+
+            #section-content {
+                width: 100%;
+                max-width: 1208px;
+                margin: 44px auto 60px auto;
+            }
+
+            #section-heading {
+                text-align: center;
+                margin-bottom: 42px;
+            }
+
+            .eyebrow {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 6px 18px 6px 18px;
+                border: 1px solid #cde7ef;
+                border-radius: 9999px;
+                background-color: #e6f6fa;
+                color: #1c667c;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 13px;
+                letter-spacing: 0.12em;
+            }
+
+            .eyebrow-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #2dbbc9;
+            }
+
+            #section-title {
+                margin: 12px 0 10px 0;
+                font-size: 64px;
+                line-height: 1.15;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+            }
+
+            .accent {
+                background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+
+            .description {
+                margin: 0;
+                color: #638098;
+                font-size: 20px;
+                line-height: 1.6;
+            }
+
+            .saved-for {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                margin: 8px 0 0 0;
+                color: #638098;
+                font-size: 14px;
+            }
+
+            .saved-for img {
+                width: 21px;
+                height: 21px;
+            }
+
+            .section-toolbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 24px;
+            }
+
+            .section-toolbar h2 {
+                margin: 0;
+                font-size: 28px;
+                letter-spacing: -0.03em;
+            }
+
+            .profile-count {
+                margin-left: 16px;
+                font-size: 18px;
+                font-weight: 400;
+                color: #638098;
+            }
+
+            .primary, .outline {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                min-height: 48px;
+                padding: 10px 24px 10px 24px;
+                border: 1px solid #1d6980;
+                border-radius: 10px;
+                font: inherit;
+                font-weight: 700;
+                font-size: 18px;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .primary {
+                background-color: #1d6980;
+                color: white;
+            }
+
+            .outline {
+                background-color: transparent;
+                color: #1d6980;
+            }
+
+            .primary:hover {
+                opacity: 0.9;
+            }
+
+            .outline:hover {
+                background-color: #e2f3f8;
+            }
+
+            .primary img, .outline img {
+                width: 22px;
+                height: 22px;
+            }
+
+            #profiles-list {
+                border: 1px solid #cde7ef;
+                border-radius: 14px;
+                background-color: rgba(255,255,255,0.8);
+                max-height: 438px;
+                overflow-y: auto;
+                padding: 0 14px 0 14px;
+            }
+
+            .profile-row {
+                display: flex;
+                align-items: center;
+                gap: 24px;
+                min-height: 72px;
+                padding: 8px 16px 8px 16px;
+                border-bottom: 1px solid #d5e7ee;
+            }
+
+            .profile-row:last-child {
+                border-bottom: none;
+            }
+
+            .profile-row.active {
+                background-color: #effbf5;
+            }
+
+            .avatar {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 56px;
+                height: 56px;
+                border-radius: 50%;
+                background-color: #e6f3f7;
+                color: #1c667c;
+                font-size: 24px;
+                font-weight: 700;
+            }
+
+            .player-name {
+                flex: 1;
+                min-width: 0;
+                overflow-wrap: anywhere;
+                font-size: 24px;
+                font-weight: 700;
+            }
+
+            .profile-row form {
+                margin: 0;
+            }
+
+            .profile-row .outline {
+                min-width: 144px;
+            }
+
+            .active-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                padding: 12px 18px 12px 18px;
+                border-radius: 10px;
+                background-color: #ddf6ec;
+                color: #1c667c;
+                font-weight: 700;
+            }
+
+            .active-badge img {
+                width: 22px;
+                height: 22px;
+            }
+
+            .profile-menu {
+                position: relative;
+            }
+
+            .profile-menu summary {
+                list-style: none;
+                border: 1px solid #cde7ef;
+                border-radius: 8px;
+                width: 38px;
+                height: 40px;
+                text-align: center;
+                line-height: 36px;
+                color: #1c667c;
+                cursor: pointer;
+            }
+
+            .profile-menu summary::-webkit-details-marker {
+                display: none;
+            }
+
+            .menu-actions {
+                position: absolute;
+                z-index: 2;
+                right: 0;
+                width: 140px;
+                padding: 6px;
+                border: 1px solid #cde7ef;
+                border-radius: 8px;
+                background-color: white;
+                box-shadow: 0 8px 24px rgba(26,105,128,0.12);
+            }
+
+            .menu-actions button {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                border: none;
+                border-radius: 4px;
+                background-color: transparent;
+                text-align: left;
+                color: #18313d;
+                font: inherit;
+                cursor: pointer;
+            }
+
+            .menu-actions button:hover {
+                background-color: #e6f3f7;
+            }
+
+            .empty-state {
+                padding: 36px;
+                text-align: center;
+                color: #638098;
+                line-height: 1.8;
+            }
+
+            .notice {
+                padding: 12px 18px 12px 18px;
+                margin: 0 0 20px 0;
+                border: 1px solid #cde7ef;
+                border-radius: 10px;
+                color: #1c667c;
+                background-color: #e6f6fa;
+            }
+
+            #profile-modal {
+                position: fixed;
+                inset: 0;
+                z-index: 10;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: rgba(30,61,89,0.45);
+            }
+
+            #modal-card {
+                position: relative;
+                width: 608px;
+                padding: 36px 40px 30px 40px;
+                border: 1px solid #cde7ef;
+                border-radius: 20px;
+                background-color: #fcfefe;
+            }
+
+            #modal-card h2 {
+                margin: 0 0 4px 0;
+                font-size: 38px;
+                letter-spacing: -0.04em;
+            }
+
+            #modal-close {
+                position: absolute;
+                top: 26px;
+                right: 24px;
+                border: none;
+                padding: 4px;
+                background: transparent;
+                cursor: pointer;
+            }
+
+            #modal-close img {
+                width: 25px;
+                height: 25px;
+            }
+
+            #profile-form label {
+                display: block;
+                margin: 28px 0 8px 0;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            #profile-input {
+                width: 100%;
+                padding: 14px 18px 14px 18px;
+                border: 1px solid #1a9bbb;
+                border-radius: 10px;
+                color: #18313d;
+                background-color: white;
+                font: inherit;
+                font-size: 22px;
+            }
+
+            #name-help {
+                margin: 8px 0 0 0;
+                color: #638098;
+                font-size: 14px;
+            }
+
+            #modal-error {
+                color: #b32e2e;
+                margin: 14px 0 0 0;
+            }
+
+            #modal-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+                margin-top: 56px;
+            }
+
+            #progress-tabs {
+                display: flex;
+                width: 884px;
+                margin: 0 auto 20px auto;
+                border: 1px solid #cde7ef;
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            .progress-tab {
+                flex: 1;
+                padding: 12px;
+                color: #638098;
+                text-align: center;
+                text-decoration: none;
+                border-right: 1px solid #d5e7ee;
+            }
+
+            .progress-tab:last-child {
+                border-right: none;
+            }
+
+            .progress-tab.selected {
+                border: 1px solid #28a8be;
+                border-radius: 12px;
+                background-color: #e2f5f8;
+                color: #0e212b;
+                font-weight: 700;
+            }
+
+            .section-kicker {
+                margin: 18px 0 4px 0;
+                font: 13px "JetBrains Mono", monospace;
+                letter-spacing: 0.08em;
+                color: #638098;
+            }
+
+            .mode-heading {
+                margin: 0 0 18px 0;
+                font-size: 32px;
+            }
+
+            #stat-grid {
+                display: flex;
+                gap: 12px;
+                margin-bottom: 22px;
+            }
+
+            .stat-card {
+                flex: 1;
+                min-width: 0;
+                padding: 18px 22px 18px 22px;
+                border: 1px solid #cde7ef;
+                border-radius: 12px;
+                background-color: rgba(255,255,255,0.8);
+            }
+
+            .stat-label {
+                margin: 0 0 6px 0;
+                font: 13px "JetBrains Mono", monospace;
+                letter-spacing: 0.02em;
+                color: #638098;
+            }
+
+            .stat-value {
+                font-size: 38px;
+                font-weight: 800;
+                line-height: 1.2;
+            }
+
+            .stat-unit {
+                font-size: 22px;
+                color: #638098;
+            }
+
+            .stat-value img {
+                width: 32px;
+                height: 32px;
+                vertical-align: middle;
+            }
+
+            .table-panel {
+                border: 1px solid #cde7ef;
+                border-radius: 12px;
+                background-color: rgba(255,255,255,0.8);
+                overflow: hidden;
+            }
+
+            .table-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 22px 14px 22px;
+            }
+
+            .table-heading h3 {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .table-heading span {
+                color: #638098;
+                font-size: 14px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+                color: #638098;
+                font-size: 14px;
+            }
+
+            th {
+                background-color: #f4f9fb;
+                font: 12px "JetBrains Mono", monospace;
+                font-weight: 400;
+                letter-spacing: 0.03em;
+            }
+
+            th, td {
+                padding: 10px 26px 10px 26px;
+                border-top: 1px solid #d5e7ee;
+            }
+
+            td:first-child {
+                color: #0e212b;
+                font-weight: 700;
+            }
+
+            .stars {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+            .stars img {
+                width: 18px;
+                height: 18px;
+            }
+
+            .leader-filters {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 0 0 22px 0;
+            }
+
+            .leader-filters select {
+                padding: 10px 14px 10px 14px;
+                border: 1px solid #cde7ef;
+                border-radius: 8px;
+                background-color: white;
+                color: #18313d;
+                font: inherit;
+            }
+
+            tr.active-player {
+                background-color: #effbf5;
+            }
+
+            #page {
+                justify-content: flex-start;
+            }
+
+            #bottom-bar {
+                margin-top: auto;
+            }
+
+            #profile-input:focus {
+                outline: 2px solid #2dbbc9;
+                outline-offset: 0;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="page">
+            <header id="top-bar">
+                <div id="brand">
+                    <div id="brand-logo">TQ</div>
+                    <span id="brand-name">TypeQuest</span>
+                </div>
+
+                <nav id="top-nav">
+                    <!-- Settings remains a placeholder. -->
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('play') }}" class="nav-link">Play</a>
+                    <a href="{{ url_for('progress') }}" class="nav-link">Progress</a>
+                    <a href="{{ url_for('profiles') }}" class="nav-link nav-link-active">Profiles</a>
+                    <a href="#settings" class="nav-link">Settings</a>
+                </nav>
+
+                <div id="profile">
+                    <span id="profile-name">{{ active_profile.name if active_profile else "Choose profile" }}</span>
+                    <a id="profile-icon" href="{{ url_for('profiles') }}">
+                        <img src="{{ url_for('static', filename='icons/profile.svg') }}" alt="">
+                    </a>
+                </div>
+            </header>
+            <main id="section-content">
+                <div id="section-heading">
+                    <div class="eyebrow"><span class="eyebrow-dot"></span>LOCAL PLAYERS</div>
+                    <h1 id="section-title">Who’s <span class="accent">typing?</span></h1>
+                    <p class="description">Choose a profile to keep your progress separate.</p>
+                </div>
+                {% if request.args.get('choose') %}
+                    <p class="notice">Create or choose a profile before playing.</p>
+                {% endif %}
+                {% if error and not modal %}<p class="notice">{{ error }}</p>{% endif %}
+                <div class="section-toolbar">
+                    <h2>Your profiles <span class="profile-count">{{ profiles | length }} profile{% if profiles | length != 1 %}s{% endif %}</span></h2>
+                    <button id="create-profile" class="primary" type="button"><span>＋</span>Create profile</button>
+                </div>
+                <div id="profiles-list">
+                    {% for profile in profiles %}
+                        <div class="profile-row{% if active_profile and profile.id == active_profile.id %} active{% endif %}">
+                            <span class="avatar">{{ profile.name | initials }}</span>
+                            <span class="player-name">{{ profile.name }}</span>
+                            {% if active_profile and profile.id == active_profile.id %}
+                                <span class="active-badge"><img src="{{ url_for('static', filename='icons/check.svg') }}" alt="">Active profile</span>
+                            {% else %}
+                                <form method="post" action="{{ url_for('profiles') }}">
+                                    <input type="hidden" name="action" value="switch">
+                                    <input type="hidden" name="profile_id" value="{{ profile.id }}">
+                                    <button class="outline switch-profile" type="submit">Switch →</button>
+                                </form>
+                            {% endif %}
+                            <details class="profile-menu">
+                                <summary title="Profile options">⋯</summary>
+                                <div class="menu-actions">
+                                    <button type="button" data-action="rename" data-id="{{ profile.id }}" data-name="{{ profile.name }}">Rename</button>
+                                    <button type="button" data-action="delete" data-id="{{ profile.id }}" data-name="{{ profile.name }}">Delete</button>
+                                </div>
+                            </details>
+                        </div>
+                    {% else %}
+                        <div class="empty-state">No profiles yet. Create your first profile to start playing and saving results.</div>
+                    {% endfor %}
+                </div>
+            </main>
+            <footer id="bottom-bar">
+                <div id="audio-status">
+                    <span id="audio-dot"></span>
+                    <span>AUDIO [STEREO 48k]</span>
+                </div>
+                <span>© 2025 TYPEQUEST STUDIO</span>
+            </footer>
+        </div>
+        <div id="profile-modal"{% if not modal %} hidden{% endif %}>
+            <div id="modal-card">
+                <button id="modal-close" type="button" title="Close"><img src="{{ url_for('static', filename='icons/close.svg') }}" alt="Close"></button>
+                <h2 id="modal-title">{% if modal == 'rename' %}Rename profile{% else %}Create a profile{% endif %}</h2>
+                <p id="modal-description" class="description">Give your player a name.</p>
+                <form id="profile-form" method="post" action="{{ url_for('profiles') }}">
+                    <input id="profile-action" type="hidden" name="action" value="{{ modal or 'create' }}">
+                    <input id="edit-profile-id" type="hidden" name="profile_id" value="{{ edit_id or '' }}">
+                    <div id="name-fields">
+                        <label for="profile-input">Profile name</label>
+                        <input id="profile-input" name="name" type="text" minlength="1" maxlength="24" required value="{{ entered_name }}" autocomplete="off">
+                        <p id="name-help">1–24 characters. Names must be unique.</p>
+                    </div>
+                    <p id="modal-error"{% if not error %} hidden{% endif %}>{{ error or '' }}</p>
+                    <div id="modal-actions">
+                        <button id="modal-cancel" class="outline" type="button">Cancel</button>
+                        <button id="modal-submit" class="primary" type="submit">{% if modal == 'rename' %}Save name{% else %}Create &amp; switch{% endif %}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script src="{{ url_for('static', filename='js/profiles.js') }}"></script>
+    </body>
+</html>

@@ -1,12 +1,12 @@
 # TypeQuest 2
 
-**Phase 1 backend — Flask, Jinja2, and SQLite**
+**Profiles and Progress — local players and saved runs**
 
 The playable frontend milestone is preserved on `main` as `v1.0.0`. Backend development continues on `feature/backend_1`.
 
 TypeQuest 2 is a browser-based typing game for a college Design Thinking and Idea Lab project. It uses Flask and Jinja2 to serve HTML, SQLite to store game content, and internal CSS plus vanilla JavaScript for gameplay, with simple code that can be understood, modified, and explained during the lab presentation.
 
-This milestone includes playable **Classic, Time Attack, and Survival** modes, along with Home, game selection, and Classic level selection. Gameplay and result calculations remain in the browser. Flask loads the initial content from SQLite when rendering each page. Player results are not saved.
+This milestone includes playable **Classic, Time Attack, and Survival** modes, along with Home, game selection, and Classic level selection. Gameplay and result calculations remain in the browser. Flask loads the initial content from SQLite when rendering each page. Completed runs are saved in SQLite for the selected local profile.
 
 The current version is intended for **desktop and laptop browsers with a physical keyboard**. Mobile layouts are not implemented.
 
@@ -21,7 +21,9 @@ The current version is intended for **desktop and laptop browsers with a physica
 | Time Attack | 30-second, 1-minute, 2-minute, and 5-minute challenges with a continuous passage stream |
 | Survival | Automatic scrolling, editable visible text, increasing difficulty, hearts, and GAME OVER |
 | Shared gameplay controls | Pause/resume, Escape shortcut, automatic pause on focus loss, and restart |
-| Results | Final statistics appear on the current gameplay page |
+| Results | Final statistics remain on the gameplay page and completed runs save to the active profile |
+| Profiles | Create, switch, rename, and delete local players; an active profile is required to play |
+| Progress | Best results, latest five sessions per mode, and separate local leaderboards |
 
 ### Classic
 
@@ -33,7 +35,8 @@ The current version is intended for **desktop and laptop browsers with a physica
 - Typing moves forward; **Backspace is the way to move back and erase**. Left/Right Arrow editing is not used in Classic.
 - Entering the full passage completes the level, even if incorrect characters remain.
 - Completion freezes the clock and shows accuracy and Raw WPM alongside the Net WPM display.
-- Stars, unlocking, and saved completion status are pending. Level cards show **Not attempted** because progress is not stored.
+- Completion awards 1 star below 90% accuracy, 2 stars at 90% or above, and 3 stars at 95% or above. Exact, unrounded accuracy is used; WPM has no effect on stars.
+- Level cards display the current profile’s best stars. Tiers 3–5 remain globally unavailable; star-based unlocking is not implemented.
 
 ### Time Attack
 
@@ -105,16 +108,26 @@ Speed increases continuously between these points and caps at 4 characters per s
 | Dedicated results page | Results are currently shown on the gameplay page |
 | Remaining Classic content | Tiers 3–5 and levels 21–50 are unavailable |
 | Final passage seeding | Current JavaScript content can be replaced with the final level/passages later |
-| Stars and progression | No earned stars, completion tracking, or progression-based unlocking |
-| Saved results | No persistence between runs, page reloads, or browser sessions |
-| Progress and leaderboard | Navigation placeholders; no statistics dashboard or local leaderboard |
-| Profiles | No account system or profile management; the displayed username is a visual placeholder |
+| Tier unlocking | Star-based unlocking remains pending; Tiers 3–5 stay unavailable |
 | Settings | Navigation placeholder with no settings page or functionality |
 | Audio | The audio footer is decorative; game audio is not implemented |
 
-The database currently stores game content only. There are no profile, session, progress, leaderboard, or settings tables, and game results are not saved in SQLite or browser storage. Some interface text describes planned features such as stars and unlocking; those are not functional in this version.
+The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The active profile is remembered using Flask’s signed session cookie with a local-development key; this is not an online account security system.
 
 Mobile support, multiplayer, and a separate Practice mode are outside the current project scope.
+
+## Profiles, Saving, and Leaderboards
+
+- Profile names are trimmed, unique (case-insensitive for ASCII names), and 1–24 characters long.
+- Creating a profile immediately selects it. Use Switch to choose another player. The ⋯ menu provides Rename and Delete; deletion requires confirmation and removes that profile’s saved runs only.
+- Opening a game without a selected profile redirects to Profiles. No sample players or scores are added to the real database.
+- Each completed run adds one row. Restarting begins a new attempt; abandoned runs are not saved. A run ID prevents duplicate rows if the same completion request is received again.
+- Results remain tied to the profile that started the game. If another tab switches or deletes that profile, the result is rejected visibly rather than assigned to a different player. Up to ten recently opened game pages retain their save tokens.
+- Save failures appear in the gameplay footer. Do not navigate away immediately after completion; wait for “Saved for …”.
+- Classic progress counts distinct completed levels and sums the best stars for each level. Replaying a level cannot inflate the total best stars.
+- Classic leaderboard: total best stars across levels. Time Attack leaderboard: best Net WPM, separately for 30/60/120/300 seconds. Survival leaderboard: longest active survival time. Equal scores are ordered by profile ID.
+- Personal Progress shows best figures and the latest five completed runs per mode. Times are stored in UTC and displayed in IST.
+- SQLite content and result queries stay in `database.py`, which imports only `sqlite3`. The existing typing, scrolling, timer, and damage engines stay in JavaScript; small completion/restart hooks call the shared result saver.
 
 ## Backend and Content Storage
 
@@ -125,6 +138,10 @@ The database is `typequest.db` in the project root. It is Git-ignored and can be
 | `classic_tiers` | 5 | Tier ranges and global availability |
 | `classic_levels` | 20 | Level numbers, tiers, titles, and exact passages |
 | `typing_passages` | 200 | 100 Time Attack passages and 100 Survival passages, with 20 per Survival tier |
+| `profiles` | 0 on a fresh setup | Local player names and creation timestamps |
+| `classic_progress` | 0 on a fresh setup | Completed runs; foreign keys to profiles and Classic levels |
+| `time_attack_progress` | 0 on a fresh setup | Completed runs associated with a profile and duration |
+| `survival_progress` | 0 on a fresh setup | Completed runs associated with a profile, survival time, and tier |
 
 Passages appearing in both modes remain separate mode-specific records. Python uses built-in `sqlite3`, parameterized queries, `sqlite3.Row`, and enabled foreign keys. No ORM is used.
 
@@ -140,10 +157,13 @@ Passages appearing in both modes remain separate mode-specific records. Python u
 | `/classic?level=1` | Selected Classic level |
 | `/time-attack?duration=60` | Selected Time Attack duration |
 | `/survival` | Survival |
+| `/profiles` | Profile list and create/switch/rename/delete forms |
+| `/progress` | Personal results; `?tab=leaderboard` opens rankings |
+| `/results` (POST) | Save a completed game using its issued run ID |
 
 An invalid or unavailable Classic level shows the existing unavailable-level screen with HTTP 404. Invalid/unavailable tier selections fall back to Tier 1. Missing, invalid, or unsupported Time Attack durations default to 60 seconds.
 
-Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no content-fetch APIs or AJAX requests.
+Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no asynchronous content-fetch requests. Completed runs are sent once to `/results` using a small shared JavaScript saver.
 
 ## Run Locally — Windows PowerShell
 
@@ -186,11 +206,12 @@ Browser verification during this migration also covered navigation, the six orig
 TypeQuest 2/
 ├── app.py                     # Flask routes and initial page data
 ├── database.py                # SQLite connections and queries
-├── schema.sql                 # Exactly three content tables
+├── schema.sql                 # Three content tables and four profile/progress tables
 ├── seed.py                    # Explicit database initialization/seeding
 ├── seed_data.json             # Exact original content, tracked in Git
 ├── requirements.txt           # Flask (includes Jinja2 as a dependency)
-├── test_backend.py            # Small unittest suite
+├── test_backend.py            # Content and route tests
+├── test_profiles_progress.py  # Profiles, saving, stars, isolation, and leaderboard tests
 ├── typequest.db               # Local database, Git-ignored
 ├── templates/
 │   ├── index.html
@@ -198,13 +219,17 @@ TypeQuest 2/
 │   ├── classic-levels.html
 │   ├── classic.html
 │   ├── time-attack.html
-│   └── survival.html
+│   ├── survival.html
+│   ├── profiles.html
+│   └── progress.html
 ├── static/
 │   ├── js/
 │   │   ├── home.js
 │   │   ├── classic.js
 │   │   ├── time-attack.js
-│   │   └── survival.js
+│   │   ├── survival.js
+│   │   ├── profiles.js
+│   │   └── results.js
 │   └── icons/
 ├── .gitignore
 └── README.md
@@ -222,4 +247,6 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 - Keep static page backgrounds on `body`, icons in separate SVG files, and layouts focused on desktop/laptop screens.
 - Preserve the supplied designs and favor code that can be explained line by line over frameworks or unnecessary abstractions.
 
-Phase 1 adds server-side content storage and rendering while preserving the three playable modes. Player profiles, saved results, progression, and the remaining interface work are still pending.
+Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, a dedicated results page, settings, and audio remain pending.
+
+To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 12 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, duplicate prevention, profile changes during play, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.

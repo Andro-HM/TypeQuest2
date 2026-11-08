@@ -257,6 +257,7 @@ function updateStats()
 // Update the interface to reflect the current game state, including button states and messages
 function updateInterface()
 {
+    const completedMessage = footerMessage.textContent;
     pauseButton.disabled = gameState === "start" || gameState === "end";
     restartButton.disabled = false;
     pauseBtnLabel.textContent = "Pause";
@@ -283,6 +284,11 @@ function updateInterface()
     }
     else
     {
+        if (completedMessage.includes(" · Saved for ") || completedMessage.includes(" · Not saved: "))
+        {
+            footerMessage.textContent = completedMessage;
+            return;
+        }
         gameStatus.textContent = "TIME UP";
         footerMessage.textContent = "TIME UP · ACCURACY " + (accuracy * 100).toFixed(1) + "% · RAW WPM " + rawWpm.toFixed(1) + " · WORDS " + wordsTyped;
     }
@@ -295,6 +301,7 @@ function finishGame()
     activeMs = durationMs;
     gameState = "end";
     updateCursor();
+    saveGameResult(typedCount, correctCharacters, getActiveTime(), 0);
 }
 
 function updateGame()
@@ -518,6 +525,7 @@ function togglePause()
 // Only Restart clears the spans. Every run begins with a fresh three-second countdown.
 function restartGame()
 {
+    startResultRun();
     typingArea.innerHTML = "";
     windowStart = 0;
     windowEnd = 60;
