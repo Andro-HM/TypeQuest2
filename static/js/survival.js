@@ -664,7 +664,7 @@ function togglePause()
 // Only Restart clears the spans and begins a fresh three-second countdown.
 function restartGame()
 {
-    startResultRun();
+    resultSaved = false;
     if (animationFrame !== null)
     {
         cancelAnimationFrame(animationFrame);

@@ -334,7 +334,7 @@ function togglePause()
 // Clear the existing spans and counters, then wait for the first character again.
 function restartGame()
 {
-    startResultRun();
+    resultSaved = false;
     position = 0;
     correctCharacters = 0;
     gameState = "start";

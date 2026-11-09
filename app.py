@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, g, jsonify
 from datetime import datetime, timedelta
 import math
-import secrets
 import sqlite3
 
 import database
@@ -53,7 +52,7 @@ def classic():
     if level is None:
         return render_template("classic.html", level=None), 404
 
-    return render_template("classic.html", level=dict(level), run=issue_run("classic", level_id=number))
+    return render_template("classic.html", level=dict(level))
 
 
 @app.route("/time-attack")
@@ -66,7 +65,7 @@ def time_attack():
     for passage in database.get_passages("time_attack"):
         passages.append(passage["content"])
 
-    return render_template("time-attack.html", duration=duration, passages=passages, run=issue_run("time_attack", duration=duration))
+    return render_template("time-attack.html", duration=duration, passages=passages)
 
 
 @app.route("/survival")
@@ -78,9 +77,7 @@ def survival():
     for passage in database.get_passages("survival"):
         tiers[passage["tier"] - 1]["passages"].append(passage["content"])
 
-    return render_template("survival.html", tiers=tiers, run=issue_run("survival"))
-
-
+    return render_template("survival.html", tiers=tiers)
 
 
 @app.before_request
@@ -185,58 +182,57 @@ def progress():
                            recent=recent, leaderboard=leaderboard)
 
 
-def issue_run(mode, level_id=None, duration=None):
-    token = secrets.token_hex(16)
-    runs = session.get("runs", {})
-    # Retain a few concurrent game tabs without growing the session cookie indefinitely.
-    while len(runs) >= 10:
-        del runs[next(iter(runs))]
-    runs[token] = {"profile_id": g.profile["id"], "mode": mode, "level_id": level_id, "duration": duration}
-    session["runs"] = runs
-    return token
-
-
 @app.route("/results", methods=["POST"])
 def save_results():
+    if g.profile is None:
+        return jsonify(error="Choose a profile before saving."), 401
+
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify(error="Invalid result."), 400
-    run_id = data.get("run_id")
-    if not isinstance(run_id, str) or len(run_id) > 64 or "-" not in run_id:
-        return jsonify(error="Invalid run."), 400
-    base, attempt = run_id.rsplit("-", 1)
-    if not attempt.isdigit():
-        return jsonify(error="Invalid run."), 400
-    run = session.get("runs", {}).get(base)
-    if g.profile is None or run is None or run["profile_id"] != g.profile["id"]:
-        return jsonify(error="Profile changed or this game tab expired. Result not saved."), 409
-    try:
-        typed = data["typed_count"]
-        correct = data["correct_count"]
-        missed = data.get("missed_count", 0)
-        elapsed = data["elapsed_ms"]
-        for value in (typed, correct, missed):
-            if type(value) is not int or value < 0:
-                raise ValueError
-        if type(elapsed) not in (int, float) or not math.isfinite(elapsed) or elapsed <= 0 or correct > typed:
-            raise ValueError
-        if run["mode"] == "classic":
-            level = database.get_level(run["level_id"])
-            if level is None or typed != len(level["content"]) or missed != 0:
-                raise ValueError
-        if run["mode"] == "time_attack" and (elapsed != run["duration"] * 1000 or missed != 0):
-            raise ValueError
-    except (KeyError, TypeError, ValueError, OverflowError):
-        return jsonify(error="Invalid or incomplete result."), 400
+    if data.get("profile_id") != g.profile["id"]:
+        return jsonify(error="The selected profile changed. Result not saved."), 409
+
+    mode = data.get("mode")
+    if mode not in ("classic", "time_attack", "survival"):
+        return jsonify(error="Choose a valid game mode."), 400
+
+    typed = data.get("typed_count")
+    correct = data.get("correct_count")
+    missed = data.get("missed_count", 0)
+    elapsed = data.get("elapsed_ms")
+    for count in (typed, correct, missed):
+        if type(count) is not int or count < 0:
+            return jsonify(error="Invalid character counts."), 400
+    if correct > typed or type(elapsed) not in (int, float):
+        return jsonify(error="Invalid result."), 400
+    if elapsed <= 0 or not math.isfinite(elapsed):
+        return jsonify(error="Invalid playing time."), 400
+
+    level_id = None
+    duration = None
+    if mode == "classic":
+        level_id = data.get("level_id")
+        if type(level_id) is not int:
+            return jsonify(error="Choose a valid level."), 400
+        level = database.get_level(level_id)
+        if level is None or typed != len(level["content"]) or missed != 0:
+            return jsonify(error="Complete an available Classic level before saving."), 400
+    elif mode == "time_attack":
+        duration = data.get("duration")
+        if duration not in DURATIONS or elapsed != duration * 1000 or missed != 0:
+            return jsonify(error="Complete a supported Time Attack duration before saving."), 400
+
     accuracy = 0
     if typed + missed > 0:
         accuracy = correct / (typed + missed)
     try:
         net_wpm = typed / 5 / (elapsed / 60000) * accuracy
-    except (ZeroDivisionError, OverflowError):
+    except (OverflowError, ZeroDivisionError):
         return jsonify(error="Invalid result."), 400
     if not math.isfinite(net_wpm):
         return jsonify(error="Invalid result."), 400
+
     stars = 1
     if accuracy >= 0.95:
         stars = 3
@@ -244,8 +240,8 @@ def save_results():
         stars = 2
     tier = min(5, int(elapsed // 60000) + 1)
     try:
-        database.save_result(run["mode"], g.profile["id"], data["run_id"], net_wpm, accuracy, elapsed,
-                             stars, run["level_id"], run["duration"], tier)
+        database.save_result(mode, g.profile["id"], net_wpm, accuracy, elapsed,
+                             stars, level_id, duration, tier)
     except sqlite3.IntegrityError:
         return jsonify(error="Profile or level no longer exists. Result not saved."), 409
     return jsonify(saved=True, profile=g.profile["name"], stars=stars)

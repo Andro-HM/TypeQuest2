@@ -121,8 +121,8 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 - Profile names are trimmed, unique (case-insensitive for ASCII names), and 1–24 characters long.
 - Creating a profile immediately selects it. Use Switch to choose another player. The ⋯ menu provides Rename and Delete; deletion requires confirmation and removes that profile’s saved runs only.
 - Opening a game without a selected profile redirects to Profiles. No sample players or scores are added to the real database.
-- Each completed run adds one row. Restarting begins a new attempt; abandoned runs are not saved. A run ID prevents duplicate rows if the same completion request is received again.
-- Results remain tied to the profile that started the game. If another tab switches or deletes that profile, the result is rejected visibly rather than assigned to a different player. Up to ten recently opened game pages retain their save tokens.
+- Each completed run adds one row. A single JavaScript `resultSaved` flag prevents repeated saves from that completion. Restart resets the flag; abandoned runs are not saved. There are no run tokens, attempt IDs, or server-side replay registry.
+- Flask’s session remembers the selected profile. Each game sends its displayed profile ID with its result; a simple comparison rejects the save if the selected player has changed or been deleted. No concurrent-tab token system is used.
 - Save failures appear in the gameplay footer. Do not navigate away immediately after completion; wait for “Saved for …”.
 - Classic progress counts distinct completed levels and sums the best stars for each level. Replaying a level cannot inflate the total best stars.
 - Classic leaderboard: total best stars across levels. Time Attack leaderboard: best Net WPM, separately for 30/60/120/300 seconds. Survival leaderboard: longest active survival time. Equal scores are ordered by profile ID.
@@ -159,11 +159,11 @@ Passages appearing in both modes remain separate mode-specific records. Python u
 | `/survival` | Survival |
 | `/profiles` | Profile list and create/switch/rename/delete forms |
 | `/progress` | Personal results; `?tab=leaderboard` opens rankings |
-| `/results` (POST) | Save a completed game using its issued run ID |
+| `/results` (POST) | Save a completed game for the selected profile |
 
 An invalid or unavailable Classic level shows the existing unavailable-level screen with HTTP 404. Invalid/unavailable tier selections fall back to Tier 1. Missing, invalid, or unsupported Time Attack durations default to 60 seconds.
 
-Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no asynchronous content-fetch requests. Completed runs are sent once to `/results` using a small shared JavaScript saver.
+Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no asynchronous content-fetch requests. Completed runs are sent to `/results` using a small shared JavaScript saver. The POST includes the mode, profile, level/duration where applicable, character counts, and active elapsed time. Flask checks the basic values and calculates WPM, accuracy, and stars before inserting the result.
 
 ## Run Locally — Windows PowerShell
 
@@ -249,4 +249,10 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 
 Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, a dedicated results page, settings, and audio remain pending.
 
-To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 12 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, duplicate prevention, profile changes during play, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 13 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, profile changes during play, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+
+### Simplified result saving
+
+The save flow is now: game completes → check/set `resultSaved` → POST `/results` → validate basic values → insert a row for the selected profile. Restart sets `resultSaved = false`. Repeating a raw HTTP POST can create another row; normal duplicate completion calls are stopped by the JavaScript flag rather than database tokens.
+
+Run `python seed.py` once after updating an older installation. It removes the old `run_id` columns while preserving existing progress IDs, profile links, scores, stars, times, and timestamps. Fresh databases use the simpler seven-table schema directly. The upgrade runs only during explicit initialization, not on ordinary Flask startup. Tests cover upgrading a populated old database and repeating initialization without losing history.

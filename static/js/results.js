@@ -1,21 +1,13 @@
-let resultAttempt = 0;
-let savedAttempt = -1;
+let resultSaved = false;
 
-// Restart gets a new result ID without changing the typing engine or making a request.
-function startResultRun()
+async function saveGameResult(typed, correct, elapsed, missed)
 {
-    resultAttempt++;
-}
-
-function saveGameResult(typed, correct, elapsed, missed)
-{
-    if (savedAttempt === resultAttempt)
+    if (resultSaved)
     {
         return;
     }
+    resultSaved = true;
 
-    const attempt = resultAttempt;
-    savedAttempt = attempt;
     if (resultConfig.mode === "classic")
     {
         let stars = 1;
@@ -32,38 +24,45 @@ function saveGameResult(typed, correct, elapsed, missed)
 
     const result =
     {
-        run_id: resultConfig.runId + "-" + attempt,
+        profile_id: resultConfig.profileId,
+        mode: resultConfig.mode,
         typed_count: typed,
         correct_count: correct,
         elapsed_ms: elapsed,
         missed_count: missed
     };
+    if (resultConfig.mode === "classic")
+    {
+        result.level_id = resultConfig.levelId;
+    }
+    else if (resultConfig.mode === "time_attack")
+    {
+        result.duration = resultConfig.duration;
+    }
 
-    fetch(resultConfig.url,
+    try
     {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(result)
-    })
-    .then(function (response)
-    {
-        return response.json().then(function (data)
+        const response = await fetch(resultConfig.url,
         {
-            if (!response.ok)
-            {
-                throw new Error(data.error || "Result not saved.");
-            }
-            if (resultAttempt === attempt)
-            {
-                footerMessage.textContent += " · Saved for " + data.profile;
-            }
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(result)
         });
-    })
-    .catch(function (error)
+        const data = await response.json();
+        if (!response.ok)
+        {
+            throw new Error(data.error || "Result not saved.");
+        }
+        if (gameState === "end")
+        {
+            footerMessage.textContent += " · Saved for " + data.profile;
+        }
+    }
+    catch (error)
     {
-        if (resultAttempt === attempt)
+        if (gameState === "end")
         {
             footerMessage.textContent += " · Not saved: " + error.message;
         }
-    });
+    }
 }

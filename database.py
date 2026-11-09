@@ -106,30 +106,30 @@ def delete_profile(profile_id):
         connection.close()
 
 
-def save_result(mode, profile_id, run_id, net_wpm, accuracy, elapsed_ms, stars=1, level_id=None, duration=None, tier=1):
+def save_result(mode, profile_id, net_wpm, accuracy, elapsed_ms, stars=1, level_id=None, duration=None, tier=1):
     connection = get_connection()
     try:
         with connection:
             if mode == "classic":
                 connection.execute(
                     """INSERT INTO classic_progress
-                       (profile_id, level_id, run_id, net_wpm, accuracy, stars, elapsed_ms)
-                       VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(run_id) DO NOTHING""",
-                    (profile_id, level_id, run_id, net_wpm, accuracy, stars, elapsed_ms),
+                       (profile_id, level_id, net_wpm, accuracy, stars, elapsed_ms)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    (profile_id, level_id, net_wpm, accuracy, stars, elapsed_ms),
                 )
             elif mode == "time_attack":
                 connection.execute(
                     """INSERT INTO time_attack_progress
-                       (profile_id, duration, run_id, net_wpm, accuracy, elapsed_ms)
-                       VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(run_id) DO NOTHING""",
-                    (profile_id, duration, run_id, net_wpm, accuracy, elapsed_ms),
+                       (profile_id, duration, net_wpm, accuracy, elapsed_ms)
+                       VALUES (?, ?, ?, ?, ?)""",
+                    (profile_id, duration, net_wpm, accuracy, elapsed_ms),
                 )
             else:
                 connection.execute(
                     """INSERT INTO survival_progress
-                       (profile_id, run_id, net_wpm, accuracy, elapsed_ms, tier)
-                       VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(run_id) DO NOTHING""",
-                    (profile_id, run_id, net_wpm, accuracy, elapsed_ms, tier),
+                       (profile_id, net_wpm, accuracy, elapsed_ms, tier)
+                       VALUES (?, ?, ?, ?, ?)""",
+                    (profile_id, net_wpm, accuracy, elapsed_ms, tier),
                 )
     finally:
         connection.close()

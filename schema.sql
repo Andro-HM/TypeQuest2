@@ -32,7 +32,6 @@ CREATE TABLE IF NOT EXISTS classic_progress (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     level_id INTEGER NOT NULL REFERENCES classic_levels(id),
-    run_id TEXT NOT NULL UNIQUE,
     net_wpm REAL NOT NULL CHECK (net_wpm >= 0),
     accuracy REAL NOT NULL CHECK (accuracy BETWEEN 0 AND 1),
     stars INTEGER NOT NULL CHECK (stars BETWEEN 1 AND 3),
@@ -44,7 +43,6 @@ CREATE TABLE IF NOT EXISTS time_attack_progress (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     duration INTEGER NOT NULL CHECK (duration IN (30, 60, 120, 300)),
-    run_id TEXT NOT NULL UNIQUE,
     net_wpm REAL NOT NULL CHECK (net_wpm >= 0),
     accuracy REAL NOT NULL CHECK (accuracy BETWEEN 0 AND 1),
     elapsed_ms REAL NOT NULL CHECK (elapsed_ms > 0),
@@ -54,7 +52,6 @@ CREATE TABLE IF NOT EXISTS time_attack_progress (
 CREATE TABLE IF NOT EXISTS survival_progress (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-    run_id TEXT NOT NULL UNIQUE,
     net_wpm REAL NOT NULL CHECK (net_wpm >= 0),
     accuracy REAL NOT NULL CHECK (accuracy BETWEEN 0 AND 1),
     elapsed_ms REAL NOT NULL CHECK (elapsed_ms > 0),

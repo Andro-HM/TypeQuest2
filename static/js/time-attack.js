@@ -525,7 +525,7 @@ function togglePause()
 // Only Restart clears the spans. Every run begins with a fresh three-second countdown.
 function restartGame()
 {
-    startResultRun();
+    resultSaved = false;
     typingArea.innerHTML = "";
     windowStart = 0;
     windowEnd = 60;

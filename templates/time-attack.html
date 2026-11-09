@@ -335,9 +335,9 @@
             </footer>
         </div>
 
-        {% if run %}
+        {% if active_profile %}
         <script>
-            const resultConfig = {runId: {{ run | tojson }}, mode: "time_attack", url: {{ url_for('save_results') | tojson }}};
+            const resultConfig = {profileId: {{ active_profile.id | tojson }}, mode: "time_attack", duration: {{ duration | tojson }}, url: {{ url_for('save_results') | tojson }}};
         </script>
         <script src="{{ url_for('static', filename='js/results.js') }}"></script>
         {% endif %}

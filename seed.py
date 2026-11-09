@@ -12,9 +12,27 @@ def seed_database(database_path=None):
     data = json.loads((root / "seed_data.json").read_text(encoding="utf-8"))
 
     with closing(get_connection(database_path)) as connection:
-        connection.executescript((root / "schema.sql").read_text(encoding="utf-8"))
-
         with connection:
+            connection.execute("BEGIN")
+            # Upgrade older databases once, keeping every saved row except its obsolete token.
+            old_tables = []
+            for table in ("classic_progress", "time_attack_progress", "survival_progress"):
+                columns = [row["name"] for row in connection.execute("PRAGMA table_info(" + table + ")")]
+                if "run_id" in columns:
+                    connection.execute("ALTER TABLE " + table + " RENAME TO " + table + "_old")
+                    columns.remove("run_id")
+                    old_tables.append((table, columns))
+
+            schema = (root / "schema.sql").read_text(encoding="utf-8")
+            for statement in schema.split(";"):
+                if statement.strip():
+                    connection.execute(statement)
+
+            for table, columns in old_tables:
+                names = ", ".join(columns)
+                connection.execute("INSERT INTO " + table + " (" + names + ") SELECT " + names + " FROM " + table + "_old")
+                connection.execute("DROP TABLE " + table + "_old")
+
             for tier in data["tiers"]:
                 connection.execute(
                     """INSERT INTO classic_tiers (id, first_level, last_level, available)
