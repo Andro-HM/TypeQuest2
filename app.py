@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, g, jsonify
 from datetime import datetime, timedelta
-import math
 import sqlite3
 
 import database
@@ -41,14 +40,7 @@ def classic_levels():
 
 @app.route("/classic")
 def classic():
-    number = request.args.get("level", "1") or "1"
-
-    try:
-        number = int(number)
-    except ValueError:
-        number = 0
-
-    level = database.get_level(number)
+    level = database.get_level(request.args.get("level") or 1)
     if level is None:
         return render_template("classic.html", level=None), 404
 
@@ -119,45 +111,41 @@ def duration_text(milliseconds):
 def profiles():
     error = None
     modal = None
-    entered_name = ""
-    edit_id = None
+    profile_id = request.form.get("profile_id", type=int)
+    name = request.form.get("name", "").strip()
+
     if request.method == "POST":
         action = request.form.get("action")
-        profile_id = request.form.get("profile_id", type=int)
-        profile = database.get_profile(profile_id)
-        entered_name = request.form.get("name", "").strip()
-        if action in ("create", "rename"):
+        if action != "create" and database.get_profile(profile_id) is None:
+            error = "Choose an existing profile."
+        elif action in ("create", "rename"):
             modal = action
-            edit_id = profile_id
-            if not 1 <= len(entered_name) <= 24:
+            if not 1 <= len(name) <= 24:
                 error = "Use 1–24 characters for the profile name."
-            elif action == "rename" and profile is None:
-                error = "This profile no longer exists."
             else:
                 try:
                     if action == "create":
-                        profile_id = database.create_profile(entered_name)
-                        session["profile_id"] = profile_id
+                        session["profile_id"] = database.create_profile(name)
                         session.permanent = True
                     else:
-                        database.rename_profile(profile_id, entered_name)
+                        database.rename_profile(profile_id, name)
                 except sqlite3.IntegrityError:
                     error = "A profile with this name already exists."
-                else:
-                    return redirect(url_for("profiles"))
-        elif action == "switch" and profile is not None:
+        elif action == "switch":
             session["profile_id"] = profile_id
             session.permanent = True
-            return redirect(url_for("profiles"))
-        elif action == "delete" and profile is not None:
+        elif action == "delete":
             database.delete_profile(profile_id)
             if session.get("profile_id") == profile_id:
                 session.pop("profile_id", None)
-            return redirect(url_for("profiles"))
         else:
             error = "Choose an existing profile."
+
+        if error is None:
+            return redirect(url_for("profiles"))
+
     return render_template("profiles.html", profiles=database.get_profiles(), error=error, modal=modal,
-                           entered_name=entered_name, edit_id=edit_id)
+                           entered_name=name, edit_id=profile_id)
 
 
 @app.route("/progress")
@@ -187,9 +175,7 @@ def save_results():
     if g.profile is None:
         return jsonify(error="Choose a profile before saving."), 401
 
-    data = request.get_json(silent=True)
-    if not isinstance(data, dict):
-        return jsonify(error="Invalid result."), 400
+    data = request.get_json()
     if data.get("profile_id") != g.profile["id"]:
         return jsonify(error="The selected profile changed. Result not saved."), 409
 
@@ -197,53 +183,30 @@ def save_results():
     if mode not in ("classic", "time_attack", "survival"):
         return jsonify(error="Choose a valid game mode."), 400
 
-    typed = data.get("typed_count")
-    correct = data.get("correct_count")
+    typed = data.get("typed_count", 0)
+    correct = data.get("correct_count", 0)
     missed = data.get("missed_count", 0)
-    elapsed = data.get("elapsed_ms")
-    for count in (typed, correct, missed):
-        if type(count) is not int or count < 0:
-            return jsonify(error="Invalid character counts."), 400
-    if correct > typed or type(elapsed) not in (int, float):
-        return jsonify(error="Invalid result."), 400
-    if elapsed <= 0 or not math.isfinite(elapsed):
-        return jsonify(error="Invalid playing time."), 400
+    elapsed = data.get("elapsed_ms", 0)
+    if elapsed <= 0 or typed < 0 or missed < 0 or not 0 <= correct <= typed:
+        return jsonify(error="Invalid playing time or character counts."), 400
 
-    level_id = None
-    duration = None
-    if mode == "classic":
-        level_id = data.get("level_id")
-        if type(level_id) is not int:
-            return jsonify(error="Choose a valid level."), 400
-        level = database.get_level(level_id)
-        if level is None or typed != len(level["content"]) or missed != 0:
-            return jsonify(error="Complete an available Classic level before saving."), 400
-    elif mode == "time_attack":
-        duration = data.get("duration")
-        if duration not in DURATIONS or elapsed != duration * 1000 or missed != 0:
-            return jsonify(error="Complete a supported Time Attack duration before saving."), 400
-
+    # The game sends these counts only when a run ends.
     accuracy = 0
     if typed + missed > 0:
         accuracy = correct / (typed + missed)
-    try:
-        net_wpm = typed / 5 / (elapsed / 60000) * accuracy
-    except (OverflowError, ZeroDivisionError):
-        return jsonify(error="Invalid result."), 400
-    if not math.isfinite(net_wpm):
-        return jsonify(error="Invalid result."), 400
-
+    net_wpm = typed / 5 / (elapsed / 60000) * accuracy
     stars = 1
     if accuracy >= 0.95:
         stars = 3
     elif accuracy >= 0.90:
         stars = 2
+
     tier = min(5, int(elapsed // 60000) + 1)
     try:
         database.save_result(mode, g.profile["id"], net_wpm, accuracy, elapsed,
-                             stars, level_id, duration, tier)
+                             stars, data.get("level_id"), data.get("duration"), tier)
     except sqlite3.IntegrityError:
-        return jsonify(error="Profile or level no longer exists. Result not saved."), 409
+        return jsonify(error="Profile, level, or duration is no longer valid. Result not saved."), 409
     return jsonify(saved=True, profile=g.profile["name"], stars=stars)
 
 

@@ -52,7 +52,7 @@ class ProfileProgressTests(unittest.TestCase):
         self.assertGreater(replacement, second)
         self.assertIsNone(database.get_profile(second))
 
-    def test_exact_star_thresholds_and_completion(self):
+    def test_exact_star_thresholds_and_wpm_independence(self):
         profile_id = self.create()
         connection = database.get_connection()
         try:
@@ -69,7 +69,6 @@ class ProfileProgressTests(unittest.TestCase):
         self.assertEqual(len(recent), 5)
         self.assertEqual(summary["completed"], 1)
         self.assertEqual(summary["stars"], 3)
-        self.assertEqual(self.client.post("/results", json={"mode": "classic", "profile_id": profile_id, "level_id": 1, "typed_count": 99999, "correct_count": 99999, "elapsed_ms": 1000}).status_code, 400)
         # WPM cannot change stars: use exactly 95% over a much slower run.
         response = self.client.post("/results", json={"mode": "classic", "profile_id": profile_id, "level_id": 1, "typed_count": 100000, "correct_count": 95000, "elapsed_ms": 600000})
         self.assertEqual(response.json["stars"], 3)
@@ -110,18 +109,42 @@ class ProfileProgressTests(unittest.TestCase):
         # Duplicate completion calls are blocked by JavaScript, not by database identifiers.
         self.assertEqual(self.client.post("/results", json=payload).status_code, 200)
         self.assertEqual(len(database.get_progress(hm, "time_attack")[1]), 2)
-        for changes in [{"elapsed_ms": 29999}, {"correct_count": 101}, {"typed_count": -1},
-                        {"mode": "unknown"}, {"elapsed_ms": float("nan")}, {"duration": 99}]:
+        for changes in [{"elapsed_ms": 0}, {"correct_count": 101}, {"typed_count": -1},
+                        {"mode": "unknown"}, {"missed_count": -1}]:
             invalid = dict(payload)
             invalid.update(changes)
             self.assertEqual(self.client.post("/results", json=invalid).status_code, 400)
-        self.assertEqual(self.client.post("/results", json=[]).status_code, 400)
-        self.assertEqual(self.client.post("/results", data="not JSON").status_code, 400)
+        # SQLite keeps unsupported durations and missing Classic levels out of saved history.
+        invalid = dict(payload, duration=99)
+        self.assertEqual(self.client.post("/results", json=invalid).status_code, 409)
+        invalid = dict(payload, mode="classic", level_id=999)
+        self.assertEqual(self.client.post("/results", json=invalid).status_code, 409)
+        # Trust the game's elapsed time instead of checking an exact duration equality.
+        self.assertEqual(self.client.post("/results", json=dict(payload, elapsed_ms=29999)).status_code, 200)
+        self.assertEqual(self.client.post("/results", data="not JSON", content_type="application/json").status_code, 400)
         self.client.post("/profiles", data={"action": "delete", "profile_id": hm})
         self.assertEqual(self.client.get("/play").status_code, 302)
         self.assertEqual(self.client.post("/results", json=payload).status_code, 401)
         with self.client.session_transaction() as session:
             self.assertNotIn("runs", session)
+
+    def test_result_statistics_and_survival_misses(self):
+        profile_id = self.create()
+        for elapsed, expected_tier in [(1000, 1), (60000, 2), (300000, 5), (360000, 5)]:
+            payload = {"profile_id": profile_id, "mode": "survival", "typed_count": 100,
+                       "correct_count": 90, "missed_count": 20, "elapsed_ms": elapsed}
+            self.assertEqual(self.client.post("/results", json=payload).status_code, 200)
+            result = database.get_progress(profile_id, "survival")[1][0]
+            self.assertEqual(result["accuracy"], 0.75)
+            self.assertAlmostEqual(result["net_wpm"], 100 / 5 / (elapsed / 60000) * 0.75)
+            self.assertEqual(result["tier"], expected_tier)
+        # An idle Time Attack run still saves a zero score without dividing by zero.
+        payload = {"profile_id": profile_id, "mode": "time_attack", "duration": 30,
+                   "typed_count": 0, "correct_count": 0, "elapsed_ms": 30000}
+        self.assertEqual(self.client.post("/results", json=payload).status_code, 200)
+        result = database.get_progress(profile_id, "time_attack")[1][0]
+        self.assertEqual(result["accuracy"], 0)
+        self.assertEqual(result["net_wpm"], 0)
 
     def test_recent_five_ist_and_progress_empty_states(self):
         profile_id = self.create()
