@@ -24,7 +24,6 @@ async function saveGameResult(typed, correct, elapsed, missed)
 
     const result =
     {
-        profile_id: resultConfig.profileId,
         mode: resultConfig.mode,
         typed_count: typed,
         correct_count: correct,

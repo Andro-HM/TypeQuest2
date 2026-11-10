@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import database
+import app as backend
 from app import app
 from seed import seed_database
 
@@ -16,16 +17,18 @@ class ProfileProgressTests(unittest.TestCase):
         self.patch = patch.object(database, "DATABASE_PATH", self.path)
         self.patch.start()
         seed_database()
+        self.profile_patch = patch.object(backend, "active_profile_id", None)
+        self.profile_patch.start()
         self.client = app.test_client()
 
     def tearDown(self):
+        self.profile_patch.stop()
         self.patch.stop()
         self.directory.cleanup()
 
     def create(self, name="HM"):
         self.client.post("/profiles", data={"action": "create", "name": name})
-        with self.client.session_transaction() as session:
-            return session["profile_id"]
+        return backend.active_profile_id
 
     def test_profile_guard_creation_switch_rename_and_validation(self):
         for url in ["/play", "/classic-levels", "/classic?level=1", "/time-attack", "/survival"]:
@@ -61,7 +64,7 @@ class ProfileProgressTests(unittest.TestCase):
         finally:
             connection.close()
         for correct, expected in [(89999, 1), (90000, 2), (94999, 2), (95000, 3), (100000, 3)]:
-            payload = {"mode": "classic", "profile_id": profile_id, "level_id": 1, "typed_count": 100000, "correct_count": correct, "elapsed_ms": 60000}
+            payload = {"mode": "classic", "level_id": 1, "typed_count": 100000, "correct_count": correct, "elapsed_ms": 60000}
             response = self.client.post("/results", json=payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json["stars"], expected)
@@ -70,7 +73,7 @@ class ProfileProgressTests(unittest.TestCase):
         self.assertEqual(summary["completed"], 1)
         self.assertEqual(summary["stars"], 3)
         # WPM cannot change stars: use exactly 95% over a much slower run.
-        response = self.client.post("/results", json={"mode": "classic", "profile_id": profile_id, "level_id": 1, "typed_count": 100000, "correct_count": 95000, "elapsed_ms": 600000})
+        response = self.client.post("/results", json={"mode": "classic", "level_id": 1, "typed_count": 100000, "correct_count": 95000, "elapsed_ms": 600000})
         self.assertEqual(response.json["stars"], 3)
 
     def test_separate_profiles_leaderboards_duration_and_cascade(self):
@@ -99,11 +102,8 @@ class ProfileProgressTests(unittest.TestCase):
     def test_active_profile_and_basic_result_validation(self):
         self.assertEqual(self.client.post("/results", json={}).status_code, 401)
         hm = self.create("HM")
-        payload = {"mode": "time_attack", "profile_id": hm, "duration": 30,
+        payload = {"mode": "time_attack", "duration": 30,
                    "typed_count": 100, "correct_count": 95, "elapsed_ms": 30000}
-        self.create("AR")
-        self.assertEqual(self.client.post("/results", json=payload).status_code, 409)
-        self.client.post("/profiles", data={"action": "switch", "profile_id": hm})
         self.assertEqual(self.client.post("/results", json=payload).status_code, 200)
         self.assertEqual(len(database.get_progress(hm, "time_attack")[1]), 1)
         # Duplicate completion calls are blocked by JavaScript, not by database identifiers.
@@ -125,13 +125,45 @@ class ProfileProgressTests(unittest.TestCase):
         self.client.post("/profiles", data={"action": "delete", "profile_id": hm})
         self.assertEqual(self.client.get("/play").status_code, 302)
         self.assertEqual(self.client.post("/results", json=payload).status_code, 401)
-        with self.client.session_transaction() as session:
-            self.assertNotIn("runs", session)
+        self.assertIsNone(backend.active_profile_id)
+
+    def test_global_selection_is_shared_and_results_use_current_profile(self):
+        self.assertIsNone(backend.active_profile_id)
+        self.assertIsNone(app.secret_key)
+        self.assertNotIn("Set-Cookie", self.client.get("/").headers)
+        self.assertEqual(self.client.get("/progress").status_code, 200)
+        hm = self.create("HM")
+        ar = self.create("AR")
+        other_client = app.test_client()
+        other_client.post("/profiles", data={"action": "switch", "profile_id": hm})
+        self.assertEqual(backend.active_profile_id, hm)
+        self.assertIn('id="profile-name">HM', self.client.get("/").get_data(as_text=True))
+        self.client.post("/profiles", data={"action": "switch", "profile_id": ar})
+        self.assertEqual(backend.active_profile_id, ar)
+        self.assertIn('id="profile-name">AR', other_client.get("/").get_data(as_text=True))
+        for mode in ("classic", "time_attack", "survival"):
+            payload = {"mode": mode, "typed_count": 100, "correct_count": 95,
+                       "elapsed_ms": 30000, "level_id": 1, "duration": 30}
+            response = other_client.post("/results", json=payload)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json["profile"], "AR")
+            self.assertEqual(database.get_progress(hm, mode)[1], [])
+            self.assertEqual(database.get_progress(ar, mode)[1][0]["profile_id"], ar)
+        self.client.post("/profiles", data={"action": "rename", "profile_id": ar, "name": "Alex"})
+        self.assertEqual(backend.active_profile_id, ar)
+        self.assertIn('id="profile-name">Alex', other_client.get("/").get_data(as_text=True))
+        self.client.post("/profiles", data={"action": "delete", "profile_id": hm})
+        self.assertEqual(backend.active_profile_id, ar)
+        self.client.post("/profiles", data={"action": "delete", "profile_id": ar})
+        self.assertIsNone(backend.active_profile_id)
+        self.assertEqual(other_client.get("/play").status_code, 302)
+        self.assertEqual(other_client.post("/results", json=payload).status_code, 401)
+        self.assertNotIn("Set-Cookie", other_client.get("/").headers)
 
     def test_result_statistics_and_survival_misses(self):
         profile_id = self.create()
         for elapsed, expected_tier in [(1000, 1), (60000, 2), (300000, 5), (360000, 5)]:
-            payload = {"profile_id": profile_id, "mode": "survival", "typed_count": 100,
+            payload = {"mode": "survival", "typed_count": 100,
                        "correct_count": 90, "missed_count": 20, "elapsed_ms": elapsed}
             self.assertEqual(self.client.post("/results", json=payload).status_code, 200)
             result = database.get_progress(profile_id, "survival")[1][0]
@@ -139,7 +171,7 @@ class ProfileProgressTests(unittest.TestCase):
             self.assertAlmostEqual(result["net_wpm"], 100 / 5 / (elapsed / 60000) * 0.75)
             self.assertEqual(result["tier"], expected_tier)
         # An idle Time Attack run still saves a zero score without dividing by zero.
-        payload = {"profile_id": profile_id, "mode": "time_attack", "duration": 30,
+        payload = {"mode": "time_attack", "duration": 30,
                    "typed_count": 0, "correct_count": 0, "elapsed_ms": 30000}
         self.assertEqual(self.client.post("/results", json=payload).status_code, 200)
         result = database.get_progress(profile_id, "time_attack")[1][0]

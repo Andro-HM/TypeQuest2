@@ -112,7 +112,7 @@ Speed increases continuously between these points and caps at 4 characters per s
 | Settings | Navigation placeholder with no settings page or functionality |
 | Audio | The audio footer is decorative; game audio is not implemented |
 
-The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The active profile is remembered using Flask’s signed session cookie with a local-development key; this is not an online account security system.
+The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The selected profile is stored in the Python variable `active_profile_id` for this one-process localhost demonstration. Selection is shared by all browsers and resets when Flask restarts; saved profiles and results remain in SQLite.
 
 Mobile support, multiplayer, and a separate Practice mode are outside the current project scope.
 
@@ -122,7 +122,7 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 - Creating a profile immediately selects it. Use Switch to choose another player. The ⋯ menu provides Rename and Delete; deletion requires confirmation and removes that profile’s saved runs only.
 - Opening a game without a selected profile redirects to Profiles. No sample players or scores are added to the real database.
 - Each completed run adds one row. A single JavaScript `resultSaved` flag prevents repeated saves from that completion. Restart resets the flag; abandoned runs are not saved. There are no run tokens, attempt IDs, or server-side replay registry.
-- Flask’s session remembers the selected profile. Each game sends its displayed profile ID with its result; a simple comparison rejects the save if the selected player has changed or been deleted. No concurrent-tab token system is used.
+- `active_profile_id` holds the selected player’s database ID. Create and Switch update it; deleting the active player clears it. Pages read that profile from SQLite and pass it explicitly to Jinja. Result JSON has no profile ID: `/results` saves to the profile currently selected in Python. There are no Flask sessions, selection cookies, secret key, request hooks, or context processors for profile selection.
 - Save failures appear in the gameplay footer. Do not navigate away immediately after completion; wait for “Saved for …”.
 - Classic progress counts distinct completed levels and sums the best stars for each level. Replaying a level cannot inflate the total best stars.
 - Classic leaderboard: total best stars across levels. Time Attack leaderboard: best Net WPM, separately for 30/60/120/300 seconds. Survival leaderboard: longest active survival time. Equal scores are ordered by profile ID.
@@ -249,18 +249,18 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 
 Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, a dedicated results page, settings, and audio remain pending.
 
-To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 14 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, profile changes during play, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 15 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
 
 ### Simplified result saving
 
-The save flow is now: game completes → check/set `resultSaved` → POST `/results` → check the selected profile and basic count/time values → calculate statistics → insert a row. Restart sets `resultSaved = false`. Repeating a raw HTTP POST can create another row; normal duplicate completion calls are stopped by the JavaScript flag rather than database tokens.
+The save flow is now: game completes → check/set `resultSaved` → POST `/results` → require a selected profile and check basic count/time values → calculate statistics → insert a row. Restart sets `resultSaved = false`. Repeating a raw HTTP POST can create another row; normal duplicate completion calls are stopped by the JavaScript flag rather than database tokens.
 
 Run `python seed.py` once after updating an older installation. It removes the old `run_id` columns while preserving existing progress IDs, profile links, scores, stars, times, and timestamps. Fresh databases use the simpler seven-table schema directly. The upgrade runs only during explicit initialization, not on ordinary Flask startup. Tests cover upgrading a populated old database and repeating initialization without losing history.
 
 ### Localhost backend approach
 
-`app.py` contains the routes, profile form handling, active-profile session selection, and result calculations. `database.py` contains direct SQLite queries: reads open a connection, fetch rows, and close it; writes commit and always close the connection, including after an error. Foreign keys and the existing table constraints stay enabled. There is no extra service, repository, or validation layer.
+`app.py` contains the routes, profile form handling, the `active_profile_id` variable, and result calculations. `database.py` contains direct SQLite queries: reads open a connection, fetch rows, and close it; writes commit and always close the connection, including after an error. Foreign keys and the existing table constraints stay enabled. There is no extra service, repository, or validation layer.
 
-The game decides when a run is complete. `/results` trusts the game's JSON field types, completion event, and elapsed time rather than checking passage length, exact challenge duration, numeric types, or extreme fabricated values again. It retains the selected-profile comparison, supported mode check, nonnegative character counts, correct-count bounds, and positive playing time. SQLite rejects invalid profile/level references and unsupported durations. Profile forms still check name length and report duplicate names. Ordinary malformed JSON is handled by Flask.
+The game decides when a run is complete. `/results` trusts the game's JSON field types, completion event, and elapsed time rather than checking passage length, exact challenge duration, numeric types, or extreme fabricated values again. It requires an existing selected profile and retains the supported mode check, nonnegative character counts, correct-count bounds, and positive playing time. The profile foreign key comes directly from `active_profile_id`, not from the browser. SQLite rejects invalid profile/level references and unsupported durations. Profile forms still check name length and report duplicate names. Ordinary malformed JSON is handled by Flask.
 
 Accuracy, Net WPM, raw-accuracy Classic stars, and Survival tier calculations are unchanged. Templates, CSS, browser gameplay, the seven-table schema, and the explicit `seed.py` setup process are unchanged by this simplification.

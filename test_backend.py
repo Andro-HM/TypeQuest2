@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import database
+import app as backend
 from app import app
 from seed import seed_database
 
@@ -19,13 +20,14 @@ class BackendTests(unittest.TestCase):
         self.database_patch = patch.object(database, "DATABASE_PATH", self.path)
         self.database_patch.start()
         seed_database()
+        self.profile_patch = patch.object(backend, "active_profile_id", None)
+        self.profile_patch.start()
         self.client = app.test_client()
-        profile_id = database.create_profile("Test player")
-        with self.client.session_transaction() as session:
-            session["profile_id"] = profile_id
+        backend.active_profile_id = database.create_profile("Test player")
         self.fixture = json.loads((Path(__file__).parent / "seed_data.json").read_text(encoding="utf-8"))
 
     def tearDown(self):
+        self.profile_patch.stop()
         self.database_patch.stop()
         self.directory.cleanup()
 
