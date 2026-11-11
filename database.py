@@ -173,7 +173,7 @@ def get_progress(profile_id, mode):
     return summary, recent
 
 
-def get_leaderboard(mode, duration):
+def get_leaderboard(mode):
     connection = get_connection()
     if mode == "classic":
         result = connection.execute(
@@ -188,7 +188,7 @@ def get_leaderboard(mode, duration):
         result = connection.execute(
             """SELECT profiles.id, profiles.name, MAX(progress.net_wpm) AS score
                FROM profiles JOIN time_attack_progress AS progress ON progress.profile_id = profiles.id
-               WHERE duration = ? GROUP BY profiles.id ORDER BY score DESC, profiles.id""", (duration,)
+               GROUP BY profiles.id ORDER BY score DESC, profiles.id"""
         ).fetchall()
     else:
         result = connection.execute(

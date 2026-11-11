@@ -172,17 +172,14 @@ def progress():
     mode = request.args.get("mode", "classic")
     if mode not in ("classic", "time_attack", "survival"):
         mode = "classic"
-    duration = request.args.get("duration", 60, type=int)
-    if duration not in DURATIONS:
-        duration = 60
     summary = None
     recent = []
     if active_profile is not None and tab != "leaderboard":
         summary, recent = database.get_progress(active_profile_id, tab)
     leaderboard = []
     if tab == "leaderboard":
-        leaderboard = database.get_leaderboard(mode, duration)
-    return render_template("progress.html", tab=tab, mode=mode, duration=duration, summary=summary,
+        leaderboard = database.get_leaderboard(mode)
+    return render_template("progress.html", tab=tab, mode=mode, summary=summary,
                            recent=recent, leaderboard=leaderboard, active_profile=active_profile)
 
 

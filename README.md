@@ -125,7 +125,7 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 - `active_profile_id` holds the selected player’s database ID. Create and Switch update it; deleting the active player selects the first remaining profile by ID, or clears it if none remain. Pages read that profile from SQLite and pass it explicitly to Jinja. Result JSON has no profile ID: `/results` saves to the profile currently selected in Python. There are no Flask sessions, selection cookies, secret key, request hooks, or context processors for profile selection.
 - Save failures appear in the gameplay footer. Do not navigate away immediately after completion; wait for “Saved for …”.
 - Classic progress counts distinct completed levels and sums the best stars for each level. Replaying a level cannot inflate the total best stars.
-- Classic leaderboard: total best stars across levels. Time Attack leaderboard: best Net WPM, separately for 30/60/120/300 seconds. Survival leaderboard: longest active survival time. Equal scores are ordered by profile ID.
+- Classic leaderboard: total best stars across levels. Time Attack leaderboard: best Net WPM across all durations in one ranking. Survival leaderboard: longest active survival time. Equal scores are ordered by profile ID.
 - Personal Progress shows best figures and the latest five completed runs per mode. Times are stored in UTC and displayed in IST.
 - SQLite content and result queries stay in `database.py`, which imports only `sqlite3`. The existing typing, scrolling, timer, and damage engines stay in JavaScript; small completion/restart hooks call the shared result saver.
 
@@ -230,16 +230,16 @@ The records are synthetic presentation data, dated 4–10 November 2026. They ar
 | Demo profile | Classic levels completed | Total best stars | Longest Survival | Ranking highlight among demo players |
 | --- | --- | --- | --- | --- |
 | anish | 20 | 60 | 03:15 | Classic leader; all 20 available levels at 3 stars |
-| akash | 14 | 29 | 02:28 | 30-second Time Attack leader |
-| smriti | 20 | 55 | 04:45 | 1-minute Time Attack leader |
-| isha | 10 | 18 | 03:58 | 2-minute Time Attack leader |
+| akash | 14 | 29 | 02:28 | Time Attack leader; best run at 30 seconds |
+| smriti | 20 | 55 | 04:45 | Strong Classic results and a 76 WPM 1-minute best |
+| isha | 10 | 18 | 03:58 | 73 WPM personal best at 2 minutes |
 | rajiv | 6 | 8 | 01:35 | Early progress and lower scores |
-| ravi | 18 | 42 | 05:32 | 5-minute Time Attack and Survival leader |
+| ravi | 18 | 42 | 05:32 | Survival leader; 69 WPM personal best at 5 minutes |
 | rakesh | 3 | 4 | 00:54 | Beginner progress |
 
 Each profile has two Classic attempts per completed level, two Time Attack attempts at every duration, and six Survival sessions. The samples include improvement, different accuracy/star results, a perfect Classic result, all five Survival tiers across the dataset, and occasional shorter Survival runs. All personal tabs have five recent rows. Classic stars follow the actual unrounded accuracy thresholds; Classic WPM matches passage length and time, Time Attack elapsed time matches duration, and Survival tiers match elapsed time.
 
-For the presentation, launch `app.py`, open `/`, then use Profiles to switch players. Show Anish's Classic cards in Tiers 1 and 2, open each Progress tab, and switch the Leaderboard mode/duration filters using **Show ranking**. Tiers 3–5 remain disabled because those level passages do not exist yet. If Flask was already running during seeding, refresh Profiles; the current selection stays unchanged until you switch it.
+For the presentation, launch `app.py`, open `/`, then use Profiles to switch players. Show Anish's Classic cards in Tiers 1 and 2, open each Progress tab, and switch the Leaderboard mode filter using **Show ranking**. Tiers 3–5 remain disabled because those level passages do not exist yet. If Flask was already running during seeding, refresh Profiles; the current selection stays unchanged until you switch it.
 
 ## Tests
 
@@ -320,7 +320,7 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 
 Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, and a dedicated results page remain pending.
 
-To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` runs 27 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` runs 27 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, mode-wide rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
 
 ### Simplified result saving
 

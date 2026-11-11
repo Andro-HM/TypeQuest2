@@ -40,13 +40,11 @@ class DemoDataTests(unittest.TestCase):
                 html = client.get("/progress", query_string={"tab": mode}).get_data(as_text=True)
                 self.assertIn("Saved for " + name, html)
                 self.assertNotIn("No completed", html)
-        for mode, duration, winner in [("classic", 60, "anish"), ("time_attack", 30, "akash"),
-                                       ("time_attack", 60, "smriti"), ("time_attack", 120, "isha"),
-                                       ("time_attack", 300, "ravi"), ("survival", 60, "ravi")]:
-            ranking = database.get_leaderboard(mode, duration)
+        for mode, winner in [("classic", "anish"), ("time_attack", "akash"), ("survival", "ravi")]:
+            ranking = database.get_leaderboard(mode)
             self.assertEqual(len(ranking), 7)
             self.assertEqual(ranking[0]["name"], winner)
-            html = client.get("/progress", query_string={"tab": "leaderboard", "mode": mode, "duration": duration}).get_data(as_text=True)
+            html = client.get("/progress", query_string={"tab": "leaderboard", "mode": mode}).get_data(as_text=True)
             for player in DEMO_PLAYERS:
                 self.assertIn(player[0], html)
 

@@ -754,14 +754,10 @@
                                 <option value="{{ value }}"{% if mode == value %} selected{% endif %}>{{ label }}</option>
                             {% endfor %}
                         </select>
-                        <label for="leader-duration">Time Attack duration</label>
-                        <select id="leader-duration" name="duration">
-                            {% for seconds in [30,60,120,300] %}<option value="{{ seconds }}"{% if duration == seconds %} selected{% endif %}>{{ seconds }} seconds</option>{% endfor %}
-                        </select>
                         <button class="outline" type="submit">Show ranking</button>
                     </form>
                     <div class="table-panel">
-                        <div class="table-heading"><h3>{{ {'classic':'Classic · Total best stars', 'time_attack':'Time Attack · Best Net WPM', 'survival':'Survival · Longest time'}[mode] }}{% if mode == 'time_attack' %} · {{ duration }} seconds{% endif %}</h3><span>Local profiles</span></div>
+                        <div class="table-heading"><h3>{{ {'classic':'Classic · Total best stars', 'time_attack':'Time Attack · Best Net WPM', 'survival':'Survival · Longest time'}[mode] }}</h3><span>Local profiles</span></div>
                         <table>
                             <thead><tr><th>RANK</th><th>PLAYER</th><th>{% if mode == 'classic' %}STARS{% elif mode == 'time_attack' %}NET WPM{% else %}SURVIVAL TIME{% endif %}</th></tr></thead>
                             <tbody>

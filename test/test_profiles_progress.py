@@ -92,21 +92,28 @@ class ProfileProgressTests(unittest.TestCase):
         response = self.client.post("/results", json={"mode": "classic", "level_id": 1, "typed_count": 100000, "correct_count": 95000, "elapsed_ms": 600000})
         self.assertEqual(response.json["stars"], 3)
 
-    def test_separate_profiles_leaderboards_duration_and_cascade(self):
+    def test_separate_profiles_mode_leaderboards_and_cascade(self):
         hm = self.create("HM")
         ar = self.create("AR")
         database.save_result("classic", hm, 20, 0.89, 60000, 1, 1)
         database.save_result("classic", hm, 30, 0.96, 60000, 3, 1)
         database.save_result("classic", hm, 30, 0.91, 60000, 2, 2)
         database.save_result("classic", ar, 99, 1, 60000, 3, 1)
-        self.assertEqual([(r["id"], r["score"]) for r in database.get_leaderboard("classic", 60)], [(hm, 5), (ar, 3)])
+        self.assertEqual([(r["id"], r["score"]) for r in database.get_leaderboard("classic")], [(hm, 5), (ar, 3)])
         database.save_result("time_attack", hm, 50, 1, 30000, duration=30)
         database.save_result("time_attack", ar, 70, 1, 60000, duration=60)
-        self.assertEqual([r["id"] for r in database.get_leaderboard("time_attack", 30)], [hm])
-        self.assertEqual([r["id"] for r in database.get_leaderboard("time_attack", 60)], [ar])
+        self.assertEqual([(r["id"], r["score"]) for r in database.get_leaderboard("time_attack")], [(ar, 70), (hm, 50)])
+        # A faster run at another duration updates the same mode-wide best.
+        database.save_result("time_attack", hm, 80, 1, 300000, duration=300)
+        self.assertEqual([(r["id"], r["score"]) for r in database.get_leaderboard("time_attack")], [(hm, 80), (ar, 70)])
+        for mode in ["classic", "time_attack", "survival"]:
+            html = self.client.get("/progress", query_string={"tab": "leaderboard", "mode": mode, "duration": 30}).get_data(as_text=True)
+            self.assertNotIn("leader-duration", html)
+            self.assertNotIn("Time Attack duration", html)
+            self.assertEqual(html.count('<select '), 1)
         database.save_result("survival", hm, 99, 1, 20000)
         database.save_result("survival", ar, 10, 0.5, 90000, tier=2)
-        self.assertEqual([r["id"] for r in database.get_leaderboard("survival", 60)], [ar, hm])
+        self.assertEqual([r["id"] for r in database.get_leaderboard("survival")], [ar, hm])
         database.delete_profile(hm)
         for mode in ["classic", "time_attack", "survival"]:
             summary, recent = database.get_progress(hm, mode)
