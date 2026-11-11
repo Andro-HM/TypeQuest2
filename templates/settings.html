@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Settings — TypeQuest</title>
+
+        <!-- Fonts used in the Stitch design -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+
+        <style>
+            /* ========================================
+               1. PAGE AND BACKGROUND
+               ======================================== */
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html, body {
+                margin: 0;
+                min-height: 100%;
+            }
+
+            body {
+                background-color: #f3f7f9;
+                background-image: radial-gradient(circle at 50% 48%,
+                    rgba(220, 240, 247, 0.75) 0%,
+                    rgba(235, 245, 249, 0.45) 30%,
+                    #f6f9fb 70%,
+                    #f3f7f9 100%);
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+                color: #14232c;
+                font-family: "Plus Jakarta Sans", sans-serif;
+            }
+
+            #page {
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                min-height: 100vh;
+                padding: 28px 48px 28px 48px;
+            }
+
+            /* ========================================
+               2. TOP NAVIGATION
+               ======================================== */
+
+            #top-bar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            #brand {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+
+            #brand-logo {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                background-color: #23687d;
+                color: white;
+                font-size: 14px;
+                font-weight: 700;
+                letter-spacing: 0.025em;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #brand-name {
+                color: #0f212b;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: -0.025em;
+            }
+
+            #top-nav {
+                display: flex;
+                align-items: center;
+                padding: 4px;
+                border: 1px solid rgba(210, 227, 234, 0.6);
+                border-radius: 9999px;
+                background-color: rgba(228, 238, 242, 0.8);
+                backdrop-filter: blur(12px);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            }
+
+            .nav-link {
+                padding: 6px 20px 6px 20px;
+                border-radius: 9999px;
+                color: #4a636f;
+                font-size: 14px;
+                font-weight: 500;
+                text-decoration: none;
+                transition: background-color 0.2s, color 0.2s;
+            }
+
+            .nav-link:hover {
+                background-color: rgba(20, 184, 166, 0.15);
+                color: #144857;
+            }
+
+            .nav-link-active {
+                border: 1px solid rgba(20, 184, 166, 0.2);
+                background-color: rgba(20, 184, 166, 0.25);
+                color: #144857;
+                font-weight: 600;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            #profile {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            #profile-name {
+                color: #18313d;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            #profile-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border: 1px solid #cbdce3;
+                border-radius: 50%;
+                background-color: #e2ecf0;
+            }
+
+            #profile-icon img {
+                width: 20px;
+                height: 20px;
+            }
+
+            /* ========================================
+               3. SETTINGS HEADING
+               ======================================== */
+
+            #settings-content {
+                width: 100%;
+                max-width: 1364px;
+                margin: 56px auto 80px auto;
+            }
+
+            #settings-heading {
+                margin-bottom: 46px;
+                text-align: center;
+            }
+
+            #tagline {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 24px;
+                padding: 8px 18px 8px 18px;
+                border: 1px solid #cde7ef;
+                border-radius: 9999px;
+                background-color: #e6f6fa;
+                color: #1c667c;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 14px;
+                letter-spacing: 0.12em;
+            }
+
+            #tagline-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #2dbbc9;
+            }
+
+            #settings-title {
+                margin: 0 0 12px 0;
+                color: #0e212b;
+                font-size: 68px;
+                font-weight: 800;
+                letter-spacing: -0.04em;
+                line-height: 1.15;
+            }
+
+            #title-accent {
+                background: linear-gradient(135deg, #1b6b85 0%, #20879f 45%, #2dbbc9 100%);
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+
+            #settings-description {
+                margin: 0;
+                color: #638098;
+                font-size: 22px;
+                line-height: 1.5;
+            }
+
+            /* ========================================
+               4. VOLUME CONTROLS
+               ======================================== */
+
+            #volume-settings {
+                padding: 16px 42px 16px 42px;
+                border: 1px solid #d5e7ee;
+                border-radius: 22px;
+                background-color: rgba(255, 255, 255, 0.8);
+                box-shadow: 0 8px 24px rgba(26, 105, 128, 0.03);
+            }
+
+            .volume-row {
+                display: flex;
+                align-items: center;
+                gap: 52px;
+                min-height: 126px;
+                border-bottom: 1px solid #d5e7ee;
+            }
+
+            .volume-row:last-child {
+                border-bottom: none;
+            }
+
+            .volume-info {
+                display: flex;
+                flex: 1;
+                align-items: center;
+                gap: 40px;
+                min-width: 0;
+            }
+
+            .volume-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                width: 84px;
+                height: 80px;
+                border-radius: 18px;
+                background-color: #e6f3f7;
+            }
+
+            .volume-icon img {
+                width: 52px;
+                height: 52px;
+            }
+
+            .volume-title {
+                display: block;
+                margin-bottom: 4px;
+                color: #0e212b;
+                font-size: 28px;
+                font-weight: 800;
+                letter-spacing: -0.035em;
+            }
+
+            .volume-description {
+                margin: 0;
+                color: #638098;
+                font-size: 18px;
+                line-height: 1.5;
+            }
+
+            .volume-slider {
+                appearance: none;
+                flex-shrink: 0;
+                width: 39%;
+                height: 14px;
+                margin: 0;
+                border-radius: 9999px;
+                background: linear-gradient(to right, #13adbd var(--volume), #d7e4ed var(--volume));
+                cursor: pointer;
+            }
+
+            .volume-slider::-webkit-slider-thumb {
+                appearance: none;
+                width: 30px;
+                height: 30px;
+                border: 1px solid #b8d6e4;
+                border-radius: 50%;
+                background-color: white;
+                box-shadow: 0 3px 6px rgba(26, 105, 128, 0.15);
+            }
+
+            .volume-slider::-moz-range-thumb {
+                width: 36px;
+                height: 36px;
+                border: 1px solid #b8d6e4;
+                border-radius: 50%;
+                background-color: white;
+                box-shadow: 0 3px 6px rgba(26, 105, 128, 0.15);
+            }
+
+            .volume-value {
+                flex-shrink: 0;
+                width: 96px;
+                padding: 10px;
+                border: 1px solid #cde7ef;
+                border-radius: 14px;
+                color: #638098;
+                font-size: 24px;
+                font-weight: 600;
+                text-align: center;
+            }
+
+            /* ========================================
+               5. BOTTOM STATUS BAR
+               ======================================== */
+
+            #bottom-bar {
+                margin-top: auto;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+                color: #738e9b;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 12px;
+                letter-spacing: 0.025em;
+            }
+
+            #audio-status {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            #audio-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background-color: #1b889e;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="page">
+            <header id="top-bar">
+                <div id="brand">
+                    <div id="brand-logo">TQ</div>
+                    <span id="brand-name">TypeQuest</span>
+                </div>
+
+                <nav id="top-nav">
+                    <a href="{{ url_for('home') }}" class="nav-link">Home</a>
+                    <a href="{{ url_for('play') }}" class="nav-link">Play</a>
+                    <a href="{{ url_for('progress') }}" class="nav-link">Progress</a>
+                    <a href="{{ url_for('profiles') }}" class="nav-link">Profiles</a>
+                    <a href="{{ url_for('settings') }}" class="nav-link nav-link-active">Settings</a>
+                </nav>
+
+                <div id="profile">
+                    <span id="profile-name">{{ active_profile.name if active_profile else "Choose profile" }}</span>
+                    <a id="profile-icon" href="{{ url_for('profiles') }}">
+                        <img src="{{ url_for('static', filename='icons/profile.svg') }}" alt="">
+                    </a>
+                </div>
+            </header>
+
+            <main id="settings-content">
+                <div id="settings-heading">
+                    <div id="tagline">
+                        <span id="tagline-dot"></span>
+                        <span>PREFERENCES</span>
+                    </div>
+                    <h1 id="settings-title">Audio <span id="title-accent">Settings</span></h1>
+                    <p id="settings-description">Adjust the game, tap and background music volumes.</p>
+                </div>
+
+                <form id="volume-settings" action="{{ url_for('settings') }}" method="post">
+                    <div class="volume-row">
+                        <div class="volume-info">
+                            <div class="volume-icon">
+                                <img src="{{ url_for('static', filename='icons/game-volume.svg') }}" alt="">
+                            </div>
+                            <div>
+                                <label class="volume-title" for="game-volume">Game Volume</label>
+                                <p class="volume-description">Correct and wrong typing sounds</p>
+                            </div>
+                        </div>
+                        <input id="game-volume" class="volume-slider" name="game_volume" type="range" min="0" max="100" value="{{ game_volume }}" style="--volume: {{ game_volume }}%;">
+                        <output id="game-volume-value" class="volume-value" for="game-volume">{{ game_volume }}%</output>
+                    </div>
+
+                    <div class="volume-row">
+                        <div class="volume-info">
+                            <div class="volume-icon">
+                                <img src="{{ url_for('static', filename='icons/tap-volume.svg') }}" alt="">
+                            </div>
+                            <div>
+                                <label class="volume-title" for="tap-volume">Tap Volume</label>
+                                <p class="volume-description">UI button and navigation clicks</p>
+                            </div>
+                        </div>
+                        <input id="tap-volume" class="volume-slider" name="tap_volume" type="range" min="0" max="100" value="{{ tap_volume }}" style="--volume: {{ tap_volume }}%;">
+                        <output id="tap-volume-value" class="volume-value" for="tap-volume">{{ tap_volume }}%</output>
+                    </div>
+
+                    <div class="volume-row">
+                        <div class="volume-info">
+                            <div class="volume-icon">
+                                <img src="{{ url_for('static', filename='icons/background-music.svg') }}" alt="">
+                            </div>
+                            <div>
+                                <label class="volume-title" for="background-music-volume">Background Music Volume</label>
+                                <p class="volume-description">Background music</p>
+                            </div>
+                        </div>
+                        <input id="background-music-volume" class="volume-slider" name="background_music_volume" type="range" min="0" max="100" value="{{ background_music_volume }}" style="--volume: {{ background_music_volume }}%;">
+                        <output id="background-music-volume-value" class="volume-value" for="background-music-volume">{{ background_music_volume }}%</output>
+                    </div>
+                </form>
+            </main>
+
+            <footer id="bottom-bar">
+                <div id="audio-status">
+                    <span id="audio-dot"></span>
+                    <span>AUDIO [STEREO 48k]</span>
+                </div>
+                <span>© 2025 TYPEQUEST STUDIO</span>
+            </footer>
+        </div>
+        <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+    </body>
+</html>

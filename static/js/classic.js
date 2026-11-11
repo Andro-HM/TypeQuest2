@@ -250,11 +250,13 @@ function handleTyping(event)
 
         if (event.key === character.textContent)
         {
+            window.parent.playSound("correct_key", "game_volume");
             character.classList.add("correct");
             correctCharacters++;
         }
         else
         {
+            window.parent.playSound("wrong_key", "game_volume");
             character.classList.add("incorrect");
         }
 

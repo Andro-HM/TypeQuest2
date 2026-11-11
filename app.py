@@ -8,9 +8,18 @@ import database
 app = Flask(__name__)
 DURATIONS = (30, 60, 120, 300)
 active_profile_id = None
+game_volume = 50
+tap_volume = 70
+background_music_volume = 60
 
 
 @app.route("/")
+def index():
+    return render_template("app.html", background_music_volume=background_music_volume,
+                           game_volume=game_volume, tap_volume=tap_volume)
+
+
+@app.route("/home")
 def home():
     return render_template("index.html", active_profile=database.get_profile(active_profile_id))
 
@@ -142,7 +151,8 @@ def profiles():
         elif action == "delete":
             database.delete_profile(profile_id)
             if active_profile_id == profile_id:
-                active_profile_id = None
+                remaining_profiles = database.get_profiles()
+                active_profile_id = remaining_profiles[0]["id"] if remaining_profiles else None
         else:
             error = "Choose an existing profile."
 
@@ -174,6 +184,21 @@ def progress():
         leaderboard = database.get_leaderboard(mode, duration)
     return render_template("progress.html", tab=tab, mode=mode, duration=duration, summary=summary,
                            recent=recent, leaderboard=leaderboard, active_profile=active_profile)
+
+
+@app.route("/settings", methods=["GET", "POST"])
+def settings():
+    global game_volume, tap_volume, background_music_volume
+
+    if request.method == "POST":
+        game_volume = request.form.get("game_volume", game_volume, type=int)
+        tap_volume = request.form.get("tap_volume", tap_volume, type=int)
+        background_music_volume = request.form.get("background_music_volume", background_music_volume, type=int)
+        return jsonify(saved=True)
+
+    return render_template("settings.html", game_volume=game_volume, tap_volume=tap_volume,
+                           background_music_volume=background_music_volume,
+                           active_profile=database.get_profile(active_profile_id))
 
 
 @app.route("/results", methods=["POST"])
@@ -215,4 +240,8 @@ def save_results():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    existing_profiles = database.get_profiles()
+    if existing_profiles:
+        active_profile_id = existing_profiles[0]["id"]
+
+    app.run(debug=True, use_reloader=False)

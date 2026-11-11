@@ -423,6 +423,7 @@ function handleTyping(event)
 
         if (event.key === character.textContent)
         {
+            window.parent.playSound("correct_key", "game_volume");
             if (!wasCorrect)
             {
                 correctCharacters++;
@@ -433,6 +434,7 @@ function handleTyping(event)
         }
         else
         {
+            window.parent.playSound("wrong_key", "game_volume");
             if (wasCorrect)
             {
                 correctCharacters--;

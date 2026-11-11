@@ -706,6 +706,7 @@
 
     <body>
         <div id="page">
+
             <header id="top-bar">
                 <div id="brand">
                     <div id="brand-logo">TQ</div>
@@ -713,12 +714,11 @@
                 </div>
 
                 <nav id="top-nav">
-                    <!-- Settings remains a placeholder. -->
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                     <a href="{{ url_for('play') }}" class="nav-link">Play</a>
                     <a href="{{ url_for('progress') }}" class="nav-link nav-link-active">Progress</a>
                     <a href="{{ url_for('profiles') }}" class="nav-link">Profiles</a>
-                    <a href="#settings" class="nav-link">Settings</a>
+                    <a href="{{ url_for('settings') }}" class="nav-link">Settings</a>
                 </nav>
 
                 <div id="profile">
@@ -728,6 +728,7 @@
                     </a>
                 </div>
             </header>
+
             <main id="section-content">
                 <div id="section-heading">
                     <div class="eyebrow"><span class="eyebrow-dot"></span>YOUR RECORD</div>
@@ -735,11 +736,13 @@
                     <p class="description">Your best results and recent sessions, all in one place.</p>
                     {% if active_profile %}<p class="saved-for"><img src="{{ url_for('static', filename='icons/check.svg') }}" alt="">Saved for {{ active_profile.name }}</p>{% endif %}
                 </div>
+
                 <nav id="progress-tabs">
                     {% for value, label in [('leaderboard','Leaderboard'), ('classic','Classic'), ('time_attack','Time Attack'), ('survival','Survival')] %}
                         <a class="progress-tab{% if tab == value %} selected{% endif %}" href="{{ url_for('progress', tab=value) }}">{{ label }}</a>
                     {% endfor %}
                 </nav>
+
                 {% if tab == 'leaderboard' %}
                     <p class="section-kicker">LOCAL PLAYERS</p>
                     <h2 class="mode-heading">Leaderboard</h2>
@@ -768,8 +771,10 @@
                             </tbody>
                         </table>
                     </div>
+                    
                 {% elif not active_profile %}
                     <div class="empty-state">Choose a profile to view your progress.<br><a class="outline" href="{{ url_for('profiles') }}">Choose profile</a></div>
+                
                 {% else %}
                     {% set title = {'classic':'Classic', 'time_attack':'Time Attack', 'survival':'Survival'}[tab] %}
                     <p class="section-kicker">{% if tab == 'classic' %}LEVEL JOURNEY{% else %}PERSONAL BESTS{% endif %}</p>
@@ -802,6 +807,7 @@
                     </div>
                 {% endif %}
             </main>
+
             <footer id="bottom-bar">
                 <div id="audio-status">
                     <span id="audio-dot"></span>

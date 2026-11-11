@@ -1,6 +1,6 @@
 # TypeQuest 2
 
-**Profiles and Progress — local players and saved runs**
+**Persistent browser-tab music with existing Flask pages**
 
 The playable frontend milestone is preserved on `main` as `v1.0.0`. Backend development continues on `feature/backend_1`.
 
@@ -24,6 +24,8 @@ The current version is intended for **desktop and laptop browsers with a physica
 | Results | Final statistics remain on the gameplay page and completed runs save to the active profile |
 | Profiles | Create, switch, rename, and delete local players; an active profile is required to play |
 | Progress | Best results, latest five sessions per mode, and separate local leaderboards |
+| Settings | Three live audio volume sliders with automatic updates to global Python variables |
+| Audio | Looping background music, overlapping typing sounds, and shared UI taps on every page |
 
 ### Classic
 
@@ -109,10 +111,8 @@ Speed increases continuously between these points and caps at 4 characters per s
 | Remaining Classic content | Tiers 3–5 and levels 21–50 are unavailable |
 | Final passage seeding | Current JavaScript content can be replaced with the final level/passages later |
 | Tier unlocking | Star-based unlocking remains pending; Tiers 3–5 stay unavailable |
-| Settings | Navigation placeholder with no settings page or functionality |
-| Audio | The audio footer is decorative; game audio is not implemented |
 
-The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The selected profile is stored in the Python variable `active_profile_id` for this one-process localhost demonstration. Selection is shared by all browsers and resets when Flask restarts; saved profiles and results remain in SQLite.
+The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The selected profile is stored in the Python variable `active_profile_id` for this one-process localhost demonstration. Selection is shared by all browsers. Each server startup selects the first existing profile ordered by database ID, or leaves selection empty if there are no profiles. Manual selection is not remembered across restarts; saved profiles and results remain in SQLite.
 
 Mobile support, multiplayer, and a separate Practice mode are outside the current project scope.
 
@@ -122,7 +122,7 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 - Creating a profile immediately selects it. Use Switch to choose another player. The ⋯ menu provides Rename and Delete; deletion requires confirmation and removes that profile’s saved runs only.
 - Opening a game without a selected profile redirects to Profiles. No sample players or scores are added to the real database.
 - Each completed run adds one row. A single JavaScript `resultSaved` flag prevents repeated saves from that completion. Restart resets the flag; abandoned runs are not saved. There are no run tokens, attempt IDs, or server-side replay registry.
-- `active_profile_id` holds the selected player’s database ID. Create and Switch update it; deleting the active player clears it. Pages read that profile from SQLite and pass it explicitly to Jinja. Result JSON has no profile ID: `/results` saves to the profile currently selected in Python. There are no Flask sessions, selection cookies, secret key, request hooks, or context processors for profile selection.
+- `active_profile_id` holds the selected player’s database ID. Create and Switch update it; deleting the active player selects the first remaining profile by ID, or clears it if none remain. Pages read that profile from SQLite and pass it explicitly to Jinja. Result JSON has no profile ID: `/results` saves to the profile currently selected in Python. There are no Flask sessions, selection cookies, secret key, request hooks, or context processors for profile selection.
 - Save failures appear in the gameplay footer. Do not navigate away immediately after completion; wait for “Saved for …”.
 - Classic progress counts distinct completed levels and sums the best stars for each level. Replaying a level cannot inflate the total best stars.
 - Classic leaderboard: total best stars across levels. Time Attack leaderboard: best Net WPM, separately for 30/60/120/300 seconds. Survival leaderboard: longest active survival time. Equal scores are ordered by profile ID.
@@ -151,13 +151,15 @@ Passages appearing in both modes remain separate mode-specific records. Python u
 
 | URL | Page |
 | --- | --- |
-| `/` | Home |
+| `/` | Persistent outer document with music and one fullscreen iframe |
+| `/home` | Existing Home page inside the iframe |
 | `/play` | Mode selection |
 | `/classic-levels?tier=1` | Classic tiers and level cards |
 | `/classic?level=1` | Selected Classic level |
 | `/time-attack?duration=60` | Selected Time Attack duration |
 | `/survival` | Survival |
 | `/profiles` | Profile list and create/switch/rename/delete forms |
+| `/settings` (GET/POST) | Volume sliders and automatic updates |
 | `/progress` | Personal results; `?tab=leaderboard` opens rankings |
 | `/results` (POST) | Save a completed game for the selected profile |
 
@@ -178,7 +180,7 @@ python seed.py
 python app.py
 ```
 
-If `.venv` already exists, skip its creation. Open [TypeQuest locally](http://127.0.0.1:5000/) in a desktop browser. Stop Flask with `Ctrl+C`.
+If `.venv` already exists, skip its creation. The original Flask environment works again; pygame is no longer a dependency. The previous `.venv-pygame` environment is unused and remains Git-ignored. Open [TypeQuest locally](http://127.0.0.1:5000/) in a desktop browser. Stop Flask with `Ctrl+C`.
 
 If PowerShell prevents activation, use the environment's Python directly:
 
@@ -187,6 +189,8 @@ If PowerShell prevents activation, use the environment's Python directly:
 .\.venv\Scripts\python.exe seed.py
 .\.venv\Scripts\python.exe app.py
 ```
+
+Launch with `python app.py` so the first-profile startup selection runs. Debug mode remains enabled with `use_reloader=False`; restart manually after Python code edits. Open the root URL, `http://127.0.0.1:5000/`, to load the persistent outer page. The server itself never plays audio. Closing the tab stops its music while Flask keeps running; `Ctrl+C` stops Flask.
 
 Serve the application through Flask. Opening template HTML directly, or using `python -m http.server`, will not render Jinja or load database content. Fonts load from Google Fonts; SVG icons are local.
 
@@ -214,6 +218,7 @@ TypeQuest 2/
 ├── test_profiles_progress.py  # Profiles, saving, stars, isolation, and leaderboard tests
 ├── typequest.db               # Local database, Git-ignored
 ├── templates/
+│   ├── app.html                # Persistent outer document and fullscreen iframe
 │   ├── index.html
 │   ├── play.html
 │   ├── classic-levels.html
@@ -221,15 +226,20 @@ TypeQuest 2/
 │   ├── time-attack.html
 │   ├── survival.html
 │   ├── profiles.html
-│   └── progress.html
+│   ├── progress.html
+│   └── settings.html
 ├── static/
 │   ├── js/
+│   │   ├── audio.js
+│   │   ├── background-music.js  # One music player belonging to the outer document
 │   │   ├── home.js
 │   │   ├── classic.js
 │   │   ├── time-attack.js
 │   │   ├── survival.js
 │   │   ├── profiles.js
-│   │   └── results.js
+│   │   ├── results.js
+│   │   └── settings.js
+│   ├── audio/                   # Background/UI originals and louder typing WAVs
 │   └── icons/
 ├── .gitignore
 └── README.md
@@ -247,9 +257,9 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 - Keep static page backgrounds on `body`, icons in separate SVG files, and layouts focused on desktop/laptop screens.
 - Preserve the supplied designs and favor code that can be explained line by line over frameworks or unnecessary abstractions.
 
-Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, a dedicated results page, settings, and audio remain pending.
+Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, and a dedicated results page remain pending.
 
-To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 15 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 24 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
 
 ### Simplified result saving
 
@@ -264,3 +274,29 @@ Run `python seed.py` once after updating an older installation. It removes the o
 The game decides when a run is complete. `/results` trusts the game's JSON field types, completion event, and elapsed time rather than checking passage length, exact challenge duration, numeric types, or extreme fabricated values again. It requires an existing selected profile and retains the supported mode check, nonnegative character counts, correct-count bounds, and positive playing time. The profile foreign key comes directly from `active_profile_id`, not from the browser. SQLite rejects invalid profile/level references and unsupported durations. Profile forms still check name length and report duplicate names. Ordinary malformed JSON is handled by Flask.
 
 Accuracy, Net WPM, raw-accuracy Classic stars, and Survival tier calculations are unchanged. Templates, CSS, browser gameplay, the seven-table schema, and the explicit `seed.py` setup process are unchanged by this simplification.
+
+### Settings milestone
+
+Settings contains exactly three sliders, each from 0% to 100%: Game Volume for correct/wrong typing sounds, Tap Volume for UI/navigation clicks, and Background Music Volume for looping music. Game and Tap control the browser sound effects; Background Music controls the outer browser page’s player.
+
+`app.py` stores `game_volume = 50`, `tap_volume = 70`, and `background_music_volume = 60`. GET `/settings` renders the current values and the selected profile. One JavaScript input handler updates the percentage and filled track immediately, adjusts the browser gain for Game or Tap, and sends the changed field to POST `/settings`. A Background Music change calls the same-origin parent’s `setMusicVolume()` to change its running GainNode, then saves the value to the Python variable through the existing POST. There is no Save button or page reload. Fields not included in that POST retain their current values.
+
+Volumes are shared by all profiles, work without a selected profile, and reset to their defaults when Flask restarts. SQLite is unchanged. No settings table, cookies, or browser storage is used. All Settings navigation links now open `/settings`.
+
+### Audio playback
+
+The recordings live in `static/audio/`. Background music and UI tap recordings are unchanged; correct and wrong typing WAVs have their louder levels baked into the files, with matching average levels and their original durations, stereo channels, and sample rates. Flask has no Python audio player and requirements contain no pygame dependency.
+
+GET `/` renders `templates/app.html`: a small parent document with one fullscreen, borderless iframe pointing to `/home`. `static/js/background-music.js` belongs only to this parent. The existing Home template remains `index.html`; its route is `/home`, and every existing `url_for('home')` link follows it inside the iframe.
+
+Links, form submissions, redirects, progress filters, and the existing `window.location` gameplay navigation use the iframe’s own window. The outer document stays loaded. No SPA router, content rewriting, messages, timestamps, or browser storage are used. Focusing the iframe after load keeps Home’s Enter shortcut and gameplay keyboard input working; the outer title follows the current page title.
+
+The parent fetches and decodes music once, then starts one guarded `AudioBufferSourceNode` with `loop = true`, connected to one GainNode. This repeats the decoded samples without timers or end/restart callbacks. Audio starts immediately when browser autoplay permits it; otherwise the shared interaction handler inside the iframe unlocks the parent’s audio contexts. Iframe navigation never recreates the music context, source, or gain.
+
+The Settings page calls `window.parent.setMusicVolume()` directly because parent and iframe are same-origin. Its background slider changes the running parent gain immediately and continues POSTing to the existing Python `background_music_volume` variable. Game and Tap control the parent’s two sound-effect gains. `audio.js` is loaded once by `app.html`; the three effects are decoded once per outer page load. Gameplay pages call `window.parent.playSound()`, and Settings calls `window.parent.setAudioVolume()`. The shared click and unlock handlers attach to each iframe document when it loads. There is no per-page `_audio.html` include.
+
+Refreshing the outer tab destroys the old player and starts a new document at Home, using the current volume from Flask. Closing the tab destroys its browser audio contexts, even while Flask keeps running. Merely loading a child URL directly, such as `/settings`, does not create a background player: enter the application at `/`.
+
+Tests cover the parent route, Home route, shared effects assets, Python volume updates, import/startup without Python audio, existing profile selection/fallback, and the unchanged database/gameplay behavior. Browser checks exercise iframe navigation, profile forms, normal redirects, persistent music identity, independent volumes, loop samples, outer refresh, and tab closure. The existing missing `favicon.ico` request still returns 404.
+
+Typing playback stays basic: decoded file → Game Volume gain → speakers. The extra per-sound gain boosts and runtime compressor have been removed. Loudness editing is done once in the typing WAVs, not while the game runs. Game Volume still controls both, including 0 for mute; UI taps and persistent background music retain their existing levels.

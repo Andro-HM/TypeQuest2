@@ -705,12 +705,11 @@
                 </div>
 
                 <nav id="top-nav">
-                    <!-- Settings remains a placeholder. -->
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                     <a href="{{ url_for('play') }}" class="nav-link">Play</a>
                     <a href="{{ url_for('progress') }}" class="nav-link">Progress</a>
                     <a href="{{ url_for('profiles') }}" class="nav-link nav-link-active">Profiles</a>
-                    <a href="#settings" class="nav-link">Settings</a>
+                    <a href="{{ url_for('settings') }}" class="nav-link">Settings</a>
                 </nav>
 
                 <div id="profile">
@@ -720,6 +719,7 @@
                     </a>
                 </div>
             </header>
+
             <main id="section-content">
                 <div id="section-heading">
                     <div class="eyebrow"><span class="eyebrow-dot"></span>LOCAL PLAYERS</div>
@@ -729,11 +729,14 @@
                 {% if request.args.get('choose') %}
                     <p class="notice">Create or choose a profile before playing.</p>
                 {% endif %}
+                
                 {% if error and not modal %}<p class="notice">{{ error }}</p>{% endif %}
+
                 <div class="section-toolbar">
                     <h2>Your profiles <span class="profile-count">{{ profiles | length }} profile{% if profiles | length != 1 %}s{% endif %}</span></h2>
                     <button id="create-profile" class="primary" type="button"><span>＋</span>Create profile</button>
                 </div>
+                
                 <div id="profiles-list">
                     {% for profile in profiles %}
                         <div class="profile-row{% if active_profile and profile.id == active_profile.id %} active{% endif %}">
@@ -761,6 +764,7 @@
                     {% endfor %}
                 </div>
             </main>
+
             <footer id="bottom-bar">
                 <div id="audio-status">
                     <span id="audio-dot"></span>
@@ -769,6 +773,7 @@
                 <span>© 2025 TYPEQUEST STUDIO</span>
             </footer>
         </div>
+
         <div id="profile-modal"{% if not modal %} hidden{% endif %}>
             <div id="modal-card">
                 <button id="modal-close" type="button" title="Close"><img src="{{ url_for('static', filename='icons/close.svg') }}" alt="Close"></button>
@@ -780,7 +785,7 @@
                     <div id="name-fields">
                         <label for="profile-input">Profile name</label>
                         <input id="profile-input" name="name" type="text" minlength="1" maxlength="24" required value="{{ entered_name }}" autocomplete="off">
-                        <p id="name-help">1–24 characters. Names must be unique.</p>
+                        <p id="name-help">1-24 characters. Names must be unique.</p>
                     </div>
                     <p id="modal-error"{% if not error %} hidden{% endif %}>{{ error or '' }}</p>
                     <div id="modal-actions">
@@ -790,6 +795,7 @@
                 </form>
             </div>
         </div>
+
         <script src="{{ url_for('static', filename='js/profiles.js') }}"></script>
     </body>
 </html>

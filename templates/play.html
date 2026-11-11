@@ -361,12 +361,11 @@
                 </div>
 
                 <nav id="top-nav">
-                    <!-- Settings remains a placeholder. -->
                     <a href="{{ url_for('home') }}" class="nav-link">Home</a>
                     <a href="{{ url_for('play') }}" class="nav-link nav-link-active">Play</a>
                     <a href="{{ url_for('progress') }}" class="nav-link">Progress</a>
                     <a href="{{ url_for('profiles') }}" class="nav-link">Profiles</a>
-                    <a href="#settings" class="nav-link">Settings</a>
+                    <a href="{{ url_for('settings') }}" class="nav-link">Settings</a>
                 </nav>
 
                 <div id="profile">

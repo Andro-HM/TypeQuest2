@@ -12,7 +12,7 @@ function handleHomeKeydown(event)
     if (event.key === "Enter" && event.target === document.body)
     {
         event.preventDefault();
-        openPlayPage();
+        beginButton.click();
     }
 }
 
