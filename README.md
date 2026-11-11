@@ -1,6 +1,6 @@
 # TypeQuest 2
 
-**Persistent browser-tab music with existing Flask pages**
+**Playable modes, local profiles and progress, settings, and persistent browser-tab audio**
 
 The playable frontend milestone is preserved on `main` as `v1.0.0`. Backend development continues on `feature/backend_1`.
 
@@ -109,7 +109,7 @@ Speed increases continuously between these points and caps at 4 characters per s
 | --- | --- |
 | Dedicated results page | Results are currently shown on the gameplay page |
 | Remaining Classic content | Tiers 3–5 and levels 21–50 are unavailable |
-| Final passage seeding | Current JavaScript content can be replaced with the final level/passages later |
+| Final passage content | Current SQLite passages can be replaced with the final supplied content later |
 | Tier unlocking | Star-based unlocking remains pending; Tiers 3–5 stay unavailable |
 
 The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The selected profile is stored in the Python variable `active_profile_id` for this one-process localhost demonstration. Selection is shared by all browsers. Each server startup selects the first existing profile ordered by database ID, or leaves selection empty if there are no profiles. Manual selection is not remembered across restarts; saved profiles and results remain in SQLite.
@@ -131,7 +131,7 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 
 ## Backend and Content Storage
 
-The database is `typequest.db` in the project root. It is Git-ignored and can be rebuilt from the tracked `schema.sql` and `seed_data.json` files.
+The database is `typequest.db` in the project root. It is Git-ignored and can be rebuilt from the tracked `test/schema.sql` and `test/seed_data.json` files.
 
 | Table | Initial records | Purpose |
 | --- | --- | --- |
@@ -145,13 +145,13 @@ The database is `typequest.db` in the project root. It is Git-ignored and can be
 
 Passages appearing in both modes remain separate mode-specific records. Python uses built-in `sqlite3`, parameterized queries, `sqlite3.Row`, and enabled foreign keys. No ORM is used.
 
-`seed.py` creates missing tables and inserts missing seed IDs. Repeating it does not duplicate rows or overwrite existing database edits. Ordinary Flask startup does not initialize or reseed the database. The seed fixture is for rebuilding; normal page requests read SQLite.
+`test/seed.py` creates missing tables and inserts missing seed IDs. Repeating it does not duplicate rows or overwrite existing database edits. Ordinary Flask startup does not initialize or reseed the database. The seed fixture is for rebuilding; normal page requests read SQLite. Run it from the project root using `python -m test.seed`, not by running the file directly inside `test/`. Editing an existing ID in `test/seed_data.json` does not update that row in an existing database; update the database row separately when replacing existing content.
 
 ## Flask Routes
 
 | URL | Page |
 | --- | --- |
-| `/` | Persistent outer document with music and one fullscreen iframe |
+| `/` | Persistent outer document with shared audio and one fullscreen iframe |
 | `/home` | Existing Home page inside the iframe |
 | `/play` | Mode selection |
 | `/classic-levels?tier=1` | Classic tiers and level cards |
@@ -165,28 +165,28 @@ Passages appearing in both modes remain separate mode-specific records. Python u
 
 An invalid or unavailable Classic level shows the existing unavailable-level screen with HTTP 404. Invalid/unavailable tier selections fall back to Tier 1. Missing, invalid, or unsupported Time Attack durations default to 60 seconds.
 
-Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no asynchronous content-fetch requests. Completed runs are sent to `/results` using a small shared JavaScript saver. The POST includes the mode, profile, level/duration where applicable, character counts, and active elapsed time. Flask checks the basic values and calculates WPM, accuracy, and stars before inserting the result.
+Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no asynchronous content-fetch requests. Completed runs are sent to `/results` using a small shared JavaScript saver. The POST includes the mode, level/duration where applicable, character counts, and active elapsed time. The selected profile comes from Python, not the request. Flask checks the basic values and calculates WPM, accuracy, and stars before inserting the result.
 
 ## Run Locally — Windows PowerShell
 
-Use Python 3 and run these commands from the project directory:
+Use Python 3 and run these commands from the project root directory. The `test/` folder contains both database setup files and automated tests:
 
 ```powershell
-cd "C:\_VAULT\Techhh\TypeQuest 2"
+# Open PowerShell in your cloned TypeQuest 2 folder first.
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python seed.py
+python -m test.seed
 python app.py
 ```
 
-If `.venv` already exists, skip its creation. The original Flask environment works again; pygame is no longer a dependency. The previous `.venv-pygame` environment is unused and remains Git-ignored. Open [TypeQuest locally](http://127.0.0.1:5000/) in a desktop browser. Stop Flask with `Ctrl+C`.
+If `.venv` already exists on this device, skip its creation. Each teammate creates their own environment; do not copy a virtual environment from another laptop. Flask is the only listed dependency; pygame is not needed. Open [TypeQuest locally](http://127.0.0.1:5000/) in a desktop browser. Stop Flask with `Ctrl+C`.
 
 If PowerShell prevents activation, use the environment's Python directly:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe seed.py
+.\.venv\Scripts\python.exe -m test.seed
 .\.venv\Scripts\python.exe app.py
 ```
 
@@ -194,11 +194,42 @@ Launch with `python app.py` so the first-profile startup selection runs. Debug m
 
 Serve the application through Flask. Opening template HTML directly, or using `python -m http.server`, will not render Jinja or load database content. Fonts load from Google Fonts; SVG icons are local.
 
+## Setup on a Teammate's Device
+
+Install Python 3 and Git, then clone the repository or pull the project updates. Open PowerShell in that checkout's root folder and follow the initial setup commands above. The folder path can differ from laptop to laptop.
+
+- Keep `app.py`, `database.py`, all of `templates/`, and all of `static/` to run the website.
+- Keep `requirements.txt` for installing dependencies.
+- Keep `test/seed.py`, `test/schema.sql`, `test/seed_data.json`, and `test/__init__.py` for initial database setup or rebuilding a missing database.
+- The two `test/test_*.py` files are optional for launching the website, but keep them in Git so everyone can run the checks.
+- Keep `README.md` and `.gitignore` with the repository.
+- Do not transfer `.venv/`, the unused `.venv-pygame/`, or `__pycache__/`. The new device creates its own environment and cache.
+
+`typequest.db` is Git-ignored. Seeding creates it in the project root, not inside `test/`. A fresh database has game content but no profiles or saved results. Each teammate creates a profile in the browser; their records are independent of yours. Pulling code does not transfer anyone's profiles or progress.
+
+After the first setup, launch normally from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe app.py
+```
+
+Do not seed before every launch. Rerun setup when creating a missing database or applying the documented seed/schema updates. After later pulls, install requirements again if dependencies changed. Existing database edits and results survive repeat seeding.
+
 ## Tests
+
+Run from the project root with the virtual environment activated:
 
 ```powershell
 python -m unittest -v
 ```
+
+Without activating it:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest -v
+```
+
+The `test/` package contains 24 tests in `test_backend.py` and `test_profiles_progress.py`. Default discovery finds them through `test/__init__.py`. Neither the tests nor the seed helper run during ordinary `python app.py` startup.
 
 The tests use temporary SQLite databases and cover the full seed fixture, repeatable seeding without overwriting edits, foreign keys, routes, assets, tier/level validation, duration defaults, and safe JSON rendering. They do not change the application's database.
 
@@ -208,14 +239,16 @@ Browser verification during this migration also covered navigation, the six orig
 
 ```text
 TypeQuest 2/
-├── app.py                     # Flask routes and initial page data
+├── app.py                     # Flask routes, selected profile, global volumes and result saving
 ├── database.py                # SQLite connections and queries
-├── schema.sql                 # Three content tables and four profile/progress tables
-├── seed.py                    # Explicit database initialization/seeding
-├── seed_data.json             # Exact original content, tracked in Git
 ├── requirements.txt           # Flask (includes Jinja2 as a dependency)
-├── test_backend.py            # Content and route tests
-├── test_profiles_progress.py  # Profiles, saving, stars, isolation, and leaderboard tests
+├── test/                      # Database setup files and automated tests
+│   ├── __init__.py            # Allows module commands and default test discovery
+│   ├── seed.py                # Explicit database initialization/seeding
+│   ├── schema.sql             # Seven database tables
+│   ├── seed_data.json         # Original content, tracked in Git
+│   ├── test_backend.py        # Content and route tests
+│   └── test_profiles_progress.py  # Profiles, results, stars, and leaderboards
 ├── typequest.db               # Local database, Git-ignored
 ├── templates/
 │   ├── app.html                # Persistent outer document and fullscreen iframe
@@ -230,7 +263,7 @@ TypeQuest 2/
 │   └── settings.html
 ├── static/
 │   ├── js/
-│   │   ├── audio.js
+│   │   ├── audio.js           # Shared typing/UI sounds, loaded once by app.html
 │   │   ├── background-music.js  # One music player belonging to the outer document
 │   │   ├── home.js
 │   │   ├── classic.js
@@ -259,13 +292,13 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 
 Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, and a dedicated results page remain pending.
 
-To update an existing database for this version, stop Flask, run `python seed.py`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 24 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 24 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
 
 ### Simplified result saving
 
 The save flow is now: game completes → check/set `resultSaved` → POST `/results` → require a selected profile and check basic count/time values → calculate statistics → insert a row. Restart sets `resultSaved = false`. Repeating a raw HTTP POST can create another row; normal duplicate completion calls are stopped by the JavaScript flag rather than database tokens.
 
-Run `python seed.py` once after updating an older installation. It removes the old `run_id` columns while preserving existing progress IDs, profile links, scores, stars, times, and timestamps. Fresh databases use the simpler seven-table schema directly. The upgrade runs only during explicit initialization, not on ordinary Flask startup. Tests cover upgrading a populated old database and repeating initialization without losing history.
+Run `python -m test.seed` once after updating an older installation. It removes the old `run_id` columns while preserving existing progress IDs, profile links, scores, stars, times, and timestamps. Fresh databases use the simpler seven-table schema directly. The upgrade runs only during explicit initialization, not on ordinary Flask startup. Tests cover upgrading a populated old database and repeating initialization without losing history.
 
 ### Localhost backend approach
 
@@ -273,7 +306,7 @@ Run `python seed.py` once after updating an older installation. It removes the o
 
 The game decides when a run is complete. `/results` trusts the game's JSON field types, completion event, and elapsed time rather than checking passage length, exact challenge duration, numeric types, or extreme fabricated values again. It requires an existing selected profile and retains the supported mode check, nonnegative character counts, correct-count bounds, and positive playing time. The profile foreign key comes directly from `active_profile_id`, not from the browser. SQLite rejects invalid profile/level references and unsupported durations. Profile forms still check name length and report duplicate names. Ordinary malformed JSON is handled by Flask.
 
-Accuracy, Net WPM, raw-accuracy Classic stars, and Survival tier calculations are unchanged. Templates, CSS, browser gameplay, the seven-table schema, and the explicit `seed.py` setup process are unchanged by this simplification.
+Accuracy, Net WPM, raw-accuracy Classic stars, and Survival tier calculations are unchanged. Templates, CSS, browser gameplay, the seven-table schema, and the explicit `test/seed.py` setup process are unchanged by this simplification.
 
 ### Settings milestone
 

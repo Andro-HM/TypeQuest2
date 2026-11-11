@@ -11,7 +11,7 @@ from unittest.mock import patch
 import database
 import app as backend
 from app import app
-from seed import seed_database
+from test.seed import seed_database
 
 
 class BackendTests(unittest.TestCase):
@@ -171,17 +171,17 @@ class BackendTests(unittest.TestCase):
                 for profile in database.get_profiles():
                     database.delete_profile(profile["id"])
             with patch("flask.Flask.run") as run:
-                state = runpy.run_path(str(Path(__file__).parent / "app.py"), run_name="__main__")
+                state = runpy.run_path(str(Path(__file__).parents[1] / "app.py"), run_name="__main__")
                 self.assertEqual(state["active_profile_id"], expected)
                 self.assertNotIn("pygame", state)
                 run.assert_called_once_with(debug=True, use_reloader=False)
 
     def test_import_does_not_start_server_or_python_audio(self):
         with patch("flask.Flask.run") as run:
-            state = runpy.run_path(str(Path(__file__).parent / "app.py"), run_name="typequest_import_test")
+            state = runpy.run_path(str(Path(__file__).parents[1] / "app.py"), run_name="typequest_import_test")
             run.assert_not_called()
             self.assertNotIn("pygame", state)
-        self.assertNotIn("pygame", (Path(__file__).parent / "requirements.txt").read_text())
+        self.assertNotIn("pygame", (Path(__file__).parents[1] / "requirements.txt").read_text())
 
     @patch.multiple(backend, game_volume=50, tap_volume=70, background_music_volume=60)
     def test_background_volume_updates_python_value_for_outer_page(self):

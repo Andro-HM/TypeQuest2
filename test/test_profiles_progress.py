@@ -7,7 +7,7 @@ from unittest.mock import patch
 import database
 import app as backend
 from app import app
-from seed import seed_database
+from test.seed import seed_database
 
 
 class ProfileProgressTests(unittest.TestCase):
@@ -44,7 +44,7 @@ class ProfileProgressTests(unittest.TestCase):
         self.assertEqual(len(database.get_profiles()), 1)
         second = self.create("AR")
         self.client.post("/profiles", data={"action": "switch", "profile_id": first})
-        self.assertIn("HM", self.client.get("/").get_data(as_text=True))
+        self.assertIn("HM", self.client.get("/home").get_data(as_text=True))
         self.client.post("/profiles", data={"action": "rename", "profile_id": first, "name": "Alex"})
         self.assertEqual(database.get_profile(first)["name"], "Alex")
         self.client.post("/profiles", data={"action": "rename", "profile_id": first, "name": "AR"})
@@ -54,6 +54,22 @@ class ProfileProgressTests(unittest.TestCase):
         replacement = self.create("New player")
         self.assertGreater(replacement, second)
         self.assertIsNone(database.get_profile(second))
+
+    def test_deleting_active_profile_selects_first_remaining(self):
+        first = self.create("HM")
+        second = self.create("AR")
+        third = self.create("Sam")
+        self.assertEqual(backend.active_profile_id, third)
+        self.client.post("/profiles", data={"action": "delete", "profile_id": third})
+        self.assertEqual(backend.active_profile_id, first)
+        self.assertEqual(self.client.get("/play").status_code, 200)
+        self.client.post("/profiles", data={"action": "switch", "profile_id": second})
+        self.assertEqual(backend.active_profile_id, second)
+        self.client.post("/profiles", data={"action": "delete", "profile_id": first})
+        self.assertEqual(backend.active_profile_id, second)
+        self.client.post("/profiles", data={"action": "delete", "profile_id": second})
+        self.assertIsNone(backend.active_profile_id)
+        self.assertEqual(self.client.get("/play").status_code, 302)
 
     def test_exact_star_thresholds_and_wpm_independence(self):
         profile_id = self.create()
@@ -130,17 +146,17 @@ class ProfileProgressTests(unittest.TestCase):
     def test_global_selection_is_shared_and_results_use_current_profile(self):
         self.assertIsNone(backend.active_profile_id)
         self.assertIsNone(app.secret_key)
-        self.assertNotIn("Set-Cookie", self.client.get("/").headers)
+        self.assertNotIn("Set-Cookie", self.client.get("/home").headers)
         self.assertEqual(self.client.get("/progress").status_code, 200)
         hm = self.create("HM")
         ar = self.create("AR")
         other_client = app.test_client()
         other_client.post("/profiles", data={"action": "switch", "profile_id": hm})
         self.assertEqual(backend.active_profile_id, hm)
-        self.assertIn('id="profile-name">HM', self.client.get("/").get_data(as_text=True))
+        self.assertIn('id="profile-name">HM', self.client.get("/home").get_data(as_text=True))
         self.client.post("/profiles", data={"action": "switch", "profile_id": ar})
         self.assertEqual(backend.active_profile_id, ar)
-        self.assertIn('id="profile-name">AR', other_client.get("/").get_data(as_text=True))
+        self.assertIn('id="profile-name">AR', other_client.get("/home").get_data(as_text=True))
         for mode in ("classic", "time_attack", "survival"):
             payload = {"mode": mode, "typed_count": 100, "correct_count": 95,
                        "elapsed_ms": 30000, "level_id": 1, "duration": 30}
@@ -151,14 +167,14 @@ class ProfileProgressTests(unittest.TestCase):
             self.assertEqual(database.get_progress(ar, mode)[1][0]["profile_id"], ar)
         self.client.post("/profiles", data={"action": "rename", "profile_id": ar, "name": "Alex"})
         self.assertEqual(backend.active_profile_id, ar)
-        self.assertIn('id="profile-name">Alex', other_client.get("/").get_data(as_text=True))
+        self.assertIn('id="profile-name">Alex', other_client.get("/home").get_data(as_text=True))
         self.client.post("/profiles", data={"action": "delete", "profile_id": hm})
         self.assertEqual(backend.active_profile_id, ar)
         self.client.post("/profiles", data={"action": "delete", "profile_id": ar})
         self.assertIsNone(backend.active_profile_id)
         self.assertEqual(other_client.get("/play").status_code, 302)
         self.assertEqual(other_client.post("/results", json=payload).status_code, 401)
-        self.assertNotIn("Set-Cookie", other_client.get("/").headers)
+        self.assertNotIn("Set-Cookie", other_client.get("/home").headers)
 
     def test_result_statistics_and_survival_misses(self):
         profile_id = self.create()
