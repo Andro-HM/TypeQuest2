@@ -120,7 +120,7 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 
 - Profile names are trimmed, unique (case-insensitive for ASCII names), and 1–24 characters long.
 - Creating a profile immediately selects it. Use Switch to choose another player. The ⋯ menu provides Rename and Delete; deletion requires confirmation and removes that profile’s saved runs only.
-- Opening a game without a selected profile redirects to Profiles. No sample players or scores are added to the real database.
+- Opening a game without a selected profile redirects to Profiles. Normal seeding adds no sample players or scores. The optional demo seeder below adds synthetic history only when explicitly run.
 - Each completed run adds one row. A single JavaScript `resultSaved` flag prevents repeated saves from that completion. Restart resets the flag; abandoned runs are not saved. There are no run tokens, attempt IDs, or server-side replay registry.
 - `active_profile_id` holds the selected player’s database ID. Create and Switch update it; deleting the active player selects the first remaining profile by ID, or clears it if none remain. Pages read that profile from SQLite and pass it explicitly to Jinja. Result JSON has no profile ID: `/results` saves to the profile currently selected in Python. There are no Flask sessions, selection cookies, secret key, request hooks, or context processors for profile selection.
 - Save failures appear in the gameplay footer. Do not navigate away immediately after completion; wait for “Saved for …”.
@@ -201,7 +201,7 @@ Install Python 3 and Git, then clone the repository or pull the project updates.
 - Keep `app.py`, `database.py`, all of `templates/`, and all of `static/` to run the website.
 - Keep `requirements.txt` for installing dependencies.
 - Keep `test/seed.py`, `test/schema.sql`, `test/seed_data.json`, and `test/__init__.py` for initial database setup or rebuilding a missing database.
-- The two `test/test_*.py` files are optional for launching the website, but keep them in Git so everyone can run the checks.
+- The three `test/test_*.py` files are optional for launching the website, but keep them in Git so everyone can run the checks.
 - Keep `README.md` and `.gitignore` with the repository.
 - Do not transfer `.venv/`, the unused `.venv-pygame/`, or `__pycache__/`. The new device creates its own environment and cache.
 
@@ -214,6 +214,32 @@ After the first setup, launch normally from the project root:
 ```
 
 Do not seed before every launch. Rerun setup when creating a missing database or applying the documented seed/schema updates. After later pulls, install requirements again if dependencies changed. Existing database edits and results survive repeat seeding.
+
+## Optional Demonstration Data
+
+For the lab demonstration, add the seven named profiles and their synthetic completed sessions from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe -m test.demo_data
+```
+
+This helper also runs normal schema/content setup if needed. It adds 7 profiles, 182 Classic runs, 56 Time Attack runs, and 42 Survival runs on a fresh database. It preserves existing profiles and results, reuses an existing matching profile name, and skips the same demo sessions on later runs. Existing real runs can affect the totals and ranking positions shown below. No extra tables, profile flags, gameplay changes, or tier unlocks are added.
+
+The records are synthetic presentation data, dated 4–10 November 2026. They are not real play history. The helper is separate from normal `test.seed` and never runs at Flask startup or during a normal installation. A teammate must explicitly run the command to receive the same sample history; the local database is not shared through Git.
+
+| Demo profile | Classic levels completed | Total best stars | Longest Survival | Ranking highlight among demo players |
+| --- | --- | --- | --- | --- |
+| anish | 20 | 60 | 03:15 | Classic leader; all 20 available levels at 3 stars |
+| akash | 14 | 29 | 02:28 | 30-second Time Attack leader |
+| smriti | 20 | 55 | 04:45 | 1-minute Time Attack leader |
+| isha | 10 | 18 | 03:58 | 2-minute Time Attack leader |
+| rajiv | 6 | 8 | 01:35 | Early progress and lower scores |
+| ravi | 18 | 42 | 05:32 | 5-minute Time Attack and Survival leader |
+| rakesh | 3 | 4 | 00:54 | Beginner progress |
+
+Each profile has two Classic attempts per completed level, two Time Attack attempts at every duration, and six Survival sessions. The samples include improvement, different accuracy/star results, a perfect Classic result, all five Survival tiers across the dataset, and occasional shorter Survival runs. All personal tabs have five recent rows. Classic stars follow the actual unrounded accuracy thresholds; Classic WPM matches passage length and time, Time Attack elapsed time matches duration, and Survival tiers match elapsed time.
+
+For the presentation, launch `app.py`, open `/`, then use Profiles to switch players. Show Anish's Classic cards in Tiers 1 and 2, open each Progress tab, and switch the Leaderboard mode/duration filters using **Show ranking**. Tiers 3–5 remain disabled because those level passages do not exist yet. If Flask was already running during seeding, refresh Profiles; the current selection stays unchanged until you switch it.
 
 ## Tests
 
@@ -229,7 +255,7 @@ Without activating it:
 .\.venv\Scripts\python.exe -m unittest -v
 ```
 
-The `test/` package contains 24 tests in `test_backend.py` and `test_profiles_progress.py`. Default discovery finds them through `test/__init__.py`. Neither the tests nor the seed helper run during ordinary `python app.py` startup.
+The `test/` package contains 27 tests in `test_backend.py`, `test_profiles_progress.py`, and `test_demo_data.py`. Default discovery finds them through `test/__init__.py`. Neither the tests nor the seed helper run during ordinary `python app.py` startup.
 
 The tests use temporary SQLite databases and cover the full seed fixture, repeatable seeding without overwriting edits, foreign keys, routes, assets, tier/level validation, duration defaults, and safe JSON rendering. They do not change the application's database.
 
@@ -245,10 +271,12 @@ TypeQuest 2/
 ├── test/                      # Database setup files and automated tests
 │   ├── __init__.py            # Allows module commands and default test discovery
 │   ├── seed.py                # Explicit database initialization/seeding
+│   ├── demo_data.py           # Optional seven-profile synthetic demo dataset
 │   ├── schema.sql             # Seven database tables
 │   ├── seed_data.json         # Original content, tracked in Git
 │   ├── test_backend.py        # Content and route tests
-│   └── test_profiles_progress.py  # Profiles, results, stars, and leaderboards
+│   ├── test_profiles_progress.py  # Profiles, results, stars, and leaderboards
+│   └── test_demo_data.py       # Demo coverage, repeat runs and preservation checks
 ├── typequest.db               # Local database, Git-ignored
 ├── templates/
 │   ├── app.html                # Persistent outer document and fullscreen iframe
@@ -292,7 +320,7 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 
 Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, and a dedicated results page remain pending.
 
-To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` now runs 24 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` runs 27 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, duration-specific rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
 
 ### Simplified result saving
 
