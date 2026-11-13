@@ -192,7 +192,18 @@ If PowerShell prevents activation, use the environment's Python directly:
 
 Launch with `python app.py` so the first-profile startup selection runs. Debug mode remains enabled with `use_reloader=False`; restart manually after Python code edits. Open the root URL, `http://127.0.0.1:5000/`, to load the persistent outer page. The server itself never plays audio. Closing the tab stops its music while Flask keeps running; `Ctrl+C` stops Flask.
 
-Serve the application through Flask. Opening template HTML directly, or using `python -m http.server`, will not render Jinja or load database content. Fonts load from Google Fonts; SVG icons are local.
+Serve the application through Flask. Opening template HTML directly, or using `python -m http.server`, will not render Jinja or load database content. Fonts, SVG icons, JavaScript, and audio are served locally by Flask. Internet is unnecessary after Python dependencies have been installed. Database setup and normal use both work offline; open the root localhost URL while Flask is running.
+
+## Offline Fonts
+
+All nine page templates load `static/css/fonts.css` through Flask. Its two `@font-face` rules use relative URLs into `static/fonts/`; there are no Google Fonts stylesheet links or preconnects. The original font-family names, internal CSS, sizes, spacing, and layouts are retained.
+
+- `PlusJakartaSans-Latin-Variable.woff2`: genuine Plus Jakarta Sans from the [official Google Fonts distribution](https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2).
+- `JetBrainsMono-Latin-Variable.woff2`: genuine JetBrains Mono from the [official Google Fonts distribution](https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwg.woff2).
+
+Both are unmodified variable WOFF2 Latin builds, matching the files previously loaded for the current English pages and typing passages. Using these exact official distribution files preserves glyph rendering as well as text widths; no font conversion or subsetting is performed locally. The declared weight ranges match the weights previously supplied by Google Fonts: Plus Jakarta Sans 400–800 and JetBrains Mono 400–600. Existing heavier CSS requests keep the same browser fallback/bold synthesis behavior. The previous request included Jakarta weight 900, but Google supplied only up to 800; no styling declarations were changed.
+
+These source links are documentation, not runtime requests. Teammates receive the files through Git and do not need to download fonts separately. Browser verification blocks every non-localhost request in a fresh browser context, loads all nine pages, and compares the loaded fonts against the online baseline. Measured text widths match, and Home/Classic baseline screenshots are pixel-identical.
 
 ## Setup on a Teammate's Device
 
@@ -300,6 +311,9 @@ TypeQuest 2/
 │   │   ├── profiles.js
 │   │   ├── results.js
 │   │   └── settings.js
+│   ├── css/
+│   │   └── fonts.css            # Local font-face definitions
+│   ├── fonts/                  # Local variable WOFF2 fonts
 │   ├── audio/                   # Background/UI originals and louder typing WAVs
 │   └── icons/
 ├── .gitignore
