@@ -2,7 +2,7 @@
 
 **Playable modes, local profiles and progress, settings, and persistent browser-tab audio**
 
-The playable frontend milestone is preserved on `main` as `v1.0.0`. Backend development continues on `feature/backend_1`.
+The original playable frontend milestone is tagged `v1.0.0`. The current `main` branch includes the Flask/SQLite backend, local profiles, saved progress, leaderboards, settings, and offline fonts.
 
 TypeQuest 2 is a browser-based typing game for a college Design Thinking and Idea Lab project. It uses Flask and Jinja2 to serve HTML, SQLite to store game content, and internal CSS plus vanilla JavaScript for gameplay, with simple code that can be understood, modified, and explained during the lab presentation.
 
@@ -16,8 +16,8 @@ The current version is intended for **desktop and laptop browsers with a physica
 | --- | --- |
 | Home | Begin button and Enter shortcut open game selection |
 | Play | Opens all three modes and passes the selected Time Attack duration |
-| Classic level selection | Renders tiers and levels from SQLite with Jinja; Tiers 1–2 are available |
-| Classic gameplay | Levels 1–20, passage completion, character feedback, stopwatch, Net WPM, and final statistics |
+| Classic level selection | Renders tiers and levels from SQLite with Jinja; all five tiers have content; profile star thresholds control access |
+| Classic gameplay | Levels 1–50, passage completion, character feedback, stopwatch, Net WPM, and final statistics |
 | Time Attack | 30-second, 1-minute, 2-minute, and 5-minute challenges with a continuous passage stream |
 | Survival | Automatic scrolling, editable visible text, increasing difficulty, hearts, and GAME OVER |
 | Shared gameplay controls | Pause/resume, Escape shortcut, automatic pause on focus loss, and restart |
@@ -29,8 +29,8 @@ The current version is intended for **desktop and laptop browsers with a physica
 
 ### Classic
 
-- Five tiers are shown, with a planned total of 50 levels.
-- Tiers 1 and 2 currently contain 10 playable levels each. Tiers 3–5 are disabled.
+- Five tiers contain exactly 50 playable levels, with 10 levels per tier. Tier 1 starts unlocked; later tiers unlock from the selected profile's cumulative best stars.
+- Levels 1–20 retain their existing passages. Levels 21–50 add longer passages with more punctuation, numbers, and varied vocabulary in Tiers 3–5.
 - Tier information, level headings, and exact original passages come from the `classic_tiers` and `classic_levels` SQLite tables.
 - The multiline passage uses character coloring and a cursor that stays visible as the passage scrolls vertically.
 - The stopwatch begins on the first typed character. Paused time is excluded.
@@ -38,7 +38,7 @@ The current version is intended for **desktop and laptop browsers with a physica
 - Entering the full passage completes the level, even if incorrect characters remain.
 - Completion freezes the clock and shows accuracy and Raw WPM alongside the Net WPM display.
 - Completion awards 1 star below 90% accuracy, 2 stars at 90% or above, and 3 stars at 95% or above. Exact, unrounded accuracy is used; WPM has no effect on stars.
-- Level cards display the current profile’s best stars. Tiers 3–5 remain globally unavailable; star-based unlocking is not implemented.
+- Level cards display the current profile’s best stars. Tier thresholds are 0, 25, 55, 80, and 110 cumulative best stars for Tiers 1–5. Only the best star result per level counts; replaying a level does not add its stars again. There is no separate previous-tier star minimum. Locks also apply to direct gameplay URLs and result saves.
 
 ### Time Attack
 
@@ -108,9 +108,8 @@ Speed increases continuously between these points and caps at 4 characters per s
 | Pending area | Current limitation |
 | --- | --- |
 | Dedicated results page | Results are currently shown on the gameplay page |
-| Remaining Classic content | Tiers 3–5 and levels 21–50 are unavailable |
 | Final passage content | Current SQLite passages can be replaced with the final supplied content later |
-| Tier unlocking | Star-based unlocking remains pending; Tiers 3–5 stay unavailable |
+| Tier unlocking | Star-based unlocking is not implemented; all five tiers have content; profile star thresholds control access |
 
 The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The selected profile is stored in the Python variable `active_profile_id` for this one-process localhost demonstration. Selection is shared by all browsers. Each server startup selects the first existing profile ordered by database ID, or leaves selection empty if there are no profiles. Manual selection is not remembered across restarts; saved profiles and results remain in SQLite.
 
@@ -131,12 +130,14 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 
 ## Backend and Content Storage
 
+Classic has 50 levels. The separate 200 `typing_passages` records are reusable Time Attack/Survival text, not extra Classic levels.
+
 The database is `typequest.db` in the project root. It is Git-ignored and can be rebuilt from the tracked `test/schema.sql` and `test/seed_data.json` files.
 
 | Table | Initial records | Purpose |
 | --- | --- | --- |
 | `classic_tiers` | 5 | Tier ranges and global availability |
-| `classic_levels` | 20 | Level numbers, tiers, titles, and exact passages |
+| `classic_levels` | 50 | Level numbers, tiers, titles, and exact passages |
 | `typing_passages` | 200 | 100 Time Attack passages and 100 Survival passages, with 20 per Survival tier |
 | `profiles` | 0 on a fresh setup | Local player names and creation timestamps |
 | `classic_progress` | 0 on a fresh setup | Completed runs; foreign keys to profiles and Classic levels |
@@ -145,7 +146,18 @@ The database is `typequest.db` in the project root. It is Git-ignored and can be
 
 Passages appearing in both modes remain separate mode-specific records. Python uses built-in `sqlite3`, parameterized queries, `sqlite3.Row`, and enabled foreign keys. No ORM is used.
 
-`test/seed.py` creates missing tables and inserts missing seed IDs. Repeating it does not duplicate rows or overwrite existing database edits. Ordinary Flask startup does not initialize or reseed the database. The seed fixture is for rebuilding; normal page requests read SQLite. Run it from the project root using `python -m test.seed`, not by running the file directly inside `test/`. Editing an existing ID in `test/seed_data.json` does not update that row in an existing database; update the database row separately when replacing existing content.
+`test/seed.py` creates missing tables and inserts missing seed IDs. Repeating it does not duplicate rows or overwrite existing level/passage edits or saved results. Content availability is synchronized with `test/seed_data.json`, installing all five tiers on older versions too. This content flag does not unlock them for a profile; cumulative best stars control access. Ordinary Flask startup does not initialize or reseed the database. The seed fixture is for rebuilding; normal page requests read SQLite. Run it from the project root using `python -m test.seed`, not by running the file directly inside `test/`. Editing an existing ID in `test/seed_data.json` does not update that row in an existing database; update the database row separately when replacing existing content.
+
+### Updating an Existing 20-Level Installation
+
+From the project root after pulling this version:
+
+```powershell
+.\.venv\Scripts\python.exe -m test.seed
+.\.venv\Scripts\python.exe -m test.demo_data
+```
+
+The first command adds levels 21–50 and makes the Tier 3–5 content available without changing existing passages or saved results. Profile-based star locks still apply. The second command is optional: it gives Anish 50 completed levels and 150 best stars for the demonstration. It also creates the other six demo players if they are missing. Repeat runs skip existing demo sessions. The audio Settings page is unchanged.
 
 ## Flask Routes
 
@@ -163,7 +175,7 @@ Passages appearing in both modes remain separate mode-specific records. Python u
 | `/progress` | Personal results; `?tab=leaderboard` opens rankings |
 | `/results` (POST) | Save a completed game for the selected profile |
 
-An invalid or unavailable Classic level shows the existing unavailable-level screen with HTTP 404. Invalid/unavailable tier selections fall back to Tier 1. Missing, invalid, or unsupported Time Attack durations default to 60 seconds.
+An invalid or unavailable Classic level shows the existing unavailable-level screen with HTTP 404. Invalid, unavailable, or profile-locked tier selections fall back to Tier 1. Direct URLs to profile-locked levels redirect to Classic selection, and locked-level result submissions are rejected. Missing, invalid, or unsupported Time Attack durations default to 60 seconds.
 
 Jinja renders Classic tier buttons and cards directly. Tier selection submits a normal GET form, preserving `?tier=` without rebuilding cards in JavaScript. Initial gameplay content is passed safely with Jinja's `tojson` filter. There are no asynchronous content-fetch requests. Completed runs are sent to `/results` using a small shared JavaScript saver. The POST includes the mode, level/duration where applicable, character counts, and active elapsed time. The selected profile comes from Python, not the request. Flask checks the basic values and calculates WPM, accuracy, and stars before inserting the result.
 
@@ -234,13 +246,13 @@ For the lab demonstration, add the seven named profiles and their synthetic comp
 .\.venv\Scripts\python.exe -m test.demo_data
 ```
 
-This helper also runs normal schema/content setup if needed. It adds 7 profiles, 182 Classic runs, 56 Time Attack runs, and 42 Survival runs on a fresh database. It preserves existing profiles and results, reuses an existing matching profile name, and skips the same demo sessions on later runs. Existing real runs can affect the totals and ranking positions shown below. No extra tables, profile flags, gameplay changes, or tier unlocks are added.
+This helper also runs normal schema/content setup if needed. On an existing 20-level demo database, rerunning it adds Anish's 60 missing Classic attempts for levels 21–50; it preserves all earlier demo and real results. It adds 7 profiles, 242 Classic runs, 56 Time Attack runs, and 42 Survival runs on a fresh database. It preserves existing profiles and results, reuses an existing matching profile name, and skips the same demo sessions on later runs. Existing real runs can affect the totals and ranking positions shown below. No extra tables or stored unlock flags are added. Tier access is calculated from each profile's best stars, so Anish's 150 stars unlock every tier while the other profiles have access according to their own totals.
 
-The records are synthetic presentation data, dated 4–10 November 2026. They are not real play history. The helper is separate from normal `test.seed` and never runs at Flask startup or during a normal installation. A teammate must explicitly run the command to receive the same sample history; the local database is not shared through Git.
+The records are synthetic presentation data, dated 4–11 November 2026. They are not real play history. The helper is separate from normal `test.seed` and never runs at Flask startup or during a normal installation. A teammate must explicitly run the command to receive the same sample history; the local database is not shared through Git.
 
 | Demo profile | Classic levels completed | Total best stars | Longest Survival | Ranking highlight among demo players |
 | --- | --- | --- | --- | --- |
-| anish | 20 | 60 | 03:15 | Classic leader; all 20 available levels at 3 stars |
+| anish | 50 | 150 | 03:15 | Classic leader; all 50 levels completed at 3 stars |
 | akash | 14 | 29 | 02:28 | Time Attack leader; best run at 30 seconds |
 | smriti | 20 | 55 | 04:45 | Strong Classic results and a 76 WPM 1-minute best |
 | isha | 10 | 18 | 03:58 | 73 WPM personal best at 2 minutes |
@@ -250,7 +262,7 @@ The records are synthetic presentation data, dated 4–10 November 2026. They ar
 
 Each profile has two Classic attempts per completed level, two Time Attack attempts at every duration, and six Survival sessions. The samples include improvement, different accuracy/star results, a perfect Classic result, all five Survival tiers across the dataset, and occasional shorter Survival runs. All personal tabs have five recent rows. Classic stars follow the actual unrounded accuracy thresholds; Classic WPM matches passage length and time, Time Attack elapsed time matches duration, and Survival tiers match elapsed time.
 
-For the presentation, launch `app.py`, open `/`, then use Profiles to switch players. Show Anish's Classic cards in Tiers 1 and 2, open each Progress tab, and switch the Leaderboard mode filter using **Show ranking**. Tiers 3–5 remain disabled because those level passages do not exist yet. If Flask was already running during seeding, refresh Profiles; the current selection stays unchanged until you switch it.
+For the presentation, launch `app.py`, open `/`, then use Profiles to switch players. Show Anish's Classic cards across all five tiers, open each Progress tab, and switch the Leaderboard mode filter using **Show ranking**. All 50 Classic levels have content. Anish can access all five tiers and is the fully completed demonstration profile; the other six demo players retain their varied earlier progress. If Flask was already running during seeding, refresh Profiles; the current selection stays unchanged until you switch it.
 
 ## Tests
 
@@ -266,7 +278,7 @@ Without activating it:
 .\.venv\Scripts\python.exe -m unittest -v
 ```
 
-The `test/` package contains 27 tests in `test_backend.py`, `test_profiles_progress.py`, and `test_demo_data.py`. Default discovery finds them through `test/__init__.py`. Neither the tests nor the seed helper run during ordinary `python app.py` startup.
+The `test/` package contains 30 tests in `test_backend.py`, `test_profiles_progress.py`, and `test_demo_data.py`. Default discovery finds them through `test/__init__.py`. Neither the tests nor the seed helper run during ordinary `python app.py` startup.
 
 The tests use temporary SQLite databases and cover the full seed fixture, repeatable seeding without overwriting edits, foreign keys, routes, assets, tier/level validation, duration defaults, and safe JSON rendering. They do not change the application's database.
 
@@ -332,9 +344,9 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 - Keep static page backgrounds on `body`, icons in separate SVG files, and layouts focused on desktop/laptop screens.
 - Preserve the supplied designs and favor code that can be explained line by line over frameworks or unnecessary abstractions.
 
-Profiles and completed results are now saved, with local rankings and progress pages. Tier unlocking, remaining Classic content, and a dedicated results page remain pending.
+Profiles and completed results are now saved, with local rankings and progress pages. All 50 Classic levels and cumulative-star tier unlocking are implemented. A dedicated results page remains unimplemented.
 
-To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` runs 27 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, mode-wide rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
+To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` runs 30 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, mode-wide rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
 
 ### Simplified result saving
 

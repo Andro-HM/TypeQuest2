@@ -50,7 +50,25 @@ class BackendTests(unittest.TestCase):
                 connection.execute("UPDATE classic_levels SET title = ? WHERE id = ?", ("Edited title", 1))
         self.assertEqual(seed_database(), first)
         self.assertEqual(database.get_level(1)["title"], "Edited title")
-        self.assertEqual(first, {"classic_tiers": 5, "classic_levels": 20, "time_attack": 100, "survival": 100})
+        self.assertEqual(first, {"classic_tiers": 5, "classic_levels": 50, "time_attack": 100, "survival": 100})
+
+    def test_upgrade_from_twenty_levels_preserves_existing_records(self):
+        database.save_result("classic", backend.active_profile_id, 40, 1, 60000, 3, level_id=1)
+        connection = database.get_connection()
+        with connection:
+            connection.execute("DELETE FROM classic_levels WHERE id > 20")
+            connection.execute("UPDATE classic_tiers SET available = 0 WHERE id > 2")
+            connection.execute("UPDATE classic_levels SET title = 'My existing title' WHERE id = 1")
+        before = dict(connection.execute("SELECT * FROM classic_progress").fetchone())
+        connection.close()
+        self.assertEqual(seed_database()["classic_levels"], 50)
+        self.assertEqual(seed_database()["classic_levels"], 50)
+        self.assertEqual(database.get_level(1)["title"], "My existing title")
+        self.assertTrue(all(tier["available"] for tier in database.get_tiers()))
+        connection = database.get_connection()
+        self.assertEqual(dict(connection.execute("SELECT * FROM classic_progress").fetchone()), before)
+        self.assertEqual(connection.execute("PRAGMA foreign_key_check").fetchall(), [])
+        connection.close()
 
     def test_all_routes_and_local_assets(self):
         for url in ["/", "/home", "/play", "/classic-levels", "/classic?level=1", "/time-attack?duration=60", "/survival", "/profiles", "/progress", "/settings", "/progress?tab=leaderboard&mode=survival"]:
@@ -65,8 +83,10 @@ class BackendTests(unittest.TestCase):
                             self.assertEqual(asset.status_code, 200, target)
 
     def test_classic_levels_and_invalid_selection(self):
-        self.assertIsNone(database.get_level(21))
-        for value in ["abc", "0", "-1", "21", "999", "1 OR 1=1"]:
+        for number in range(1, 51):
+            database.save_result("classic", backend.active_profile_id, 40, 1, 60000, 3, level_id=number)
+        self.assertIsNone(database.get_level(51))
+        for value in ["abc", "0", "-1", "51", "999", "1 OR 1=1"]:
             response = self.client.get("/classic", query_string={"level": value})
             self.assertEqual(response.status_code, 404)
             self.assertIn("Level unavailable", response.get_data(as_text=True))
@@ -76,7 +96,13 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(html.count('class="level-card"'), 10)
         self.assertIn('/classic?level=11', html)
         self.assertIn('id="tier-3"', html)
-        for value in ["abc", "3", "99"]:
+        for tier in range(1, 6):
+            html = self.client.get("/classic-levels", query_string={"tier": tier}).get_data(as_text=True)
+            self.assertIn('id="tier-title">Tier ' + str(tier), html)
+            self.assertEqual(html.count('class="level-card"'), 10)
+            self.assertIn('/classic?level=' + str(tier * 10), html)
+            self.assertNotIn(' disabled', html)
+        for value in ["abc", "6", "99"]:
             html = self.client.get("/classic-levels", query_string={"tier": value}).get_data(as_text=True)
             self.assertIn('id="tier-title">Tier 1', html)
 

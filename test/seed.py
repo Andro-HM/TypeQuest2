@@ -1,4 +1,4 @@
-"""Create the schema and add missing original seed rows. Existing rows stay unchanged."""
+"""Create tables, add missing content, and apply the seeded tier availability."""
 
 import json
 from contextlib import closing
@@ -36,7 +36,7 @@ def seed_database(database_path=None):
             for tier in data["tiers"]:
                 connection.execute(
                     """INSERT INTO classic_tiers (id, first_level, last_level, available)
-                       VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING""",
+                       VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET available = excluded.available""",
                     (tier["id"], tier["first_level"], tier["last_level"], tier["available"]),
                 )
 

@@ -10,7 +10,7 @@ from test.seed import seed_database
 # name, best Classic stars per level, typical speed, Time Attack bests, Survival best seconds
 # Time Attack bests are ordered: 30 seconds, 1 minute, 2 minutes, 5 minutes.
 DEMO_PLAYERS = [
-    ("anish", [3] * 20, 61, [72, 67, 60, 54], 195),
+    ("anish", [3] * 50, 61, [72, 67, 60, 54], 195),
     ("akash", [2, 3, 2, 1] * 3 + [2, 3], 57, [84, 71, 63, 49], 148),
     ("smriti", [3, 3, 3, 2] * 5, 65, [79, 76, 70, 66], 285),
     ("isha", [1, 2, 3, 2, 1] * 2, 53, [66, 69, 73, 62], 238),
@@ -45,7 +45,7 @@ def seed_demo_data(database_path=None):
                         accuracy = {1: 0.82 + index % 8 * 0.01,
                                     2: 0.90 + index % 4 * 0.01,
                                     3: 0.95 + index % 5 * 0.01}[stars]
-                        if attempt == 1 and name == "anish" and level_id == 20:
+                        if attempt == 1 and name == "anish" and level_id in (20, 50):
                             accuracy = 1.0
                         content = connection.execute("SELECT content FROM classic_levels WHERE id = ?", (level_id,)).fetchone()["content"]
                         target_wpm = speed + index % 5 - 2 - (7 if attempt == 0 else 0)

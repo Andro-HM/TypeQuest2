@@ -448,8 +448,8 @@
 
                 <form id="tiers" action="{{ url_for('classic_levels') }}" method="get">
                     {% for tier in tiers %}
-                        <button id="tier-{{ tier.id }}" class="tier-button{% if tier.id == selected_tier.id %} tier-selected{% endif %}" type="submit" name="tier" value="{{ tier.id }}"{% if not tier.available %} disabled{% endif %}>
-                            {% if not tier.available %}
+                        <button id="tier-{{ tier.id }}" class="tier-button{% if tier.id == selected_tier.id %} tier-selected{% endif %}" type="submit" name="tier" value="{{ tier.id }}" title="{{ tier.required_stars }} cumulative best stars required"{% if not tier.unlocked %} disabled{% endif %}>
+                            {% if not tier.unlocked %}
                                 <img class="tier-lock" src="{{ url_for('static', filename='icons/lock.svg') }}" alt="Locked">
                             {% endif %}
                             <span>
@@ -484,7 +484,7 @@
                     <span id="audio-dot"></span>
                     <span>AUDIO [STEREO 48k]</span>
                 </div>
-                <span>© 2025 TYPEQUEST STUDIO</span>
+                <span>© 2026 TYPEQUEST STUDIO</span>
             </footer>
         </div>
 

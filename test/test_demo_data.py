@@ -24,7 +24,7 @@ class DemoDataTests(unittest.TestCase):
         self.directory.cleanup()
 
     def test_all_seven_profiles_have_progress_and_rankings(self):
-        self.assertEqual(seed_demo_data(), {"profiles": 7, "classic": 182, "time_attack": 56, "survival": 42})
+        self.assertEqual(seed_demo_data(), {"profiles": 7, "classic": 242, "time_attack": 56, "survival": 42})
         self.assertEqual([p["name"] for p in database.get_profiles()], [p[0] for p in DEMO_PLAYERS])
         client = backend.app.test_client()
         for profile, player in zip(database.get_profiles(), DEMO_PLAYERS):
@@ -83,8 +83,8 @@ class DemoDataTests(unittest.TestCase):
             self.assertEqual(row["tier"], min(5, int(row["elapsed_ms"] // 60000) + 1))
             self.assertGreaterEqual(row["accuracy"], 0)
             self.assertLessEqual(row["accuracy"], 1)
-        self.assertEqual(connection.execute("SELECT COUNT(*) FROM classic_levels").fetchone()[0], 20)
-        self.assertEqual(connection.execute("SELECT available FROM classic_tiers WHERE id = 3").fetchone()[0], 0)
+        self.assertEqual(connection.execute("SELECT COUNT(*) FROM classic_levels").fetchone()[0], 50)
+        self.assertEqual(connection.execute("SELECT available FROM classic_tiers WHERE id = 3").fetchone()[0], 1)
         connection.close()
 
 

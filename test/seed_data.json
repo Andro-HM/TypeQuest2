@@ -16,19 +16,19 @@
             "id": 3,
             "first_level": 21,
             "last_level": 30,
-            "available": 0
+            "available": 1
         },
         {
             "id": 4,
             "first_level": 31,
             "last_level": 40,
-            "available": 0
+            "available": 1
         },
         {
             "id": 5,
             "first_level": 41,
             "last_level": 50,
-            "available": 0
+            "available": 1
         }
     ],
     "levels": [
@@ -151,6 +151,186 @@
             "tier": 2,
             "title": "A Journey Before Sunrise",
             "content": "We began our journey before sunrise, when the roads were almost empty. My brother checked the directions while I packed the last bottle of water. As we left the city, the sky slowly changed from grey to gold. We stopped near a field to stretch our legs. In the quiet morning air, even a short break felt like an adventure."
+        },
+        {
+            "id": 21,
+            "tier": 3,
+            "title": "The Missing Sketch",
+            "content": "At 8:30, Nila returned to the studio and noticed an empty space on her desk. \"Who moved my sketch?\" she asked. Her partner pointed toward the notice board, where the drawing hung beneath a small blue label. The team had chosen her bridge design for the afternoon review. Nila smiled, found a fresh sheet of paper, and began marking the changes they would need."
+        },
+        {
+            "id": 22,
+            "tier": 3,
+            "title": "Tickets for the Observatory",
+            "content": "The observatory opened its gates at 7:15 p.m., but a line had already formed along the path. Arun checked the tickets twice: two adults, one student, and a guided tour. Inside, the guide asked everyone to leave their phones in their pockets. When the roof slid open, a narrow band of stars appeared above the telescope. Even the crowded room became quiet."
+        },
+        {
+            "id": 23,
+            "tier": 3,
+            "title": "A Recipe Revisited",
+            "content": "Grandmother's notebook listed the ingredients in a careful hand: rice, lentils, salt, and a spoonful of oil. Beside the final step, someone had added, \"Wait until the steam settles.\" Tara followed the instructions, though she reduced the water by 50 ml. The first batch was too firm; the second was just right. She recorded both results so the next cook could learn from them."
+        },
+        {
+            "id": 24,
+            "tier": 3,
+            "title": "The Station Announcement",
+            "content": "Platform 4 was crowded when the announcement changed. The 10:45 train would leave from Platform 6 instead, and passengers had only twelve minutes to cross the footbridge. Dev folded his newspaper, lifted his bag, and followed the signs. A porter helped an elderly traveler reach the lift. By the time the whistle sounded, everyone from their carriage had found a seat."
+        },
+        {
+            "id": 25,
+            "tier": 3,
+            "title": "Repairing the Radio",
+            "content": "\"Do not turn that screw yet,\" said Meera, placing the old radio on a folded towel. She checked the wire, cleaned the contacts, and replaced a cracked knob. For a moment, the speaker produced only a rough hiss. Then a familiar tune emerged through the noise. Her brother wrote the repair date on a label and fixed it neatly beneath the wooden case."
+        },
+        {
+            "id": 26,
+            "tier": 3,
+            "title": "The Evening Debate",
+            "content": "The students had ten minutes to prepare their arguments. One group supported a longer library schedule; the other wanted more outdoor study areas. \"Which change helps the most people?\" the moderator asked. Instead of repeating their opening claims, the speakers compared costs, opening hours, and survey responses. The discussion ended with a practical proposal: test both ideas for a month."
+        },
+        {
+            "id": 27,
+            "tier": 3,
+            "title": "A Parcel from Jaipur",
+            "content": "The parcel arrived on Tuesday, wrapped in brown paper and secured with string. Inside were three painted cups, a folded letter, and a receipt for Rs. 450. Anika inspected each cup before placing it on the shelf. One handle had a tiny mark, but nothing was broken. She photographed the delivery, thanked the artist, and saved the wrapping for another journey."
+        },
+        {
+            "id": 28,
+            "tier": 3,
+            "title": "Notes beside the River",
+            "content": "The field notebook had become damp around the edges. Kabir moved it beneath his jacket and read the last entry: \"Water level rising; return before dusk.\" Across the river, a fallen branch turned slowly in the current. The team took one final measurement, packed the sample bottles, and followed the higher path home. Tomorrow, they would compare these readings with the previous week's results."
+        },
+        {
+            "id": 29,
+            "tier": 3,
+            "title": "The Museum Guide",
+            "content": "Room 12 held the smallest exhibition in the museum, yet visitors often stayed there longest. A guide explained how ordinary tools had changed over two centuries. \"Notice the handle, not just the blade,\" she said, lifting a replica for the group. The students passed it around carefully. By closing time, their notebooks contained sketches, measurements, and questions that no display label could answer."
+        },
+        {
+            "id": 30,
+            "tier": 3,
+            "title": "The Lantern Festival",
+            "content": "By 6:00 p.m., the square was bright with paper lanterns. Volunteers checked each cable, moved the chairs away from the exits, and tested the microphone. A sudden breeze scattered the programs, but children gathered them before they reached the fountain. When the first song began, the crowd settled into a wide semicircle. The smallest lantern glowed above the center of the stage."
+        },
+        {
+            "id": 31,
+            "tier": 4,
+            "title": "A Test of the Water Filter",
+            "content": "Before testing the filter, the group numbered four bottles: A1, A2, B1, and B2. Each received 250 ml of the same cloudy water. They changed only one condition, the depth of the sand layer, and measured the flow every 30 seconds. \"A clearer sample is not automatically safe to drink,\" the instructor reminded them. Their report separated visible improvement from claims that required proper laboratory tests."
+        },
+        {
+            "id": 32,
+            "tier": 4,
+            "title": "The Budget Meeting",
+            "content": "The original budget was Rs. 12,500, but the revised estimate reached Rs. 14,280. Printing accounted for Rs. 1,780; transport added another Rs. 950. Rather than hiding the difference, Sana showed the team a simple table. They reduced the number of posters, borrowed two display stands, and kept a reserve for unexpected expenses. The final decision was recorded beside each item, along with the person responsible for it."
+        },
+        {
+            "id": 33,
+            "tier": 4,
+            "title": "A Signal in the Rain",
+            "content": "At 09:42, the weather station stopped transmitting. The battery still showed 78%, and the sensor responded to a local check, so Priya inspected the cable between the controller and the antenna. Rain had entered through a loose seal. She dried the connector, fitted a new cover, and waited for three consecutive readings. Only after the values appeared on the receiver did she mark the repair as complete."
+        },
+        {
+            "id": 34,
+            "tier": 4,
+            "title": "The Accessible Entrance",
+            "content": "The proposed entrance looked attractive on paper, but the trial revealed a problem: a visitor using a wheelchair could not turn comfortably beside the reception desk. The team measured the space, moved a cabinet, and tested the route again. \"A drawing is a suggestion; a working route is evidence,\" the mentor said. They updated the plan and invited the same visitors to review the revised arrangement."
+        },
+        {
+            "id": 35,
+            "tier": 4,
+            "title": "Packing the Expedition Kit",
+            "content": "The checklist divided the equipment into three groups: navigation, shelter, and shared supplies. Each person carried a map, a whistle, and enough water for the first stage. The group weighed every bag twice because the scale occasionally drifted by 0.2 kg. Before departure, they exchanged emergency contacts and agreed on two meeting points. No one left until the last name had been checked against the list."
+        },
+        {
+            "id": 36,
+            "tier": 4,
+            "title": "The Unexpected Measurement",
+            "content": "Five samples produced almost identical results, while the sixth differed by 18%. Instead of deleting it, Farah checked the label, the instrument settings, and the time recorded in the log. The sample had been measured before it reached room temperature. She repeated the procedure under the agreed conditions and retained both readings in the report. The unusual value became an explanation of the process rather than an unexplained exception."
+        },
+        {
+            "id": 37,
+            "tier": 4,
+            "title": "Rehearsal in the Auditorium",
+            "content": "The rehearsal began at 3:20 p.m. with a microphone check and a review of the lighting cues. During the second scene, the background track started six seconds late. The stage manager stopped the run, noted the exact cue, and asked the team to try the transition again. By the final rehearsal, everyone knew the sequence: lights down, curtain open, music ready, then the first line of dialogue."
+        },
+        {
+            "id": 38,
+            "tier": 4,
+            "title": "The Bicycle Survey",
+            "content": "The survey collected 126 responses, including comments from students who rarely used a bicycle. Several riders wanted more racks; others were concerned about the narrow gate near the main road. The team separated daily users from occasional users before comparing their answers. A popular suggestion did not become a final decision immediately. They first observed the entrance during the busiest hour and checked whether the proposed changes would fit."
+        },
+        {
+            "id": 39,
+            "tier": 4,
+            "title": "A Clearer Set of Instructions",
+            "content": "The first instruction sheet said, \"Connect the parts correctly,\" which helped nobody. In the revision, each step named a part, showed its orientation, and described the expected result. Step 4 read, \"Insert the short pin until its head is level with the frame.\" Three classmates tested the sheet without assistance. Their questions revealed two missing details, and both were corrected before the instructions were printed for the workshop."
+        },
+        {
+            "id": 40,
+            "tier": 4,
+            "title": "The Archive after Closing",
+            "content": "After the visitors left, the archivists inspected 24 folders from a recently donated collection. They recorded each title, counted the pages, and placed loose photographs inside separate sleeves. One envelope contained a date that disagreed with the catalog. \"Keep the original note and record the discrepancy,\" their supervisor advised. The team saved a scan, added a comment to the index, and left the uncertain date open for further research."
+        },
+        {
+            "id": 41,
+            "tier": 5,
+            "title": "The Prototype Review",
+            "content": "Version 2.4 of the prototype reduced the assembly time from 18 minutes to 11, but that was only part of the review. The team also checked repair access, material use, and the force needed to release the cover. \"Faster is useful only if the result remains dependable,\" said the evaluator. Two clips survived every trial; a third bent after repeated use. The final report recommended a revised clip, a clearer assembly diagram, and another test before the design was accepted."
+        },
+        {
+            "id": 42,
+            "tier": 5,
+            "title": "A Journey Planned Carefully",
+            "content": "The route covered 146 km, including a section where roadworks could add 35-50 minutes to the journey. Leena compared two departure times, checked the fuel estimate, and marked a rest stop before the hills. Her plan included an alternative road and the number of a local repair shop. When heavy rain delayed the group, they used the spare time already built into the schedule. Nobody needed to rush the final stretch merely to match an optimistic estimate."
+        },
+        {
+            "id": 43,
+            "tier": 5,
+            "title": "An Experiment Worth Repeating",
+            "content": "The first trial suggested a 12.5% improvement, but the students resisted announcing a conclusion from one measurement. They repeated the experiment on three separate mornings, using the same procedure and recording the room temperature each time. One result was lower than expected; another was nearly unchanged. Rather than choosing the most impressive figure, they reported the full range and explained the limitations. Their conclusion became more cautious, more precise, and much easier for another group to investigate."
+        },
+        {
+            "id": 44,
+            "tier": 5,
+            "title": "The Library at Midnight",
+            "content": "At 11:48 p.m., the library was almost silent except for the ventilation system and the turning of a few pages. A research group compared two versions of an article, checking whether a corrected figure changed the authors' argument. The answer was not obvious from the abstract. They traced the references, discussed the assumptions, and wrote down the question they still could not resolve. Before leaving, they saved their notes with a clear filename so tomorrow's work would begin with evidence rather than memory."
+        },
+        {
+            "id": 45,
+            "tier": 5,
+            "title": "Keeping the Workshop Running",
+            "content": "A useful maintenance log records more than the phrase \"machine repaired.\" It identifies the symptom, the inspection, the replaced part, and the test performed afterward. On Friday, the workshop team applied this approach to a drill that stopped under load. They found a loose connection, corrected it, and completed five controlled tests. The log included the time, the operator's initials, and a reminder to inspect the cable again. That small record made the next person's work safer and more informed."
+        },
+        {
+            "id": 46,
+            "tier": 5,
+            "title": "A Decision under Constraints",
+            "content": "The team had Rs. 8,750, four working days, and access to a shared fabrication room for only six hours. A polished metal enclosure would consume most of the budget, while a simpler plywood case could be repaired with ordinary tools. They compared the alternatives against the project's actual requirements instead of choosing the most impressive photograph. Their decision favored the case that could be built, tested, explained, and maintained within the available time. A modest finish was acceptable; an untested mechanism was not."
+        },
+        {
+            "id": 47,
+            "tier": 5,
+            "title": "The Report behind the Chart",
+            "content": "The chart showed a steady increase, but the labels hid an important change: the first two months counted visits, while the remaining months counted individual visitors. Comparing those numbers directly would be misleading. Noor returned to the source records and produced a consistent summary for the entire period. The revised chart looked less dramatic, yet it answered the question accurately. Beneath it, she included the counting rule, the date range, and a short note about incomplete records that could still affect the result."
+        },
+        {
+            "id": 48,
+            "tier": 5,
+            "title": "When the Network Fell Silent",
+            "content": "At 14:06, the demonstration room lost its network connection. The team did not abandon the presentation because the application, fonts, icons, and sample data were already available on the laptop. They restarted the local server, opened the browser, and continued with the planned examples. During the discussion, the instructor asked which parts still required an external service. The answer was specific: normal operation used local files and a local database; downloading the initial software dependencies had required a connection during setup."
+        },
+        {
+            "id": 49,
+            "tier": 5,
+            "title": "The Final Demonstration",
+            "content": "The presentation began with a short explanation of the problem, followed by a complete demonstration of the working system. Each teammate described a part they understood: the interface, the interaction rules, the database, or the saved results. When a question exposed a limitation, they acknowledged it and showed where the current implementation stopped. Their strongest evidence was not a crowded slide. It was a sequence of ordinary actions that produced the expected result, together with clear explanations of why those actions worked."
+        },
+        {
+            "id": 50,
+            "tier": 5,
+            "title": "The Last Page of the Notebook",
+            "content": "On the final page, the team wrote three questions: \"What did we build? What did we test? What would we change next?\" The answers were more useful than a list of impressive terms. They described the decisions that simplified the design, the mistakes uncovered during trials, and the improvements supported by actual observations. Completing the project did not mean every possible feature existed. It meant the agreed work was functional, the remaining limits were understood, and every member could explain the result with confidence."
         }
     ],
     "passages": [

@@ -7,6 +7,7 @@ import database
 
 app = Flask(__name__)
 DURATIONS = (30, 60, 120, 300)
+TIER_STARS = {1: 0, 2: 25, 3: 55, 4: 80, 5: 110}
 active_profile_id = None
 game_volume = 50
 tap_volume = 70
@@ -33,18 +34,31 @@ def play():
     return render_template("play.html", active_profile=active_profile)
 
 
+def get_classic_stars():
+    total = 0
+    for result in database.get_classic_bests(active_profile_id):
+        total += result["stars"]
+    return total
+
+
 @app.route("/classic-levels")
 def classic_levels():
     active_profile = database.get_profile(active_profile_id)
     if active_profile is None:
         return redirect(url_for("profiles", choose=1))
 
-    tiers = database.get_tiers()
+    total_stars = get_classic_stars()
+    tiers = []
+    for row in database.get_tiers():
+        tier = dict(row)
+        tier["required_stars"] = TIER_STARS[tier["id"]]
+        tier["unlocked"] = tier["available"] and total_stars >= tier["required_stars"]
+        tiers.append(tier)
     requested_tier = request.args.get("tier", default=1, type=int)
     selected_tier = tiers[0]
 
     for tier in tiers:
-        if tier["id"] == requested_tier and tier["available"]:
+        if tier["id"] == requested_tier and tier["unlocked"]:
             selected_tier = tier
 
     levels = database.get_levels(selected_tier["id"])
@@ -63,6 +77,9 @@ def classic():
     level = database.get_level(request.args.get("level") or 1)
     if level is None:
         return render_template("classic.html", level=None, active_profile=active_profile), 404
+
+    if get_classic_stars() < TIER_STARS[level["tier"]]:
+        return redirect(url_for("classic_levels"))
 
     return render_template("classic.html", level=dict(level), active_profile=active_profile)
 
@@ -215,6 +232,13 @@ def save_results():
     elapsed = data.get("elapsed_ms", 0)
     if elapsed <= 0 or typed < 0 or missed < 0 or not 0 <= correct <= typed:
         return jsonify(error="Invalid playing time or character counts."), 400
+
+    if mode == "classic":
+        level = database.get_level(data.get("level_id"))
+        if level is None:
+            return jsonify(error="Choose an existing Classic level."), 409
+        if get_classic_stars() < TIER_STARS[level["tier"]]:
+            return jsonify(error="This Classic tier is locked."), 403
 
     # The game sends these counts only when a run ends.
     accuracy = 0

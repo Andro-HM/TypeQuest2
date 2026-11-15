@@ -122,6 +122,60 @@ class ProfileProgressTests(unittest.TestCase):
         self.assertEqual(len(database.get_passages("time_attack")), 100)
         self.assertEqual(len(database.get_progress(ar, "classic")[1]), 1)
 
+    def test_cumulative_tier_thresholds_and_direct_access(self):
+        profile_id = self.create("Threshold player")
+        requirements = {1: 0, 2: 25, 3: 55, 4: 80, 5: 110}
+        for total in [0, 24, 25, 54, 55, 79, 80, 109, 110, 150]:
+            connection = database.get_connection()
+            with connection:
+                connection.execute("DELETE FROM classic_progress WHERE profile_id = ?", (profile_id,))
+            connection.close()
+            remaining = total
+            level_id = 1
+            while remaining:
+                stars = min(3, remaining)
+                database.save_result("classic", profile_id, 40, 1, 60000, stars, level_id=level_id)
+                remaining -= stars
+                level_id += 1
+            for tier, required in requirements.items():
+                unlocked = total >= required
+                html = self.client.get("/classic-levels", query_string={"tier": tier}).get_data(as_text=True)
+                button = html.split('id="tier-' + str(tier) + '"', 1)[1].split('>', 1)[0]
+                self.assertEqual(" disabled" not in button, unlocked, (total, tier))
+                self.assertIn('id="tier-title">Tier ' + str(tier if unlocked else 1), html)
+                first_level = (tier - 1) * 10 + 1
+                response = self.client.get("/classic", query_string={"level": first_level})
+                self.assertEqual(response.status_code, 200 if unlocked else 302, (total, tier))
+                if not unlocked:
+                    self.assertIn("/classic-levels", response.location)
+                    before = len(database.get_classic_bests(profile_id))
+                    response = self.client.post("/results", json={"mode": "classic", "level_id": first_level,
+                                                "typed_count": 100, "correct_count": 100, "elapsed_ms": 60000})
+                    self.assertEqual(response.status_code, 403)
+                    self.assertEqual(len(database.get_classic_bests(profile_id)), before)
+
+    def test_tier_unlock_uses_best_stars_and_selected_profile(self):
+        first = self.create("New player")
+        for stars in [1, 2, 3, 3, 3, 3, 3, 3, 3, 3]:
+            database.save_result("classic", first, 40, 1, 60000, stars, level_id=1)
+        self.assertEqual(backend.get_classic_stars(), 3)
+        self.assertEqual(self.client.get("/classic?level=11").status_code, 302)
+        for level in range(2, 9):
+            database.save_result("classic", first, 40, 1, 60000, 3, level_id=level)
+        self.assertEqual(backend.get_classic_stars(), 24)
+        self.assertEqual(self.client.get("/classic?level=11").status_code, 302)
+        response = self.client.post("/results", json={"mode": "classic", "level_id": 9,
+                                    "typed_count": 100, "correct_count": 85, "elapsed_ms": 60000})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(backend.get_classic_stars(), 25)
+        self.assertEqual(self.client.get("/classic?level=11").status_code, 200)
+        second = self.create("Another new player")
+        self.assertEqual(backend.get_classic_stars(), 0)
+        self.assertEqual(self.client.get("/classic?level=11").status_code, 302)
+        self.client.post("/profiles", data={"action": "switch", "profile_id": first})
+        self.assertEqual(self.client.get("/classic?level=11").status_code, 200)
+        self.assertEqual(database.get_progress(second, "classic")[0]["stars"], 0)
+
     def test_active_profile_and_basic_result_validation(self):
         self.assertEqual(self.client.post("/results", json={}).status_code, 401)
         hm = self.create("HM")
