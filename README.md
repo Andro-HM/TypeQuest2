@@ -2,11 +2,11 @@
 
 **Playable modes, local profiles and progress, settings, and persistent browser-tab audio**
 
-The original playable frontend milestone is tagged `v1.0.0`. The current `main` branch includes the Flask/SQLite backend, local profiles, saved progress, leaderboards, settings, and offline fonts.
+The current `main` branch includes the Flask/SQLite backend, local profiles, saved progress, leaderboards, settings, and offline fonts.
 
 TypeQuest 2 is a browser-based typing game for a college Design Thinking and Idea Lab project. It uses Flask and Jinja2 to serve HTML, SQLite to store game content, and internal CSS plus vanilla JavaScript for gameplay, with simple code that can be understood, modified, and explained during the lab presentation.
 
-This milestone includes playable **Classic, Time Attack, and Survival** modes, along with Home, game selection, and Classic level selection. Gameplay and result calculations remain in the browser. Flask loads the initial content from SQLite when rendering each page. Completed runs are saved in SQLite for the selected local profile.
+The application includes playable **Classic, Time Attack, and Survival** modes, along with Home, game selection, and Classic level selection. Gameplay and live statistics run in the browser. Flask loads the initial content from SQLite when rendering each page, recalculates saved statistics from submitted counts and active time, and saves completed runs for the selected local profile.
 
 The current version is intended for **desktop and laptop browsers with a physical keyboard**. Mobile layouts are not implemented.
 
@@ -16,7 +16,7 @@ The current version is intended for **desktop and laptop browsers with a physica
 | --- | --- |
 | Home | Begin button and Enter shortcut open game selection |
 | Play | Opens all three modes and passes the selected Time Attack duration |
-| Classic level selection | Renders tiers and levels from SQLite with Jinja; all five tiers have content; profile star thresholds control access |
+| Classic level selection | 50 implemented levels across five progressively unlockable tiers, rendered from SQLite with Jinja |
 | Classic gameplay | Levels 1–50, passage completion, character feedback, stopwatch, Net WPM, and final statistics |
 | Time Attack | 30-second, 1-minute, 2-minute, and 5-minute challenges with a continuous passage stream |
 | Survival | Automatic scrolling, editable visible text, increasing difficulty, hearts, and GAME OVER |
@@ -30,8 +30,8 @@ The current version is intended for **desktop and laptop browsers with a physica
 ### Classic
 
 - Five tiers contain exactly 50 playable levels, with 10 levels per tier. Tier 1 starts unlocked; later tiers unlock from the selected profile's cumulative best stars.
-- Levels 1–20 retain their existing passages. Levels 21–50 add longer passages with more punctuation, numbers, and varied vocabulary in Tiers 3–5.
-- Tier information, level headings, and exact original passages come from the `classic_tiers` and `classic_levels` SQLite tables.
+- Later tiers use longer passages with more punctuation, numbers, and varied vocabulary.
+- Tier information, level headings, and passages come from the `classic_tiers` and `classic_levels` SQLite tables.
 - The multiline passage uses character coloring and a cursor that stays visible as the passage scrolls vertically.
 - The stopwatch begins on the first typed character. Paused time is excluded.
 - Typing moves forward; **Backspace is the way to move back and erase**. Left/Right Arrow editing is not used in Classic.
@@ -103,17 +103,15 @@ Speed increases continuously between these points and caps at 4 characters per s
 - Paused time and the initial countdown are excluded from gameplay statistics.
 - WPM occupies a fixed metric column so changes in digit width do not shift the passage.
 
-## What Is Not Implemented Yet
+## Design Decisions and Scope
 
-| Pending area | Current limitation |
-| --- | --- |
-| Dedicated results page | Results are currently shown on the gameplay page |
-| Final passage content | Current SQLite passages can be replaced with the final supplied content later |
-| Tier unlocking | Star-based unlocking is not implemented; all five tiers have content; profile star thresholds control access |
+Final statistics are displayed directly on the gameplay screen. This is the intended final results design; a separate Results page is not planned.
 
-The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The selected profile is stored in the Python variable `active_profile_id` for this one-process localhost demonstration. Selection is shared by all browsers. Each server startup selects the first existing profile ordered by database ID, or leaves selection empty if there are no profiles. Manual selection is not remembered across restarts; saved profiles and results remain in SQLite.
+All 50 Classic passages and the 200 reusable Time Attack/Survival passages are included in `test/seed_data.json`. The current passage set is implemented content, not a pending feature. It can be edited later without treating the application as unfinished.
 
-Mobile support, multiplayer, and a separate Practice mode are outside the current project scope.
+The database stores game content, local profiles, and completed run history. Profiles are local players, not online accounts. There are no passwords, online authentication, settings table, or separate leaderboard table. Rankings are calculated from saved runs. The selected profile is stored in the Python variable `active_profile_id` for this one-process localhost demonstration. Selection is shared by all browsers. Each server startup selects the first existing profile ordered by database ID, or leaves selection empty if there are no profiles. Manual selection is not remembered across restarts; saved profiles and results remain in SQLite. Switching profiles in another tab during a run can attribute its result to the newly selected player, because result saving uses the current global selection.
+
+Mobile support, multiplayer, and a separate Practice mode are outside the current project scope. Use the root `/` entry point: gameplay and Settings pages rely on the parent iframe shell for audio functions, so opening those inner pages directly can cause missing-function errors during interaction.
 
 ## Profiles, Saving, and Leaderboards
 
@@ -125,7 +123,7 @@ Mobile support, multiplayer, and a separate Practice mode are outside the curren
 - Save failures appear in the gameplay footer. Do not navigate away immediately after completion; wait for “Saved for …”.
 - Classic progress counts distinct completed levels and sums the best stars for each level. Replaying a level cannot inflate the total best stars.
 - Classic leaderboard: total best stars across levels. Time Attack leaderboard: best Net WPM across all durations in one ranking. Survival leaderboard: longest active survival time. Equal scores are ordered by profile ID.
-- Personal Progress shows best figures and the latest five completed runs per mode. Times are stored in UTC and displayed in IST.
+- Personal Progress shows best figures and the latest five saved runs per mode, ordered by record ID. Times are stored in UTC and displayed in IST.
 - SQLite content and result queries stay in `database.py`, which imports only `sqlite3`. The existing typing, scrolling, timer, and damage engines stay in JavaScript; small completion/restart hooks call the shared result saver.
 
 ## Backend and Content Storage
@@ -146,18 +144,20 @@ The database is `typequest.db` in the project root. It is Git-ignored and can be
 
 Passages appearing in both modes remain separate mode-specific records. Python uses built-in `sqlite3`, parameterized queries, `sqlite3.Row`, and enabled foreign keys. No ORM is used.
 
-`test/seed.py` creates missing tables and inserts missing seed IDs. Repeating it does not duplicate rows or overwrite existing level/passage edits or saved results. Content availability is synchronized with `test/seed_data.json`, installing all five tiers on older versions too. This content flag does not unlock them for a profile; cumulative best stars control access. Ordinary Flask startup does not initialize or reseed the database. The seed fixture is for rebuilding; normal page requests read SQLite. Run it from the project root using `python -m test.seed`, not by running the file directly inside `test/`. Editing an existing ID in `test/seed_data.json` does not update that row in an existing database; update the database row separately when replacing existing content.
+`test/seed.py` creates any missing tables from the current seven-table schema and inserts missing content IDs, including Classic levels 21–50 on an older 20-level database. Repeating it does not duplicate rows or overwrite existing level/passage edits or saved results. Content availability is synchronized with `test/seed_data.json`, installing all five tiers on older versions too. This content flag does not unlock them for a profile; cumulative best stars control access. Ordinary Flask startup does not initialize or reseed the database. The seed fixture supplies initial or missing content; normal page requests read SQLite. Run it from the project root using `python -m test.seed`, not by running the file directly inside `test/`. Editing an existing ID in `test/seed_data.json` does not update that row in an existing database; update the database row separately when replacing existing content.
+
+For older databases that still contain a `run_id` column in a progress table, the seed helper rebuilds that table without the obsolete column and copies the other columns unchanged. Existing progress IDs, profile links, scores, stars, times, and timestamps are preserved. This compatibility step runs only when those old columns exist, during explicit seeding.
 
 ### Updating an Existing 20-Level Installation
 
-From the project root after pulling this version:
+Stop Flask, then run from the project root after pulling this version:
 
 ```powershell
 .\.venv\Scripts\python.exe -m test.seed
 .\.venv\Scripts\python.exe -m test.demo_data
 ```
 
-The first command adds levels 21–50 and makes the Tier 3–5 content available without changing existing passages or saved results. Profile-based star locks still apply. The second command is optional: it gives Anish 50 completed levels and 150 best stars for the demonstration. It also creates the other six demo players if they are missing. Repeat runs skip existing demo sessions. The audio Settings page is unchanged.
+The first command adds levels 21–50 and makes the Tier 3–5 content available without changing existing passages or saved results. Profile-based star locks still apply. The second command is optional: it gives Anish 50 completed levels and 150 best stars for the demonstration. It also creates the other six demo players if they are missing. Repeat runs skip existing demo sessions. Restart Flask with `.\.venv\Scripts\python.exe app.py` afterward; the Python reloader is disabled.
 
 ## Flask Routes
 
@@ -192,7 +192,7 @@ python -m test.seed
 python app.py
 ```
 
-If `.venv` already exists on this device, skip its creation. Each teammate creates their own environment; do not copy a virtual environment from another laptop. Flask is the only listed dependency; pygame is not needed. Open [TypeQuest locally](http://127.0.0.1:5000/) in a desktop browser. Stop Flask with `Ctrl+C`.
+If `.venv` already exists on this device, skip its creation. Each teammate creates their own environment; do not copy a virtual environment from another laptop. Flask is the only listed dependency; pip installs its dependencies, including Jinja2. Open [TypeQuest locally](http://127.0.0.1:5000/) in a desktop browser. Stop Flask with `Ctrl+C`.
 
 If PowerShell prevents activation, use the environment's Python directly:
 
@@ -215,7 +215,7 @@ All nine page templates load `static/css/fonts.css` through Flask. Its two `@fon
 
 Both are unmodified variable WOFF2 Latin builds, matching the files previously loaded for the current English pages and typing passages. Using these exact official distribution files preserves glyph rendering as well as text widths; no font conversion or subsetting is performed locally. The declared weight ranges match the weights previously supplied by Google Fonts: Plus Jakarta Sans 400–800 and JetBrains Mono 400–600. Existing heavier CSS requests keep the same browser fallback/bold synthesis behavior. The previous request included Jakarta weight 900, but Google supplied only up to 800; no styling declarations were changed.
 
-These source links are documentation, not runtime requests. Teammates receive the files through Git and do not need to download fonts separately. Browser verification blocks every non-localhost request in a fresh browser context, loads all nine pages, and compares the loaded fonts against the online baseline. Measured text widths match, and Home/Classic baseline screenshots are pixel-identical.
+These source links are documentation, not runtime requests. Teammates receive the files through Git and do not need to download fonts separately. Earlier browser verification used a fresh context with every non-localhost request blocked, checked all nine pages, and compared the loaded fonts against the online baseline. Measured text widths matched, and Home/Classic baseline screenshots were pixel-identical. Those checks are separate from the Python test suite.
 
 ## Setup on a Teammate's Device
 
@@ -226,7 +226,7 @@ Install Python 3 and Git, then clone the repository or pull the project updates.
 - Keep `test/seed.py`, `test/schema.sql`, `test/seed_data.json`, and `test/__init__.py` for initial database setup or rebuilding a missing database.
 - The three `test/test_*.py` files are optional for launching the website, but keep them in Git so everyone can run the checks.
 - Keep `README.md` and `.gitignore` with the repository.
-- Do not transfer `.venv/`, the unused `.venv-pygame/`, or `__pycache__/`. The new device creates its own environment and cache.
+- Do not transfer virtual environments or `__pycache__/`. The new device creates its own environment and cache.
 
 `typequest.db` is Git-ignored. Seeding creates it in the project root, not inside `test/`. A fresh database has game content but no profiles or saved results. Each teammate creates a profile in the browser; their records are independent of yours. Pulling code does not transfer anyone's profiles or progress.
 
@@ -282,7 +282,7 @@ The `test/` package contains 30 tests in `test_backend.py`, `test_profiles_progr
 
 The tests use temporary SQLite databases and cover the full seed fixture, repeatable seeding without overwriting edits, foreign keys, routes, assets, tier/level validation, duration defaults, and safe JSON rendering. They do not change the application's database.
 
-Browser verification during this migration also covered navigation, the six original page layouts, Classic completion, all Time Attack durations, and Survival scrolling, editing, damage, tiers, pause/resume, and restart. Timing scenarios used a controlled browser clock. Actual operating-system tab switching was not retested during this migration.
+The automated suite covers the cumulative unlock boundaries (0/25/55/80/110), direct locked-level access and save rejection, best-star counting, profile switching, the 20-to-50-level upgrade, demo seeding, result statistics, and leaderboards. It does not launch a browser. Earlier browser checks separately exercised navigation, profile forms, volume changes, gameplay controls and completion, tier locks, and Anish's full completion; some timing checks used a controlled browser clock. These are prior checks, not a claim that the full browser flow is rerun by the commands above.
 
 ## Project Structure
 
@@ -296,7 +296,7 @@ TypeQuest 2/
 │   ├── seed.py                # Explicit database initialization/seeding
 │   ├── demo_data.py           # Optional seven-profile synthetic demo dataset
 │   ├── schema.sql             # Seven database tables
-│   ├── seed_data.json         # Original content, tracked in Git
+│   ├── seed_data.json         # 50 Classic levels and 200 reusable mode passages
 │   ├── test_backend.py        # Content and route tests
 │   ├── test_profiles_progress.py  # Profiles, results, stars, and leaderboards
 │   └── test_demo_data.py       # Demo coverage, repeat runs and preservation checks
@@ -332,7 +332,7 @@ TypeQuest 2/
 └── README.md
 ```
 
-The three old JavaScript data files and `classic-levels.js` have been removed. Gameplay constants remain in JavaScript. Numbered character spans, correctness classes, timers, and scoring stay in the existing browser engines.
+Game content comes from SQLite; gameplay constants remain in JavaScript. Numbered character spans, correctness classes, timers, and live statistics stay in the browser engines.
 
 ## Development Approach
 
@@ -344,46 +344,36 @@ The three old JavaScript data files and `classic-levels.js` have been removed. G
 - Keep static page backgrounds on `body`, icons in separate SVG files, and layouts focused on desktop/laptop screens.
 - Preserve the supplied designs and favor code that can be explained line by line over frameworks or unnecessary abstractions.
 
-Profiles and completed results are now saved, with local rankings and progress pages. All 50 Classic levels and cumulative-star tier unlocking are implemented. A dedicated results page remains unimplemented.
+### Result saving
 
-To update an existing database for this version, stop Flask, run `python -m test.seed`, and restart Flask. This adds the four new tables without deleting content, profiles, or results. `python -m unittest -v` runs 30 tests, including exact unrounded star boundaries, profile CRUD, guest blocking, result validation, the simplified result endpoint, global profile selection across browser clients, cascade deletion, mode-wide rankings, and IST display. Browser checks cover the modal/list, navigation, completed Classic runs and restarts, all four Time Attack durations, Survival saves, and isolation between profiles.
-
-### Simplified result saving
-
-The save flow is now: game completes → check/set `resultSaved` → POST `/results` → require a selected profile and check basic count/time values → calculate statistics → insert a row. Restart sets `resultSaved = false`. Repeating a raw HTTP POST can create another row; normal duplicate completion calls are stopped by the JavaScript flag rather than database tokens.
-
-Run `python -m test.seed` once after updating an older installation. It removes the old `run_id` columns while preserving existing progress IDs, profile links, scores, stars, times, and timestamps. Fresh databases use the simpler seven-table schema directly. The upgrade runs only during explicit initialization, not on ordinary Flask startup. Tests cover upgrading a populated old database and repeating initialization without losing history.
+The save flow is: game completes → check/set `resultSaved` → POST `/results` → require a selected profile, check basic count/time values and Classic tier access → calculate statistics → insert a row. Restart sets `resultSaved = false`. Repeating a raw HTTP POST can create another row; normal duplicate completion calls are stopped by the JavaScript flag rather than database tokens.
 
 ### Localhost backend approach
 
 `app.py` contains the routes, profile form handling, the `active_profile_id` variable, and result calculations. `database.py` contains direct SQLite queries: reads open a connection, fetch rows, and close it; writes commit and always close the connection, including after an error. Foreign keys and the existing table constraints stay enabled. There is no extra service, repository, or validation layer.
 
-The game decides when a run is complete. `/results` trusts the game's JSON field types, completion event, and elapsed time rather than checking passage length, exact challenge duration, numeric types, or extreme fabricated values again. It requires an existing selected profile and retains the supported mode check, nonnegative character counts, correct-count bounds, and positive playing time. The profile foreign key comes directly from `active_profile_id`, not from the browser. SQLite rejects invalid profile/level references and unsupported durations. Profile forms still check name length and report duplicate names. Ordinary malformed JSON is handled by Flask.
+The game decides when a run is complete. `/results` trusts the game's JSON field types, completion event, and elapsed time rather than checking passage length, exact challenge duration, numeric types, or extreme fabricated values again. It requires an existing selected profile, a supported mode, nonnegative character counts, correct-count bounds, and positive playing time. Classic submissions must reference an available level in a tier unlocked by the selected profile's cumulative best stars. The profile foreign key comes directly from `active_profile_id`, not from the browser. SQLite rejects invalid profile/level references and unsupported durations. Profile forms still check name length and report duplicate names. Ordinary malformed JSON is handled by Flask.
 
-Accuracy, Net WPM, raw-accuracy Classic stars, and Survival tier calculations are unchanged. Templates, CSS, browser gameplay, the seven-table schema, and the explicit `test/seed.py` setup process are unchanged by this simplification.
-
-### Settings milestone
+### Settings
 
 Settings contains exactly three sliders, each from 0% to 100%: Game Volume for correct/wrong typing sounds, Tap Volume for UI/navigation clicks, and Background Music Volume for looping music. Game and Tap control the browser sound effects; Background Music controls the outer browser page’s player.
 
 `app.py` stores `game_volume = 50`, `tap_volume = 70`, and `background_music_volume = 60`. GET `/settings` renders the current values and the selected profile. One JavaScript input handler updates the percentage and filled track immediately, adjusts the browser gain for Game or Tap, and sends the changed field to POST `/settings`. A Background Music change calls the same-origin parent’s `setMusicVolume()` to change its running GainNode, then saves the value to the Python variable through the existing POST. There is no Save button or page reload. Fields not included in that POST retain their current values.
 
-Volumes are shared by all profiles, work without a selected profile, and reset to their defaults when Flask restarts. SQLite is unchanged. No settings table, cookies, or browser storage is used. All Settings navigation links now open `/settings`.
+Volumes are shared by all profiles, work without a selected profile, and reset to their defaults when Flask restarts. No settings table, cookies, or browser storage is used. Settings navigation links open `/settings`.
 
 ### Audio playback
 
-The recordings live in `static/audio/`. Background music and UI tap recordings are unchanged; correct and wrong typing WAVs have their louder levels baked into the files, with matching average levels and their original durations, stereo channels, and sample rates. Flask has no Python audio player and requirements contain no pygame dependency.
+The recordings live in `static/audio/`. Background music and UI tap recordings are unchanged; correct and wrong typing WAVs have their louder levels baked into the files, with matching average levels and their original durations, stereo channels, and sample rates. Audio playback belongs to the browser; Flask serves the files and stores the three global volume values.
 
-GET `/` renders `templates/app.html`: a small parent document with one fullscreen, borderless iframe pointing to `/home`. `static/js/background-music.js` belongs only to this parent. The existing Home template remains `index.html`; its route is `/home`, and every existing `url_for('home')` link follows it inside the iframe.
+GET `/` renders `templates/app.html`: a small parent document with one fullscreen, borderless iframe pointing to `/home`. `static/js/background-music.js` belongs only to this parent. The Home template is `index.html`; its route is `/home`, and every existing `url_for('home')` link follows it inside the iframe.
 
 Links, form submissions, redirects, progress filters, and the existing `window.location` gameplay navigation use the iframe’s own window. The outer document stays loaded. No SPA router, content rewriting, messages, timestamps, or browser storage are used. Focusing the iframe after load keeps Home’s Enter shortcut and gameplay keyboard input working; the outer title follows the current page title.
 
 The parent fetches and decodes music once, then starts one guarded `AudioBufferSourceNode` with `loop = true`, connected to one GainNode. This repeats the decoded samples without timers or end/restart callbacks. Audio starts immediately when browser autoplay permits it; otherwise the shared interaction handler inside the iframe unlocks the parent’s audio contexts. Iframe navigation never recreates the music context, source, or gain.
 
-The Settings page calls `window.parent.setMusicVolume()` directly because parent and iframe are same-origin. Its background slider changes the running parent gain immediately and continues POSTing to the existing Python `background_music_volume` variable. Game and Tap control the parent’s two sound-effect gains. `audio.js` is loaded once by `app.html`; the three effects are decoded once per outer page load. Gameplay pages call `window.parent.playSound()`, and Settings calls `window.parent.setAudioVolume()`. The shared click and unlock handlers attach to each iframe document when it loads. There is no per-page `_audio.html` include.
+The Settings page calls `window.parent.setMusicVolume()` directly because parent and iframe are same-origin. Its background slider changes the running parent gain immediately and continues POSTing to the existing Python `background_music_volume` variable. Game and Tap control the parent’s two sound-effect gains. `audio.js` is loaded once by `app.html`; the three effects are decoded once per outer page load. Gameplay pages call `window.parent.playSound()`, and Settings calls `window.parent.setAudioVolume()`. The shared click and unlock handlers attach to each iframe document when it loads. The child pages do not load separate audio players.
 
-Refreshing the outer tab destroys the old player and starts a new document at Home, using the current volume from Flask. Closing the tab destroys its browser audio contexts, even while Flask keeps running. Merely loading a child URL directly, such as `/settings`, does not create a background player: enter the application at `/`.
+Refreshing the outer tab destroys the old player and starts a new document at Home, using the current volume from Flask. Closing the tab destroys its browser audio contexts, even while Flask keeps running. Enter the application at `/`; directly loaded child pages do not create the shared audio player or its playback functions.
 
-Tests cover the parent route, Home route, shared effects assets, Python volume updates, import/startup without Python audio, existing profile selection/fallback, and the unchanged database/gameplay behavior. Browser checks exercise iframe navigation, profile forms, normal redirects, persistent music identity, independent volumes, loop samples, outer refresh, and tab closure. The existing missing `favicon.ico` request still returns 404.
-
-Typing playback stays basic: decoded file → Game Volume gain → speakers. The extra per-sound gain boosts and runtime compressor have been removed. Loudness editing is done once in the typing WAVs, not while the game runs. Game Volume still controls both, including 0 for mute; UI taps and persistent background music retain their existing levels.
+Typing playback stays basic: decoded file → Game Volume gain → speakers. Typing loudness is baked into the WAVs, not boosted by extra runtime gains or a compressor. Game Volume still controls both, including 0 for mute; UI taps and persistent background music retain their existing levels.
