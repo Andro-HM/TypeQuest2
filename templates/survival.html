@@ -6,13 +6,11 @@
         <title>Survival — TypeQuest</title>
         <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/typequest.svg') }}">
 
-        <!-- Fonts used in the Stitch design -->
+        <!-- Fonts used in the design -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
 
         <style>
-            /* ========================================
-               1. PAGE AND BACKGROUND
-               ======================================== */
+            /* 1. page and background */
 
             * {
                 box-sizing: border-box;
@@ -32,9 +30,7 @@
                 padding: 44px 70px 58px 70px;
             }
 
-            /* ========================================
-               2. TOP CONTROLS AND TIMER
-               ======================================== */
+            /* 2. top controls and timer */
 
             #top-bar {
                 display: flex;
@@ -110,9 +106,7 @@
                 height: 24px;
             }
 
-            /* ========================================
-               3. LEVEL HEADING
-               ======================================== */
+            /* 3. level heading */
 
             #game-content {
                 display: flex;
@@ -158,10 +152,9 @@
                 line-height: 1.15;
             }
 
-            /* ========================================
-               4. SPEED AND TYPING PASSAGE
-               ======================================== */
+            /* 4. speed and typing passage */
 
+            /* Typing layout and speed display. */
             #typing-layout {
                 display: flex;
                 align-items: center;
@@ -264,10 +257,9 @@
                 border-left: 3px solid #20adc0;
             }
 
-            /* ========================================
-               5. PAUSE AND RESTART
-               ======================================== */
+            /* 5. pause and restart */
 
+            /* Pause, restart and footer controls. */
             #game-controls {
                 text-align: center;
             }
@@ -322,6 +314,7 @@
                 </a>
             </header>
 
+            <!-- Page content. -->
             <main id="game-content">
                 <div id="game-heading">
                     <div id="status-badge">
@@ -344,6 +337,7 @@
                 </div>
             </main>
 
+            <!-- Page controls or footer. -->
             <footer id="game-controls">
                 <div id="control-buttons">
                     <button id="pause-button" class="control" type="button" disabled>
@@ -360,15 +354,19 @@
         </div>
 
         {% if active_profile %}
+        <!-- Initial values passed from Flask to JavaScript. -->
         <script>
             const resultConfig = {mode: "survival", url: {{ url_for('save_results') | tojson }}};
         </script>
+        <!-- Load the page behavior after its HTML controls exist. -->
         <script src="{{ url_for('static', filename='js/results.js') }}"></script>
         {% endif %}
+        <!-- Initial values passed from Flask to JavaScript. -->
         <script>
             const iconBase = {{ url_for('static', filename='icons/') | tojson }};
             const survivalTiers = {{ tiers | tojson }};
         </script>
+        <!-- Load the page behavior after its HTML controls exist. -->
         <script src="{{ url_for('static', filename='js/survival.js') }}"></script>
     </body>
 </html>

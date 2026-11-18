@@ -10,6 +10,7 @@ from test.seed import seed_database
 
 
 class DemoDataTests(unittest.TestCase):
+    # Use a temporary database so checks do not alter real player data.
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.path = Path(self.directory.name) / "demo.db"
@@ -18,6 +19,7 @@ class DemoDataTests(unittest.TestCase):
         self.profile_patch = patch.object(backend, "active_profile_id", None)
         self.profile_patch.start()
 
+    # Restore patched globals and remove the temporary test database.
     def tearDown(self):
         self.profile_patch.stop()
         self.database_patch.stop()

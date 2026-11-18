@@ -11,6 +11,7 @@ from test.seed import seed_database
 
 
 class ProfileProgressTests(unittest.TestCase):
+    # Use a temporary database so checks do not alter real player data.
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.path = Path(self.directory.name) / "test.db"
@@ -21,6 +22,7 @@ class ProfileProgressTests(unittest.TestCase):
         self.profile_patch.start()
         self.client = app.test_client()
 
+    # Restore patched globals and remove the temporary test database.
     def tearDown(self):
         self.profile_patch.stop()
         self.patch.stop()

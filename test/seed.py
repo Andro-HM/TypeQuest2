@@ -7,6 +7,7 @@ from pathlib import Path
 from database import get_connection
 
 
+# Create missing tables and content without replacing existing passages.
 def seed_database(database_path=None):
     root = Path(__file__).parent
     data = json.loads((root / "seed_data.json").read_text(encoding="utf-8"))

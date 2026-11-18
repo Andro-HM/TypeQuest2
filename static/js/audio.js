@@ -1,3 +1,4 @@
+// Shared typing and tap sounds for the outer app.html page.
 const audioContext = new AudioContext({latencyHint: "interactive"});
 const audioBuffers = {};
 const audioGains =
@@ -6,13 +7,14 @@ const audioGains =
     tap_volume: audioContext.createGain()
 };
 
+// Give Game and Tap their own volume controls.
 for (const name in audioGains)
 {
     audioGains[name].gain.value = audioSettings[name] / 100;
     audioGains[name].connect(audioContext.destination);
 }
 
-// Decode each recording once. Every playback reuses these buffers.
+// Fetch and decode a recording once for repeated playback.
 async function loadSound(name)
 {
     const response = await fetch(audioFiles[name]);
@@ -20,7 +22,7 @@ async function loadSound(name)
     audioBuffers[name] = await audioContext.decodeAudioData(recording);
 }
 
-// Browsers may keep the context suspended until a real click or keypress.
+// Allow background music and sound effects after user interaction.
 function unlockAudio()
 {
     unlockMusic();
@@ -31,7 +33,7 @@ function unlockAudio()
     }
 }
 
-// A new source lets consecutive taps and keystrokes overlap naturally.
+// Create a new source so consecutive sounds can overlap.
 function playSound(name, volume)
 {
     if (!audioBuffers[name])
@@ -45,11 +47,13 @@ function playSound(name, volume)
     source.start();
 }
 
+// Convert the slider percentage to its sound-effect gain.
 function setAudioVolume(name, value)
 {
     audioGains[name].gain.value = value / 100;
 }
 
+// Play one tap for a control, including keyboard-triggered clicks.
 function handleAudioTap(event)
 {
     // Pointer taps start before navigation. The following click must not repeat them.
@@ -66,7 +70,7 @@ function handleAudioTap(event)
     }
 }
 
-// Events inside the iframe stay in its document.
+// Attach shared audio handlers to the current iframe document.
 function connectPageAudio()
 {
     const page = document.getElementById("app-frame").contentDocument;
@@ -76,12 +80,14 @@ function connectPageAudio()
     page.addEventListener("click", handleAudioTap, true);
 }
 
+// Reconnect handlers whenever iframe navigation replaces its document.
 document.addEventListener("DOMContentLoaded", function()
 {
     document.getElementById("app-frame").addEventListener("load", connectPageAudio);
     connectPageAudio();
 });
 
+// audioFiles and audioSettings come from app.html.
 for (const name in audioFiles)
 {
     loadSound(name).catch(console.error);

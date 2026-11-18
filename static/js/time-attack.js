@@ -1,3 +1,4 @@
+// Find the Time Attack controls in time-attack.html.
 const typingArea = document.getElementById("typing-area");
 const challengeTimeHeading = document.getElementById("challenge-time-heading");
 const modeLabel = document.getElementById("mode-label");
@@ -10,6 +11,7 @@ const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
+// Window limits are character indexes; the cursor can move within them.
 const HISTORY_CHARACTERS = 18;
 const WINDOW_CHARACTERS = 60;
 const durationMs = durationSeconds * 1000;
@@ -20,25 +22,26 @@ let furthestPosition = 0;
 let generatedCount = 0;                 // the total number of character spans created so far
 let typedCount = 0;                    // how many spans currently have either the correct or incorrect class
 let correctCharacters = 0;
-let cursorCharacter = null;          // a reference to the span currently displaying the cursor's left border
+let cursorCharacter = null;          // Span carrying the cursor border
 
 let passageOrder = [];              // stores a shuffled list of indexes of passages to be appended
 let lastPassage = -1;              // remembers the index of the most recently appended passage
 
 let gameState = "start";
-let pausedState = "start";          // remembers whether Pause interrupted the starting countdown or active gameplay
+let pausedState = "start";          // State to restore on Resume
 
 // initial three-second countdown
 let countdownRemaining = 3000;
 let countdownSince = 0;
 
+// Keep accumulated playing time separate from the current running period.
 let activeMs = 0;
 let lastTick = null;
 let rawWpm = 0;
 let accuracy = 0;
 let wordsTyped = 0;
 
-// Use every passage once per shuffled cycle, avoiding repetition at the join.
+// Shuffle passage indexes and append numbered character spans.
 function appendPassage()
 {
     // Refill and reshuffle the list of passage indexes when it runs out.
@@ -96,7 +99,7 @@ function appendPassage()
     }
 }
 
-// Append only enough passages to keep 60 characters ahead of the typing frontier.
+// Keep at least 60 generated characters beyond the typing frontier.
 function ensureText()
 {
     while (generatedCount - furthestPosition < WINDOW_CHARACTERS)
@@ -105,7 +108,7 @@ function ensureText()
     }
 }
 
-// moves the 60-character visible window forward or backward.
+// Show and hide only spans entering or leaving the 60-character window.
 function shiftWindow(newStart)
 {
     while (windowStart < newStart)
@@ -125,7 +128,7 @@ function shiftWindow(newStart)
     }
 }
 
-// Update the cursor's position and ensure it is visible within the 60-character window
+// Move the cursor border and keep it inside the typing area.
 function updateCursor()
 {
     // Remove the old cursor
@@ -155,7 +158,6 @@ function updateCursor()
     cursorCharacter = document.getElementById("char-" + position);
     cursorCharacter.classList.add("current-character");
 
-    
     // Keep the cursor before the existing 60px fade at the right edge.
     const visibleWidth = typingArea.clientWidth - 60;
 
@@ -167,7 +169,7 @@ function updateCursor()
     }
 }
 
-// Return the total active time in milliseconds, including the current tick if the timer is running
+// Return playing time in milliseconds, excluding pauses.
 function getActiveTime()
 {
     if (lastTick === null)
@@ -178,7 +180,7 @@ function getActiveTime()
     return activeMs + (performance.now() - lastTick);
 }
 
-// Start the timer if it is not already running, using the provided start time or the current time
+// Start or resume an active playing period.
 function startTimer(startTime = performance.now())
 {
     if (lastTick === null)
@@ -187,6 +189,7 @@ function startTimer(startTime = performance.now())
     }
 }
 
+// Accumulate the current playing period, then stop the clock.
 function stopTimer()
 {
     if (lastTick !== null)
@@ -196,13 +199,14 @@ function stopTimer()
     }
 }
 
+// Clear the accumulated time and running timestamp.
 function resetTimer()
 {
     activeMs = 0;
     lastTick = null;
 }
 
-// Format the remaining time as MM:SS.tenths, rounding up to the next tenth of a second
+// Format time as MM:SS.tenths, rounding up.
 function formatRemaining(milliseconds)
 {
     const tenths = Math.ceil(Math.max(0, milliseconds) / 100);
@@ -223,7 +227,7 @@ function formatRemaining(milliseconds)
     return minutes + ":" + seconds + "." + fraction;
 }
 
-// Update the WPM, accuracy, and remaining time displays based on the current game state
+// Calculate statistics and update Net WPM and remaining time.
 function updateStats()
 {
     const elapsed = Math.min(durationMs, getActiveTime());
@@ -254,7 +258,7 @@ function updateStats()
     timer.textContent = formatRemaining(remainingMs);
 }
 
-// Update the interface to reflect the current game state, including button states and messages
+// Set buttons, status and footer text for the current game state.
 function updateInterface()
 {
     const completedMessage = footerMessage.textContent;
@@ -294,7 +298,7 @@ function updateInterface()
     }
 }
 
-// Stop the timer, set the active time to the full duration, and transition to the end state
+// Freeze at the selected duration and call results.js to save.
 function finishGame()
 {
     stopTimer();
@@ -304,6 +308,7 @@ function finishGame()
     saveGameResult(typedCount, correctCharacters, getActiveTime(), 0);
 }
 
+// Advance the countdown, check time expiry and refresh the display.
 function updateGame()
 {
     const now = performance.now();
@@ -325,7 +330,7 @@ function updateGame()
     updateInterface();
 }
 
-// Handle typing input, cursor movement, and backspace corrections
+// Handle characters, corrections and allowed cursor movement.
 function handleTyping(event)
 {
     updateGame();
@@ -414,7 +419,7 @@ function handleTyping(event)
         {
             typedCount++;
 
-            // Preserve the old word count: entered positions whose original text is a space.
+            // Count entered space positions as word separators.
             if (character.textContent === " ")
             {
                 wordsTyped++;
@@ -464,7 +469,7 @@ function handleTyping(event)
     }
 }
 
-// Remember whether Pause interrupted the starting countdown or active gameplay.
+// Freeze active play, or remember the remaining countdown.
 function pauseGame()
 {
     updateGame();
@@ -490,6 +495,7 @@ function pauseGame()
     updateInterface();
 }
 
+// Resume the saved state and return focus to the typing area.
 function resumeGame()
 {
     gameState = pausedState;
@@ -507,6 +513,7 @@ function resumeGame()
     typingArea.focus();
 }
 
+// Use the same pause/resume action for the button and Escape.
 function togglePause()
 {
     if (gameState === "end")
@@ -524,7 +531,7 @@ function togglePause()
     }
 }
 
-// Only Restart clears the spans. Every run begins with a fresh three-second countdown.
+// Reset the stream, counters and timer for a new countdown.
 function restartGame()
 {
     resultSaved = false;
@@ -550,6 +557,7 @@ function restartGame()
     typingArea.focus();
 }
 
+// Toggle pause on Escape; ignore a held-down key.
 function handleShortcut(event)
 {
     if (event.key === "Escape" && !event.repeat)
@@ -559,6 +567,7 @@ function handleShortcut(event)
     }
 }
 
+// Pause when this document becomes hidden.
 function handleVisibilityChange()
 {
     if (document.hidden)
@@ -567,11 +576,13 @@ function handleVisibilityChange()
     }
 }
 
+// Require character-by-character input.
 function preventPaste(event)
 {
     event.preventDefault();
 }
 
+// durationSeconds and passages come from the Jinja template.
 let durationTitle = "30-second challenge";
 let durationLabel = "30 SEC";
 
@@ -586,6 +597,7 @@ challengeTimeHeading.textContent = durationTitle;
 modeLabel.textContent = "TIME ATTACK / " + durationLabel;
 document.title = durationTitle + " — TypeQuest";
 
+// Connect controls, then begin the first countdown.
 typingArea.addEventListener("keydown", handleTyping);
 typingArea.addEventListener("paste", preventPaste);
 pauseButton.addEventListener("click", togglePause);

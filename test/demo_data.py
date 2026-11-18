@@ -20,6 +20,7 @@ DEMO_PLAYERS = [
 ]
 
 
+# Add repeat-safe synthetic progress for the seven demonstration profiles.
 def seed_demo_data(database_path=None):
     seed_database(database_path)
     added = {"profiles": 0, "classic": 0, "time_attack": 0, "survival": 0}

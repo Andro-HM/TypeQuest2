@@ -1,5 +1,7 @@
+// One save per completion; Restart resets this flag in the game script.
 let resultSaved = false;
 
+// Send the completed run to Flask and display its save result.
 async function saveGameResult(typed, correct, elapsed, missed)
 {
     if (resultSaved)
@@ -8,6 +10,7 @@ async function saveGameResult(typed, correct, elapsed, missed)
     }
     resultSaved = true;
 
+    // Show accuracy-based Classic stars immediately.
     if (resultConfig.mode === "classic")
     {
         let stars = 1;
@@ -22,6 +25,7 @@ async function saveGameResult(typed, correct, elapsed, missed)
         footerMessage.textContent += " · STARS " + stars + " / 3";
     }
 
+    // resultConfig comes from the gameplay template; the game supplies counters.
     const result =
     {
         mode: resultConfig.mode,
@@ -39,6 +43,7 @@ async function saveGameResult(typed, correct, elapsed, missed)
         result.duration = resultConfig.duration;
     }
 
+    // Flask calculates saved statistics and uses the selected global profile.
     try
     {
         const response = await fetch(resultConfig.url,

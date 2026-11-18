@@ -15,6 +15,7 @@ from test.seed import seed_database
 
 
 class BackendTests(unittest.TestCase):
+    # Use a temporary database so checks do not alter real player data.
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.path = Path(self.directory.name) / "typequest.db"
@@ -27,6 +28,7 @@ class BackendTests(unittest.TestCase):
         backend.active_profile_id = database.create_profile("Test player")
         self.fixture = json.loads((Path(__file__).parent / "seed_data.json").read_text(encoding="utf-8"))
 
+    # Restore patched globals and remove the temporary test database.
     def tearDown(self):
         self.profile_patch.stop()
         self.database_patch.stop()
@@ -228,6 +230,8 @@ class BackendTests(unittest.TestCase):
         self.assertIn('allow="autoplay"', html)
         self.assertIn("border: 0;", html)
         self.assertIn("const initialMusicVolume = 82;", html)
+        self.assertNotIn("<audio ", html)
+        self.assertIn("const backgroundMusicUrl = ", html)
         self.assertEqual(html.count('src="/static/js/background-music.js"'), 1)
         self.assertEqual(html.count('src="/static/js/audio.js"'), 1)
         self.assertNotIn("Set-Cookie", response.headers)

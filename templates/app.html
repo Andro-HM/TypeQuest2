@@ -12,6 +12,7 @@
                 overflow: hidden;
             }
 
+            /* Fill the tab with the current inner page. */
             #app-frame {
                 display: block;
                 width: 100%;
@@ -21,6 +22,8 @@
         </style>
     </head>
     <body>
+
+        <!-- Initial values passed from Flask to JavaScript. -->
         <script>
             const audioSettings =
             {
@@ -34,12 +37,18 @@
                 "wrong_key": {{ url_for('static', filename='audio/wrong_key.wav') | tojson }}
             };
         </script>
+
+        <!-- Initial values passed from Flask to JavaScript. -->
         <script>
             const backgroundMusicUrl = {{ url_for('static', filename='audio/background_music.wav') | tojson }};
             const initialMusicVolume = {{ background_music_volume | tojson }};
         </script>
+
+        <!-- Load the page behavior after its HTML controls exist. -->
         <script src="{{ url_for('static', filename='js/background-music.js') }}"></script>
         <script src="{{ url_for('static', filename='js/audio.js') }}"></script>
+
         <iframe id="app-frame" src="{{ url_for('home') }}" title="TypeQuest pages" allow="autoplay"></iframe>
+
     </body>
 </html>

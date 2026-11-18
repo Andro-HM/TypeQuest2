@@ -6,13 +6,11 @@
         <title>Progress — TypeQuest</title>
         <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/typequest.svg') }}">
 
-        <!-- Fonts used in the Stitch design -->
+        <!-- Fonts used in the design -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
 
         <style>
-            /* ========================================
-               1. PAGE AND BACKGROUND
-               ======================================== */
+            /* 1. page and background */
 
             * {
                 box-sizing: border-box;
@@ -45,9 +43,7 @@
                 padding: 28px 48px 28px 48px;
             }
 
-            /* ========================================
-               2. TOP NAVIGATION
-               ======================================== */
+            /* 2. top navigation */
 
             #top-bar {
                 display: flex;
@@ -146,9 +142,7 @@
                 height: 20px;
             }
 
-            /* ========================================
-               3. PLAY HEADING
-               ======================================== */
+            /* 3. play heading */
 
             #bottom-bar {
                 display: flex;
@@ -706,6 +700,7 @@
     <body>
         <div id="page">
 
+            <!-- Navigation and selected profile. -->
             <header id="top-bar">
                 <div id="brand">
                     <div id="brand-logo">TQ</div>
@@ -728,6 +723,7 @@
                 </div>
             </header>
 
+            <!-- Page content. -->
             <main id="section-content">
                 <div id="section-heading">
                     <div class="eyebrow"><span class="eyebrow-dot"></span>YOUR RECORD</div>
@@ -803,6 +799,7 @@
                 {% endif %}
             </main>
 
+            <!-- Page controls or footer. -->
             <footer id="bottom-bar">
                 <div id="audio-status">
                     <span id="audio-dot"></span>

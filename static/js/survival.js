@@ -1,3 +1,4 @@
+// Starting rules; survivalTiers is supplied by Flask through Jinja.
 const survivalData =
 {
     countdownMilliseconds: 3000,
@@ -11,6 +12,7 @@ const survivalData =
     tiers: survivalTiers
 };
 
+// Find the Survival controls and the movable character track.
 const typingArea = document.getElementById("typing-area");
 const track = document.getElementById("survival-track");
 const modeLabel = document.getElementById("mode-label");
@@ -23,6 +25,7 @@ const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
+// Keep recent text behind the cursor inside a 60-character window.
 const WINDOW_CHARACTERS = 60;
 const HISTORY_CHARACTERS = 18;
 
@@ -35,30 +38,29 @@ let typedCount = 0;         // Number of spans currently marked typed
 let correctCharacters = 0;  
 let cursorCharacter = null;     // The span currently marked as the cursor
 
-let finalizedCount = 0;         // Number of spans that have passed the left edge of the typing area
-let finalizedUntyped = 0;      //  Number of spans that have passed the left edge without being typed
+let finalizedCount = 0;         // Positions already locked beyond the left edge
+let finalizedUntyped = 0;      // Untyped positions that left the window
 
 let halfHearts = survivalData.startingHalfHearts;           // Remaining half-heart units, initially 6
 let damageCounter = 0;                                     // Mistakes accumulated toward the next half-heart loss
-let damageStage = 0;                                      // The number of minutes that have passed, used to increase the damage threshold
+let damageStage = 0;                                      // Elapsed minutes; each stage lowers the damage threshold
 
-let passageOrders = [];                 // Randomized order of passages for each tier, used to avoid repeating the same passage twice in a row
-let lastPassages = [];                 // The index of the last passage used for each tier, to avoid repeating it twice in a row
+let passageOrders = [];                 // Shuffled passage indexes for each tier
+let lastPassages = [];                 // Last passage index used in each tier
 
 let gameState = "start";
 let pausedState = "start";
 
 let countdownRemaining = survivalData.countdownMilliseconds;    // Milliseconds left in the initial three-second countdown
-let countdownSince = 0;                                       // The timestamp when the countdown began, used to calculate how much time has passed
+let countdownSince = 0;                                       // Timestamp when this countdown period started
+// Track active time separately from countdown and paused time.
 let activeMs = 0;
 let lastTick = null;
 let rawWpm = 0;
 let accuracy = 0;
 let animationFrame = null;
 
-
-// Append a passage from the current tier to the track, generating spans for each character.
-// The first passage is not preceded by a space, but all subsequent passages are.
+// Choose a passage from this tier and append numbered character spans.
 function appendPassage(tierNumber)
 {
     const tierIndex = tierNumber - 1;
@@ -82,7 +84,7 @@ function appendPassage(tierNumber)
             order[randomIndex] = temporary;
         }
 
-        // If the first passage in the new order is the same as the last passage used, swap it with the second passage to avoid repetition
+        // Avoid repeating the previous passage at the start of a new cycle.
         if (order.length > 1 && order[0] === lastPassages[tierIndex])
         {
             const temporary = order[0];
@@ -91,7 +93,7 @@ function appendPassage(tierNumber)
         }
     }
 
-    // Remove the first passage index from the order and use it to select the passage to append
+    // Take the next index from the shuffled list.
     const passageIndex = order.shift();
     let passage = tier.passages[passageIndex];
     lastPassages[tierIndex] = passageIndex;
@@ -119,7 +121,7 @@ function appendPassage(tierNumber)
     }
 }
 
-
+// Append passages until enough characters are available.
 function ensureText(minimumLength, tierNumber)
 {
     while (generatedCount < minimumLength)
@@ -128,18 +130,20 @@ function ensureText(minimumLength, tierNumber)
     }
 }
 
+// Advance the passage tier each minute, up to Tier 5.
 function getTier(elapsedMilliseconds)
 {
     const tier = Math.floor(elapsedMilliseconds / survivalData.tierMilliseconds) + 1;
     return Math.min(survivalData.tiers.length, tier);
 }
 
+// Reduce mistakes per half-heart each minute, to a minimum of one.
 function getDamageThreshold(stage)
 {
     return Math.max(1, survivalData.startingDamageThreshold - stage);
 }
 
-// Wrong keystrokes and missed characters use the same damage counter.
+// Count a wrong key or missed character toward losing half a heart.
 function applyDamage()
 {
     damageCounter++;
@@ -151,7 +155,7 @@ function applyDamage()
     }
 }
 
-// Total characters moved: speed increases steadily until it reaches the cap.
+// Calculate distance from elapsed time, acceleration and the speed cap.
 function getScrollDistance(seconds)
 {
     const acceleration = survivalData.speedIncreasePerMinute / 60;
@@ -167,6 +171,7 @@ function getScrollDistance(seconds)
     return distance;
 }
 
+// Return playing time in milliseconds, excluding pauses.
 function getActiveTime()
 {
     if (lastTick === null)
@@ -177,6 +182,7 @@ function getActiveTime()
     return activeMs + (performance.now() - lastTick);
 }
 
+// Start or resume an active playing period.
 function startTimer(startTime = performance.now())
 {
     if (lastTick === null)
@@ -185,6 +191,7 @@ function startTimer(startTime = performance.now())
     }
 }
 
+// Accumulate the current playing period, then stop the clock.
 function stopTimer()
 {
     if (lastTick !== null)
@@ -194,13 +201,14 @@ function stopTimer()
     }
 }
 
+// Clear the accumulated time and running timestamp.
 function resetTimer()
 {
     activeMs = 0;
     lastTick = null;
 }
 
-// Only the timer advances this window. Keyboard input never shifts it.
+// Let elapsed time move the window forward; typing does not move it.
 function shiftWindow(newStart)
 {
     while (windowStart < newStart)
@@ -212,7 +220,7 @@ function shiftWindow(newStart)
     }
 }
 
-// Lock characters only when they start leaving the typing area's left edge.
+// Finalize text leaving the left edge and charge untyped positions.
 function advanceBoundary(elapsedMilliseconds)
 {
     const distance = getScrollDistance(elapsedMilliseconds / 1000);
@@ -257,7 +265,7 @@ function advanceBoundary(elapsedMilliseconds)
     }
 }
 
-// Start at the boundary with space for history, and scroll from the first second.
+// Apply fractional movement between whole-character window shifts.
 function moveStrip(elapsedMilliseconds)
 {
     const distance = getScrollDistance(elapsedMilliseconds / 1000);
@@ -267,7 +275,7 @@ function moveStrip(elapsedMilliseconds)
     track.style.transform = "translateX(" + offset * characterWidth + "px)";
 }
 
-// Reserve the existing 60px fade and enough room for the cursor's 3px border.
+// Find the last position before the right-side fade.
 function getCursorLimit()
 {
     const firstCharacter = document.getElementById("char-" + windowStart);
@@ -278,6 +286,7 @@ function getCursorLimit()
     return Math.min(windowEnd - 1, windowStart + visiblePositions);
 }
 
+// Move the cursor border and keep it inside the typing area.
 function updateCursor()
 {
     if (cursorCharacter !== null)
@@ -296,6 +305,7 @@ function updateCursor()
     cursorCharacter.classList.add("current-character");
 }
 
+// Choose full, half or empty icons from the remaining half-heart units.
 function renderHearts()
 {
     for (let i = 0; i < 3; i++)
@@ -320,6 +330,7 @@ function renderHearts()
     }
 }
 
+// Format elapsed time as MM:SS.tenths.
 function formatElapsed(milliseconds)
 {
     const tenths = Math.round(milliseconds / 100);
@@ -340,7 +351,7 @@ function formatElapsed(milliseconds)
     return minutes + ":" + seconds + "." + fraction;
 }
 
-// Include missed positions in accuracy as well as heart damage.
+// Include finalized misses in accuracy, then update speed, time and hearts.
 function updateStats()
 {
     const elapsed = getActiveTime();
@@ -372,6 +383,7 @@ function updateStats()
     renderHearts();
 }
 
+// Set buttons, status and footer text for the current game state.
 function updateInterface()
 {
     const completedMessage = footerMessage.textContent;
@@ -410,6 +422,7 @@ function updateInterface()
     }
 }
 
+// Stop the clock and animation, hide the cursor and save the run.
 function finishGame()
 {
     stopTimer();
@@ -425,6 +438,7 @@ function finishGame()
     saveGameResult(typedCount, correctCharacters, getActiveTime(), finalizedUntyped);
 }
 
+// Advance the countdown and scrolling, then refresh the display.
 function updateGame()
 {
     const now = performance.now();
@@ -448,6 +462,7 @@ function updateGame()
     updateInterface();
 }
 
+// Run another animation frame while counting down or playing.
 function animateGame()
 {
     animationFrame = null;
@@ -459,7 +474,7 @@ function animateGame()
     }
 }
 
-// Editing is limited to the active window; passed characters cannot be changed.
+// Handle characters, corrections and allowed cursor movement.
 function handleTyping(event)
 {
     updateGame();
@@ -592,7 +607,7 @@ function handleTyping(event)
     }
 }
 
-// Remember whether Pause interrupted the countdown or active gameplay.
+// Freeze active play, or remember the remaining countdown.
 function pauseGame()
 {
     updateGame();
@@ -624,6 +639,7 @@ function pauseGame()
     updateGame();
 }
 
+// Resume the saved state and return focus to the typing area.
 function resumeGame()
 {
     gameState = pausedState;
@@ -646,6 +662,7 @@ function resumeGame()
     }
 }
 
+// Use the same pause/resume action for the button and Escape.
 function togglePause()
 {
     if (gameState === "end")
@@ -663,7 +680,7 @@ function togglePause()
     }
 }
 
-// Only Restart clears the spans and begins a fresh three-second countdown.
+// Clear the track, hearts and counters; start a fresh countdown.
 function restartGame()
 {
     resultSaved = false;
@@ -707,6 +724,7 @@ function restartGame()
     animationFrame = requestAnimationFrame(animateGame);
 }
 
+// Toggle pause on Escape; ignore a held-down key.
 function handleShortcut(event)
 {
     if (event.key === "Escape" && !event.repeat)
@@ -716,6 +734,7 @@ function handleShortcut(event)
     }
 }
 
+// Pause when this document becomes hidden.
 function handleVisibilityChange()
 {
     if (document.hidden)
@@ -724,11 +743,13 @@ function handleVisibilityChange()
     }
 }
 
+// Require character-by-character input.
 function preventPaste(event)
 {
     event.preventDefault();
 }
 
+// Connect controls; Restart also performs the initial setup.
 typingArea.addEventListener("keydown", handleTyping);
 typingArea.addEventListener("paste", preventPaste);
 pauseButton.addEventListener("click", togglePause);

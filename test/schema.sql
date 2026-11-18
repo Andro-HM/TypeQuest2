@@ -1,3 +1,4 @@
+-- Content ranges and availability. Profile locks are calculated in app.py.
 CREATE TABLE IF NOT EXISTS classic_tiers (
     id INTEGER PRIMARY KEY,
     first_level INTEGER NOT NULL,
@@ -5,6 +6,7 @@ CREATE TABLE IF NOT EXISTS classic_tiers (
     available INTEGER NOT NULL CHECK (available IN (0, 1))
 );
 
+-- The 50 numbered Classic passages.
 CREATE TABLE IF NOT EXISTS classic_levels (
     id INTEGER PRIMARY KEY,
     tier INTEGER NOT NULL REFERENCES classic_tiers(id),
@@ -12,6 +14,7 @@ CREATE TABLE IF NOT EXISTS classic_levels (
     content TEXT NOT NULL
 );
 
+-- Reusable Time Attack and Survival passage pools.
 CREATE TABLE IF NOT EXISTS typing_passages (
     id INTEGER PRIMARY KEY,
     mode TEXT NOT NULL CHECK (mode IN ('time_attack', 'survival')),
@@ -22,12 +25,14 @@ CREATE TABLE IF NOT EXISTS typing_passages (
 );
 
 
+-- Local player names.
 CREATE TABLE IF NOT EXISTS profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK (length(name) BETWEEN 1 AND 24 AND name = trim(name)),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Completed Classic runs, linked to a player and a level.
 CREATE TABLE IF NOT EXISTS classic_progress (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -39,6 +44,7 @@ CREATE TABLE IF NOT EXISTS classic_progress (
     played_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Completed timed runs, including the selected duration.
 CREATE TABLE IF NOT EXISTS time_attack_progress (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
@@ -49,6 +55,7 @@ CREATE TABLE IF NOT EXISTS time_attack_progress (
     played_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Completed Survival runs and their final tier.
 CREATE TABLE IF NOT EXISTS survival_progress (
     id INTEGER PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,

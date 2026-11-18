@@ -6,13 +6,11 @@
         <title>Classic Levels — TypeQuest</title>
         <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/typequest.svg') }}">
 
-        <!-- Fonts used in the Stitch design -->
+        <!-- Fonts used in the design -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
 
         <style>
-            /* ========================================
-               1. PAGE AND BACKGROUND
-               ======================================== */
+            /* 1. page and background */
 
             * {
                 box-sizing: border-box;
@@ -45,9 +43,7 @@
                 padding: 28px 48px 28px 48px;
             }
 
-            /* ========================================
-               2. TOP NAVIGATION
-               ======================================== */
+            /* 2. top navigation */
 
             #top-bar {
                 display: flex;
@@ -146,9 +142,7 @@
                 height: 20px;
             }
 
-            /* ========================================
-               3. LEVEL SELECTION HEADING
-               ======================================== */
+            /* 3. level selection heading */
 
             #levels-content {
                 position: relative;
@@ -221,9 +215,7 @@
                 line-height: 1.5;
             }
 
-            /* ========================================
-               4. TIER BUTTONS
-               ======================================== */
+            /* 4. tier buttons */
 
             #tiers {
                 display: grid;
@@ -284,9 +276,7 @@
                 font-size: 13px;
             }
 
-            /* ========================================
-               5. TIER HEADING
-               ======================================== */
+            /* 5. tier heading */
 
             #tier-summary {
                 margin-bottom: 18px;
@@ -300,9 +290,7 @@
                 letter-spacing: -0.035em;
             }
 
-            /* ========================================
-               6. LEVEL CARDS
-               ======================================== */
+            /* 6. level cards */
 
             #level-grid {
                 display: grid;
@@ -368,9 +356,7 @@
                 opacity: 0.9;
             }
 
-            /* ========================================
-               7. BOTTOM STATUS BAR
-               ======================================== */
+            /* 7. bottom status bar */
 
             #bottom-bar {
                 display: flex;
@@ -401,9 +387,7 @@
 
     <body>
         <div id="page">
-            <!-- ========================================
-                 1. TOP NAVIGATION
-                 ======================================== -->
+            <!-- 1. top navigation -->
             <header id="top-bar">
                 <div id="brand">
                     <div id="brand-logo">TQ</div>
@@ -426,9 +410,7 @@
                 </div>
             </header>
 
-            <!-- ========================================
-                 2. CLASSIC LEVEL SELECTION
-                 ======================================== -->
+            <!-- 2. classic level selection -->
             <main id="levels-content">
                 <a id="back-link" href="{{ url_for('play') }}">&larr; Game modes</a>
 
@@ -477,9 +459,7 @@
                 </div>
             </main>
 
-            <!-- ========================================
-                 3. BOTTOM STATUS BAR
-                 ======================================== -->
+            <!-- 3. bottom status bar -->
             <footer id="bottom-bar">
                 <div id="audio-status">
                     <span id="audio-dot"></span>

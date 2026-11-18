@@ -5,6 +5,7 @@ import sqlite3
 DATABASE_PATH = __file__.replace("\\", "/").rsplit("/", 1)[0] + "/typequest.db"
 
 
+# Open SQLite with named columns and foreign keys enabled.
 def get_connection(database_path=None):
     if database_path is None:
         database_path = DATABASE_PATH
@@ -15,6 +16,7 @@ def get_connection(database_path=None):
     return connection
 
 
+# Read the five tier ranges and their content availability.
 def get_tiers():
     connection = get_connection()
 
@@ -23,6 +25,7 @@ def get_tiers():
     return result
 
 
+# Read the level cards belonging to one tier.
 def get_levels(tier):
     connection = get_connection()
 
@@ -33,6 +36,7 @@ def get_levels(tier):
     return result
 
 
+# Read one level only if its tier content is available.
 def get_level(number):
     connection = get_connection()
 
@@ -47,6 +51,7 @@ def get_level(number):
     return result
 
 
+# Read the reusable text pool for Time Attack or Survival.
 def get_passages(mode):
     connection = get_connection()
 
@@ -58,6 +63,7 @@ def get_passages(mode):
     return result
 
 
+# List local profiles in database ID order.
 def get_profiles():
     connection = get_connection()
     result = connection.execute("SELECT * FROM profiles ORDER BY id").fetchall()
@@ -65,6 +71,7 @@ def get_profiles():
     return result
 
 
+# Look up one profile; a missing ID returns None.
 def get_profile(profile_id):
     connection = get_connection()
     result = connection.execute("SELECT * FROM profiles WHERE id = ?", (profile_id,)).fetchone()
@@ -72,6 +79,7 @@ def get_profile(profile_id):
     return result
 
 
+# Insert a profile and return its generated ID.
 def create_profile(name):
     connection = get_connection()
     try:
@@ -82,6 +90,7 @@ def create_profile(name):
         connection.close()
 
 
+# Update only the selected profile's name.
 def rename_profile(profile_id, name):
     connection = get_connection()
     try:
@@ -91,6 +100,7 @@ def rename_profile(profile_id, name):
         connection.close()
 
 
+# Delete a profile; foreign keys also delete its saved runs.
 def delete_profile(profile_id):
     connection = get_connection()
     try:
@@ -100,6 +110,7 @@ def delete_profile(profile_id):
         connection.close()
 
 
+# Insert the completed run into its mode-specific table.
 def save_result(mode, profile_id, net_wpm, accuracy, elapsed_ms, stars=1, level_id=None, duration=None, tier=1):
     connection = get_connection()
     try:
@@ -129,6 +140,7 @@ def save_result(mode, profile_id, net_wpm, accuracy, elapsed_ms, stars=1, level_
         connection.close()
 
 
+# Group replays by level and keep their best star and speed values.
 def get_classic_bests(profile_id):
     connection = get_connection()
     result = connection.execute(
@@ -139,8 +151,11 @@ def get_classic_bests(profile_id):
     return result
 
 
+# Read the mode summary and five most recently inserted runs.
 def get_progress(profile_id, mode):
     connection = get_connection()
+
+    # Summaries use all runs; the recent table displays only five.
     if mode == "classic":
         summary = connection.execute(
             """SELECT COUNT(*) AS completed, COALESCE(SUM(stars), 0) AS stars,
@@ -173,6 +188,7 @@ def get_progress(profile_id, mode):
     return summary, recent
 
 
+# Rank profiles by stars, best speed or longest Survival time.
 def get_leaderboard(mode):
     connection = get_connection()
     if mode == "classic":

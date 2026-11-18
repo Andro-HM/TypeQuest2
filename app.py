@@ -5,6 +5,7 @@ import sqlite3
 import database
 
 
+# Shared settings for this single-process localhost app.
 app = Flask(__name__)
 DURATIONS = (30, 60, 120, 300)
 TIER_STARS = {1: 0, 2: 25, 3: 55, 4: 80, 5: 110}
@@ -14,17 +15,19 @@ tap_volume = 70
 background_music_volume = 60
 
 
+# Render the persistent shell that owns audio and the iframe.
 @app.route("/")
 def index():
-    return render_template("app.html", background_music_volume=background_music_volume,
-                           game_volume=game_volume, tap_volume=tap_volume)
+    return render_template("app.html", background_music_volume=background_music_volume, game_volume=game_volume, tap_volume=tap_volume)
 
 
+# Render Home using the currently selected profile.
 @app.route("/home")
 def home():
     return render_template("index.html", active_profile=database.get_profile(active_profile_id))
 
 
+# Require a profile before showing the three game modes.
 @app.route("/play")
 def play():
     active_profile = database.get_profile(active_profile_id)
@@ -34,6 +37,7 @@ def play():
     return render_template("play.html", active_profile=active_profile)
 
 
+# Sum each level's best stars for the selected profile.
 def get_classic_stars():
     total = 0
     for result in database.get_classic_bests(active_profile_id):
@@ -41,6 +45,7 @@ def get_classic_stars():
     return total
 
 
+# Calculate tier locks and render the selected tier's level cards.
 @app.route("/classic-levels")
 def classic_levels():
     active_profile = database.get_profile(active_profile_id)
@@ -68,6 +73,7 @@ def classic_levels():
     return render_template("classic-levels.html", tiers=tiers, selected_tier=selected_tier, levels=levels, bests=bests, active_profile=active_profile)
 
 
+# Check the level and profile stars before loading its passage.
 @app.route("/classic")
 def classic():
     active_profile = database.get_profile(active_profile_id)
@@ -84,6 +90,7 @@ def classic():
     return render_template("classic.html", level=dict(level), active_profile=active_profile)
 
 
+# Validate the duration and pass the passage pool to the template.
 @app.route("/time-attack")
 def time_attack():
     active_profile = database.get_profile(active_profile_id)
@@ -101,6 +108,7 @@ def time_attack():
     return render_template("time-attack.html", duration=duration, passages=passages, active_profile=active_profile)
 
 
+# Group passages into the five Survival tiers.
 @app.route("/survival")
 def survival():
     active_profile = database.get_profile(active_profile_id)
@@ -117,6 +125,7 @@ def survival():
     return render_template("survival.html", tiers=tiers, active_profile=active_profile)
 
 
+# Build the short profile badge shown in templates.
 @app.template_filter("initials")
 def initials(name):
     words = name.split()
@@ -127,17 +136,20 @@ def initials(name):
     return name[0].upper()
 
 
+# Convert stored UTC timestamps to the displayed IST date.
 @app.template_filter("ist")
 def format_ist(value):
     return (datetime.strptime(value, "%Y-%m-%d %H:%M:%S") + timedelta(hours=5, minutes=30)).strftime("%d %b %Y · %H:%M")
 
 
+# Format saved milliseconds as minutes and seconds.
 @app.template_filter("duration_text")
 def duration_text(milliseconds):
     seconds = int(milliseconds / 1000)
     return f"{seconds // 60:02d}:{seconds % 60:02d}"
 
 
+# Handle profile form actions, then render the list or an error.
 @app.route("/profiles", methods=["GET", "POST"])
 def profiles():
     global active_profile_id
@@ -176,10 +188,10 @@ def profiles():
         if error is None:
             return redirect(url_for("profiles"))
 
-    return render_template("profiles.html", profiles=database.get_profiles(), error=error, modal=modal,
-                           entered_name=name, edit_id=profile_id, active_profile=database.get_profile(active_profile_id))
+    return render_template("profiles.html", profiles=database.get_profiles(), error=error, modal=modal, entered_name=name, edit_id=profile_id, active_profile=database.get_profile(active_profile_id))
 
 
+# Load personal statistics or the selected mode leaderboard.
 @app.route("/progress")
 def progress():
     active_profile = database.get_profile(active_profile_id)
@@ -196,10 +208,10 @@ def progress():
     leaderboard = []
     if tab == "leaderboard":
         leaderboard = database.get_leaderboard(mode)
-    return render_template("progress.html", tab=tab, mode=mode, summary=summary,
-                           recent=recent, leaderboard=leaderboard, active_profile=active_profile)
+    return render_template("progress.html", tab=tab, mode=mode, summary=summary, recent=recent, leaderboard=leaderboard, active_profile=active_profile)
 
 
+# Render volume sliders or update the submitted global values.
 @app.route("/settings", methods=["GET", "POST"])
 def settings():
     global game_volume, tap_volume, background_music_volume
@@ -210,11 +222,10 @@ def settings():
         background_music_volume = request.form.get("background_music_volume", background_music_volume, type=int)
         return jsonify(saved=True)
 
-    return render_template("settings.html", game_volume=game_volume, tap_volume=tap_volume,
-                           background_music_volume=background_music_volume,
-                           active_profile=database.get_profile(active_profile_id))
+    return render_template("settings.html", game_volume=game_volume, tap_volume=tap_volume, background_music_volume=background_music_volume, active_profile=database.get_profile(active_profile_id))
 
 
+# Check a completed run, calculate statistics and insert its result.
 @app.route("/results", methods=["POST"])
 def save_results():
     active_profile = database.get_profile(active_profile_id)
@@ -260,6 +271,7 @@ def save_results():
     return jsonify(saved=True, profile=active_profile["name"], stars=stars)
 
 
+# Select the first saved profile only when launching the server.
 if __name__ == "__main__":
     existing_profiles = database.get_profiles()
     if existing_profiles:

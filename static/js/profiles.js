@@ -1,8 +1,10 @@
+// Find the shared profile dialog and its form fields.
 const profileModal = document.getElementById("profile-modal");
 const profileInput = document.getElementById("profile-input");
 const profileAction = document.getElementById("profile-action");
 const editProfileId = document.getElementById("edit-profile-id");
 
+// Reuse the same form for Create, Rename and Delete.
 function openProfileModal(action, id, name)
 {
     profileAction.value = action;
@@ -35,17 +37,20 @@ function openProfileModal(action, id, name)
     }
 }
 
+// Hide the dialog and return focus to Create profile.
 function closeProfileModal()
 {
     profileModal.hidden = true;
     document.getElementById("create-profile").focus();
 }
 
+// Open an empty form for a new profile.
 function openCreateProfile()
 {
     openProfileModal("create", "", "");
 }
 
+// Read the chosen action and profile from the button data.
 function handleProfileAction(event)
 {
     const button = event.currentTarget;
@@ -53,6 +58,7 @@ function handleProfileAction(event)
     button.closest("details").open = false;
 }
 
+// Close only when clicking outside the dialog content.
 function handleModalBackdrop(event)
 {
     if (event.target === profileModal)
@@ -61,6 +67,7 @@ function handleModalBackdrop(event)
     }
 }
 
+// Close an open dialog with Escape.
 function handleModalKey(event)
 {
     if (event.key === "Escape" && !profileModal.hidden)
@@ -69,6 +76,7 @@ function handleModalKey(event)
     }
 }
 
+// Submit actions through the HTML form; Flask updates SQLite.
 document.getElementById("create-profile").addEventListener("click", openCreateProfile);
 document.getElementById("modal-close").addEventListener("click", closeProfileModal);
 document.getElementById("modal-cancel").addEventListener("click", closeProfileModal);
@@ -79,6 +87,7 @@ for (let i = 0; i < profileActions.length; i++)
 {
     profileActions[i].addEventListener("click", handleProfileAction);
 }
+// Flask may return an open dialog after a form error.
 if (!profileModal.hidden)
 {
     profileInput.focus();
