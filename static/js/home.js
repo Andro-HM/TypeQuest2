@@ -1,7 +1,6 @@
-// Connect the Home page controls.
 const beginButton = document.getElementById("btn-begin");
 
-// Open Play inside the iframe; playUrl comes from the template.
+// Navigate the iframe to the Play URL supplied by the template.
 function openPlayPage()
 {
     window.location.href = playUrl;
@@ -17,6 +16,5 @@ function handleHomeKeydown(event)
     }
 }
 
-// Connect mouse and keyboard input.
 beginButton.addEventListener("click", openPlayPage);
 document.addEventListener("keydown", handleHomeKeydown);

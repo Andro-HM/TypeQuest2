@@ -11,35 +11,35 @@ const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
-// Window limits are character indexes; the cursor can move within them.
-const HISTORY_CHARACTERS = 18;
-const WINDOW_CHARACTERS = 60;
-const durationMs = durationSeconds * 1000;
-let windowStart = 0;
-let windowEnd = 60;
-let position = 0;
-let furthestPosition = 0;
-let generatedCount = 0;                 // the total number of character spans created so far
-let typedCount = 0;                    // how many spans currently have either the correct or incorrect class
+const HISTORY_CHARACTERS = 18;    // Target history during forward typing
+const WINDOW_CHARACTERS = 60;     // Maximum spans in the visible window
+const durationMs = durationSeconds * 1000;  // Selected duration from the template
+
+let windowStart = 0;           // First span index in the window
+let windowEnd = 60;            // First index after the window
+let position = 0;              // Current cursor index
+let furthestPosition = 0;      // Right Arrow cannot move past this index
+
+let generatedCount = 0;        // Number of spans created
+let typedCount = 0;            // Positions marked correct or incorrect
 let correctCharacters = 0;
-let cursorCharacter = null;          // Span carrying the cursor border
+let cursorCharacter = null;    // Span carrying the cursor border
 
-let passageOrder = [];              // stores a shuffled list of indexes of passages to be appended
-let lastPassage = -1;              // remembers the index of the most recently appended passage
+let passageOrder = [];         // Shuffled indexes still to play
+let lastPassage = -1;          // Last passage index, or -1 before play
 
-let gameState = "start";
-let pausedState = "start";          // State to restore on Resume
+let gameState = "start";       // start, play, pause or end
+let pausedState = "start";     // State to restore on Resume
 
-// initial three-second countdown
-let countdownRemaining = 3000;
-let countdownSince = 0;
+let countdownRemaining = 3000;     // Countdown time saved on pause
+let countdownSince = 0;            // Current countdown start timestamp
 
-// Keep accumulated playing time separate from the current running period.
-let activeMs = 0;
-let lastTick = null;
-let rawWpm = 0;
+let activeMs = 0;              // Accumulated play time in milliseconds
+let lastTick = null;           // Playing period start, or null when stopped
+
+let rawWpm = 0;                // Speed before the accuracy adjustment
 let accuracy = 0;
-let wordsTyped = 0;
+let wordsTyped = 0;            // Entered positions where the passage has a space
 
 // Shuffle passage indexes and append numbered character spans.
 function appendPassage()
@@ -48,14 +48,12 @@ function appendPassage()
     if (passageOrder.length === 0)
     {
 
-        // Fill the list with every passage index
-
         for (let i = 0; i < passages.length; i++)
         {
             passageOrder.push(i);
         }
 
-        // Shuffle the list using the Fisher-Yates algorithm
+        // Fisher–Yates shuffle of the passage indexes.
         for (let i = passageOrder.length - 1; i > 0; i--)
         {
             const randomIndex = Math.floor(Math.random() * (i + 1));
@@ -64,6 +62,7 @@ function appendPassage()
             passageOrder[randomIndex] = temporary;
         }
 
+        // Avoid repeating a passage where two shuffled cycles meet.
         if (passageOrder.length > 1 && passageOrder[0] === lastPassage)
         {
             const temporary = passageOrder[0];
@@ -72,11 +71,11 @@ function appendPassage()
         }
     }
 
-    const passageIndex = passageOrder.shift();                  // remove the 1st index from the shuffled list
+    const passageIndex = passageOrder.shift();
     let passage = passages[passageIndex];
     lastPassage = passageIndex;
 
-    // adds a space in front of the passage only if it is not the first one
+    // Separate consecutive passages with one space.
     if (generatedCount > 0)
     {
         passage = " " + passage;
@@ -131,13 +130,11 @@ function shiftWindow(newStart)
 // Move the cursor border and keep it inside the typing area.
 function updateCursor()
 {
-    // Remove the old cursor
     if (cursorCharacter !== null)
     {
         cursorCharacter.classList.remove("current-character");
     }
 
-    // If the game has ended, hide cursor
     if (gameState === "end")
     {
         cursorCharacter = null;
@@ -154,7 +151,6 @@ function updateCursor()
         shiftWindow(position - WINDOW_CHARACTERS + 1);
     }
 
-    // Place the cursor on the current character
     cursorCharacter = document.getElementById("char-" + position);
     cursorCharacter.classList.add("current-character");
 
@@ -288,6 +284,7 @@ function updateInterface()
     }
     else
     {
+        // Keep the save message when the display updates again.
         if (completedMessage.includes(" · Saved for ") || completedMessage.includes(" · Not saved: "))
         {
             footerMessage.textContent = completedMessage;
@@ -315,6 +312,7 @@ function updateGame()
 
     if (gameState === "start" && now >= countdownSince + countdownRemaining)
     {
+        // Start at the countdown deadline even if this update arrived late.
         startTimer(countdownSince + countdownRemaining);
         countdownRemaining = 0;
         gameState = "play";
@@ -415,6 +413,7 @@ function handleTyping(event)
         const wasCorrect = character.classList.contains("correct");
         const wasIncorrect = character.classList.contains("incorrect");
 
+        // Count each position only on its first entry or after it was erased.
         if (!wasCorrect && !wasIncorrect)
         {
             typedCount++;
@@ -455,7 +454,7 @@ function handleTyping(event)
         {
             furthestPosition = position;
             ensureText();
-            // keeps 18 character positions behind the cursor visible during normal typing
+            // Keep up to 18 positions behind the cursor after moving forward.
             shiftWindow(Math.max(0, position - HISTORY_CHARACTERS));
         }
 
@@ -479,6 +478,7 @@ function pauseGame()
         return;
     }
 
+    // Remember whether Resume should continue the countdown or active play.
     pausedState = gameState;
 
     if (gameState === "start")
@@ -582,7 +582,7 @@ function preventPaste(event)
     event.preventDefault();
 }
 
-// durationSeconds and passages come from the Jinja template.
+// Use the selected duration in the challenge heading.
 let durationTitle = "30-second challenge";
 let durationLabel = "30 SEC";
 

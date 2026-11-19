@@ -1,5 +1,4 @@
-// One save per completion; Restart resets this flag in the game script.
-let resultSaved = false;
+let resultSaved = false;       // Blocks another submission until Restart
 
 // Send the completed run to Flask and display its save result.
 async function saveGameResult(typed, correct, elapsed, missed)
@@ -8,9 +7,11 @@ async function saveGameResult(typed, correct, elapsed, missed)
     {
         return;
     }
+
+    // Set the flag before awaiting Flask so duplicate calls cannot submit.
     resultSaved = true;
 
-    // Show accuracy-based Classic stars immediately.
+    // Show Classic stars from unrounded accuracy before Flask responds.
     if (resultConfig.mode === "classic")
     {
         let stars = 1;
@@ -25,7 +26,7 @@ async function saveGameResult(typed, correct, elapsed, missed)
         footerMessage.textContent += " · STARS " + stars + " / 3";
     }
 
-    // resultConfig comes from the gameplay template; the game supplies counters.
+    // Combine the template configuration with the finished run's counts and time.
     const result =
     {
         mode: resultConfig.mode,
@@ -34,6 +35,7 @@ async function saveGameResult(typed, correct, elapsed, missed)
         elapsed_ms: elapsed,
         missed_count: missed
     };
+
     if (resultConfig.mode === "classic")
     {
         result.level_id = resultConfig.levelId;
@@ -53,10 +55,13 @@ async function saveGameResult(typed, correct, elapsed, missed)
             body: JSON.stringify(result)
         });
         const data = await response.json();
+
         if (!response.ok)
         {
             throw new Error(data.error || "Result not saved.");
         }
+
+        // Update the footer only while the game is in its end state.
         if (gameState === "end")
         {
             footerMessage.textContent += " · Saved for " + data.profile;

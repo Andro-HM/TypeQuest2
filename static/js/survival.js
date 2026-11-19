@@ -1,14 +1,14 @@
-// Starting rules; survivalTiers is supplied by Flask through Jinja.
+// Survival rules and the passage tiers supplied by Flask.
 const survivalData =
 {
     countdownMilliseconds: 3000,
     windowCharacters: 60,
     startingHalfHearts: 6,
-    startingSpeed: 1.5,
+    startingSpeed: 1.5,           // Characters per second
     speedIncreasePerMinute: 0.5,
     maximumSpeed: 4,
     tierMilliseconds: 60000,
-    startingDamageThreshold: 6,
+    startingDamageThreshold: 6,   // Mistakes per half-heart at the start
     tiers: survivalTiers
 };
 
@@ -25,40 +25,41 @@ const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
-// Keep recent text behind the cursor inside a 60-character window.
-const WINDOW_CHARACTERS = 60;
-const HISTORY_CHARACTERS = 18;
+const WINDOW_CHARACTERS = 60;     // Maximum spans in the visible window
+const HISTORY_CHARACTERS = 18;    // Starting space for scrolling history
 
-let windowStart = 0;
-let windowEnd = 60;
-let position = 0;
-let furthestPosition = 0;
-let generatedCount = 0;     // Total number of spans generated
-let typedCount = 0;         // Number of spans currently marked typed
-let correctCharacters = 0;  
-let cursorCharacter = null;     // The span currently marked as the cursor
+let windowStart = 0;           // First span index in the window
+let windowEnd = 60;            // First index after the window
+let position = 0;              // Current cursor index
+let furthestPosition = 0;      // Right Arrow cannot move past this index
 
-let finalizedCount = 0;         // Positions already locked beyond the left edge
+let generatedCount = 0;        // Number of spans created
+let typedCount = 0;            // Positions marked correct or incorrect
+let correctCharacters = 0;
+let cursorCharacter = null;    // Span carrying the cursor border
+
+let finalizedCount = 0;        // First editable index at the left edge
 let finalizedUntyped = 0;      // Untyped positions that left the window
 
-let halfHearts = survivalData.startingHalfHearts;           // Remaining half-heart units, initially 6
-let damageCounter = 0;                                     // Mistakes accumulated toward the next half-heart loss
-let damageStage = 0;                                      // Elapsed minutes; each stage lowers the damage threshold
+let halfHearts = survivalData.startingHalfHearts;   // Two units per full heart
+let damageCounter = 0;                              // Mistakes toward the next half-heart loss
+let damageStage = 0;                                // Elapsed minutes used to set the threshold
 
-let passageOrders = [];                 // Shuffled passage indexes for each tier
-let lastPassages = [];                 // Last passage index used in each tier
+let passageOrders = [];        // Shuffled passage indexes per tier
+let lastPassages = [];         // Last passage used per tier
 
-let gameState = "start";
-let pausedState = "start";
+let gameState = "start";       // start, play, pause or end
+let pausedState = "start";     // State to restore on Resume
 
-let countdownRemaining = survivalData.countdownMilliseconds;    // Milliseconds left in the initial three-second countdown
-let countdownSince = 0;                                       // Timestamp when this countdown period started
-// Track active time separately from countdown and paused time.
-let activeMs = 0;
-let lastTick = null;
-let rawWpm = 0;
+let countdownRemaining = survivalData.countdownMilliseconds;    // Countdown time saved on pause
+let countdownSince = 0;                                         // Current countdown start timestamp
+
+let activeMs = 0;              // Accumulated play time in milliseconds
+let lastTick = null;           // Playing period start, or null when stopped
+
+let rawWpm = 0;                // Speed before the accuracy adjustment
 let accuracy = 0;
-let animationFrame = null;
+let animationFrame = null;     // Pending frame ID for pause or restart
 
 // Choose a passage from this tier and append numbered character spans.
 function appendPassage(tierNumber)
@@ -69,13 +70,12 @@ function appendPassage(tierNumber)
 
     if (order.length === 0)
     {
-        // Create a new randomized order of passages for this tier
         for (let i = 0; i < tier.passages.length; i++)
         {
             order.push(i);
         }
 
-        // Shuffle the order using the Fisher-Yates algorithm
+        // Fisher–Yates shuffle of this tier's passage indexes.
         for (let i = order.length - 1; i > 0; i--)
         {
             const randomIndex = Math.floor(Math.random() * (i + 1));
@@ -93,7 +93,6 @@ function appendPassage(tierNumber)
         }
     }
 
-    // Take the next index from the shuffled list.
     const passageIndex = order.shift();
     let passage = tier.passages[passageIndex];
     lastPassages[tierIndex] = passageIndex;
@@ -103,7 +102,6 @@ function appendPassage(tierNumber)
         passage = " " + passage;
     }
 
-    // Generate spans for each character in the passage and append them to the track
     for (let i = 0; i < passage.length; i++)
     {
         const character = document.createElement("span");
@@ -226,10 +224,11 @@ function advanceBoundary(elapsedMilliseconds)
     const distance = getScrollDistance(elapsedMilliseconds / 1000);
     const crossedCount = Math.floor(distance + 0.000000001);
     const newStart = Math.max(0, crossedCount - HISTORY_CHARACTERS);
+    // Lock a position as soon as it starts leaving the left edge.
     const leftBoundary = Math.max(0, Math.ceil(distance - HISTORY_CHARACTERS - 0.000000001));
     ensureText(Math.max(crossedCount + 1, newStart + WINDOW_CHARACTERS), getTier(elapsedMilliseconds));
 
-    // Passage tiers stop at five; damage keeps increasing each minute to its cap.
+    // Reset the damage counter each minute as the threshold changes.
     const currentStage = Math.floor(elapsedMilliseconds / survivalData.tierMilliseconds);
 
     if (currentStage !== damageStage)
@@ -355,7 +354,7 @@ function formatElapsed(milliseconds)
 function updateStats()
 {
     const elapsed = getActiveTime();
-    const opportunityPositions = typedCount + finalizedUntyped;
+    const opportunityPositions = typedCount + finalizedUntyped;  // Typed positions plus misses
     rawWpm = 0;
     accuracy = 0;
 
@@ -412,6 +411,7 @@ function updateInterface()
     }
     else
     {
+        // Keep the save message when the display updates again.
         if (completedMessage.includes(" · Saved for ") || completedMessage.includes(" · Not saved: "))
         {
             footerMessage.textContent = completedMessage;
@@ -445,6 +445,7 @@ function updateGame()
 
     if (gameState === "start" && now >= countdownSince + countdownRemaining)
     {
+        // Start at the countdown deadline even if this update arrived late.
         startTimer(countdownSince + countdownRemaining);
         countdownRemaining = 0;
         gameState = "play";
@@ -474,7 +475,7 @@ function animateGame()
     }
 }
 
-// Handle characters, corrections and allowed cursor movement.
+// Handle typing and edits between the locked left edge and the right fade.
 function handleTyping(event)
 {
     updateGame();
@@ -561,6 +562,7 @@ function handleTyping(event)
         const wasCorrect = character.classList.contains("correct");
         const wasIncorrect = character.classList.contains("incorrect");
 
+        // Count each position only on its first entry or after it was erased.
         if (!wasCorrect && !wasIncorrect)
         {
             typedCount++;
@@ -617,6 +619,7 @@ function pauseGame()
         return;
     }
 
+    // Remember whether Resume should continue the countdown or active play.
     pausedState = gameState;
 
     if (gameState === "start")

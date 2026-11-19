@@ -1,6 +1,6 @@
 // Shared typing and tap sounds for the outer app.html page.
 const audioContext = new AudioContext({latencyHint: "interactive"});
-const audioBuffers = {};
+const audioBuffers = {};       // Decoded sounds keyed by name
 const audioGains =
 {
     game_volume: audioContext.createGain(),
@@ -53,10 +53,10 @@ function setAudioVolume(name, value)
     audioGains[name].gain.value = value / 100;
 }
 
-// Play one tap for a control, including keyboard-triggered clicks.
+// Play a tap when an enabled control receives input.
 function handleAudioTap(event)
 {
-    // Pointer taps start before navigation. The following click must not repeat them.
+    // Play on pointerdown or a keyboard click to avoid a double tap.
     if (event.button !== 0 || (event.type === "click" && event.detail !== 0))
     {
         return;
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function()
     connectPageAudio();
 });
 
-// audioFiles and audioSettings come from app.html.
+// Preload the sound files listed in app.html.
 for (const name in audioFiles)
 {
     loadSound(name).catch(console.error);

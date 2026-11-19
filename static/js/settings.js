@@ -1,10 +1,10 @@
-// The form action points to Flask's /settings route.
-const settingsForm = document.getElementById("volume-settings");
+const settingsForm = document.getElementById("volume-settings");   // Its action is the Flask save URL
 
 // Update the display and sound volume, then send the value to Flask.
 function updateVolume(event)
 {
     const slider = event.target;
+
     document.getElementById(slider.id + "-value").textContent = slider.value + "%";
     slider.style.setProperty("--volume", slider.value + "%");
 
@@ -31,7 +31,7 @@ function updateVolume(event)
     });
 }
 
-// input fires while the slider moves; no Save button is needed.
+// Apply volume while the slider moves.
 for (const slider of settingsForm.querySelectorAll('input[type="range"]'))
 {
     slider.addEventListener("input", updateVolume);

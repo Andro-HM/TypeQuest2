@@ -1,8 +1,9 @@
 // Find the shared profile dialog and its form fields.
 const profileModal = document.getElementById("profile-modal");
 const profileInput = document.getElementById("profile-input");
-const profileAction = document.getElementById("profile-action");
-const editProfileId = document.getElementById("edit-profile-id");
+
+const profileAction = document.getElementById("profile-action");  // Action sent to Flask
+const editProfileId = document.getElementById("edit-profile-id");  // Existing profile ID for Rename or Delete
 
 // Reuse the same form for Create, Rename and Delete.
 function openProfileModal(action, id, name)
@@ -13,6 +14,7 @@ function openProfileModal(action, id, name)
     profileInput.required = action !== "delete";
     document.getElementById("name-fields").hidden = action === "delete";
     document.getElementById("modal-error").hidden = true;
+
     document.getElementById("modal-title").textContent = "Create a profile";
     document.getElementById("modal-description").textContent = "Give your player a name.";
     document.getElementById("modal-submit").textContent = "Create & switch";
@@ -44,7 +46,6 @@ function closeProfileModal()
     document.getElementById("create-profile").focus();
 }
 
-// Open an empty form for a new profile.
 function openCreateProfile()
 {
     openProfileModal("create", "", "");
@@ -76,17 +77,19 @@ function handleModalKey(event)
     }
 }
 
-// Submit actions through the HTML form; Flask updates SQLite.
+// Wire dialog controls. The form submission goes directly to Flask.
 document.getElementById("create-profile").addEventListener("click", openCreateProfile);
 document.getElementById("modal-close").addEventListener("click", closeProfileModal);
 document.getElementById("modal-cancel").addEventListener("click", closeProfileModal);
 profileModal.addEventListener("click", handleModalBackdrop);
 document.addEventListener("keydown", handleModalKey);
+
 const profileActions = document.querySelectorAll("[data-action]");
 for (let i = 0; i < profileActions.length; i++)
 {
     profileActions[i].addEventListener("click", handleProfileAction);
 }
+
 // Flask may return an open dialog after a form error.
 if (!profileModal.hidden)
 {

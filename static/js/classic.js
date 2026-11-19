@@ -9,14 +9,15 @@ const pauseBtnLabel = document.getElementById("pause_btn-label");
 const pauseIcon = document.getElementById("pause-icon");
 const restartButton = document.getElementById("restart-button");
 
-// Track the next character, correctness, game state and stopwatch.
-let position = 0;
+let position = 0;              // Next character index and current typed count
 let correctCharacters = 0;
-let gameState = "start";
-let cursorCharacter = null;
-let activeMs = 0;
-let lastTick = null;
-let rawWpm = 0;
+let gameState = "start";       // start, play, pause or end
+let cursorCharacter = null;    // Span carrying the cursor border
+
+let activeMs = 0;              // Accumulated play time in milliseconds
+let lastTick = null;           // Playing period start, or null when stopped
+
+let rawWpm = 0;                // Speed before the accuracy adjustment
 let accuracy = 0;
 
 // Return playing time in milliseconds, excluding pauses.
@@ -85,6 +86,7 @@ function updateStats()
 
     if (elapsed > 0)
     {
+        // One word is five characters. Convert milliseconds to minutes.
         rawWpm = (position / 5) / (elapsed / 60000);
     }
 
@@ -144,6 +146,7 @@ function updateCursor()
         cursorCharacter.classList.add("cursor-after");
     }
 
+    // Scroll only when the cursor leaves the visible area.
     if (cursorCharacter.offsetTop < typingArea.scrollTop)
     {
         typingArea.scrollTop = cursorCharacter.offsetTop;
@@ -167,7 +170,6 @@ function updateInterface()
     gameStatus.textContent = "IN PLAY";
     footerMessage.textContent = "ESC · PAUSE";
 
-    // Show the unavailable state when no level was supplied.
     if (level === null)
     {
         gameStatus.textContent = "UNAVAILABLE";
@@ -188,7 +190,7 @@ function updateInterface()
     }
 }
 
-// Type forward; Backspace erases the previous character.
+// Type forward. Backspace erases the previous character.
 function handleTyping(event)
 {
     if (event.ctrlKey || event.altKey || event.metaKey)
@@ -205,8 +207,6 @@ function handleTyping(event)
 
         return;
     }
-
-    // Accept Backspace or a single non-repeating character.
 
     event.preventDefault();
 
@@ -234,7 +234,6 @@ function handleTyping(event)
     }
     else
     {
-        // Ignore input beyond the passage.
         if (position >= level.content.length)
         {
             return;
@@ -250,6 +249,7 @@ function handleTyping(event)
 
         const character = document.getElementById("char-" + position);
 
+        // The span holds the expected character. Its class shows the result.
         if (event.key === character.textContent)
         {
             window.parent.playSound("correct_key", "game_volume");
@@ -277,7 +277,7 @@ function handleTyping(event)
     updateCursor();
 }
 
-// Stop the clock, show final statistics and call results.js to save.
+// Freeze the result on screen and send it through results.js.
 function finishGame()
 {
     stopTimer();

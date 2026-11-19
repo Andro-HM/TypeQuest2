@@ -1,11 +1,12 @@
 // Create the audio environment and its volume control.
 const musicContext = new AudioContext();
 const musicGain = musicContext.createGain();
+
 musicGain.gain.value = initialMusicVolume / 100;
 musicGain.connect(musicContext.destination);
 
-let musicBuffer = null;
-let musicSource = null;
+let musicBuffer = null;        // Decoded WAV samples, once loaded
+let musicSource = null;        // The single looping player, once started
 
 // Download the local WAV and decode it once into playable samples.
 async function loadMusic()
@@ -19,6 +20,7 @@ async function loadMusic()
 // Create one player; the audio engine loops its buffer continuously.
 function startMusic()
 {
+    // Loading and autoplay permission can arrive in either order.
     if (musicSource !== null || musicBuffer === null || musicContext.state !== "running")
     {
         return;
@@ -68,4 +70,5 @@ document.addEventListener("DOMContentLoaded", function()
 // audio.js also forwards clicks and keypresses from inside the iframe.
 document.addEventListener("pointerdown", unlockMusic, true);
 document.addEventListener("keydown", unlockMusic, true);
+
 loadMusic().catch(console.error);
